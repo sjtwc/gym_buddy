@@ -107,7 +107,7 @@ class AchievementRepository @Inject constructor(
     private suspend fun getWorkoutsThisWeek(): Int {
         val now = System.currentTimeMillis()
         val weekStart = now - (7 * 24 * 60 * 60 * 1000L)
-        return workoutDao.getWorkoutsByDateRange(weekStart, now).first().size
+        return workoutDao.getWorkoutsByDateRangeSync(weekStart, now).size
     }
     
     private suspend fun getUniqueExercisesCount(): Int {

@@ -1,10 +1,14 @@
 package com.example.gymbuddy
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -32,9 +36,20 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var sessionManager: WorkoutSessionManager
     
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("MainActivity", "Notification permission granted")
+        } else {
+            Log.d("MainActivity", "Notification permission denied")
+        }
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        requestNotificationPermission()
         scheduleStreakReminder()
         setContent {
             GymBuddyTheme {
@@ -53,23 +68,42 @@ class MainActivity : ComponentActivity() {
         sessionManager.onCleared()
     }
     
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.d("MainActivity", "Notification permission already granted")
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    Log.d("MainActivity", "Show rationale for notification permission")
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                else -> {
+                    Log.d("MainActivity", "Requesting notification permission")
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
+    
     private fun scheduleStreakReminder() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .build()
         
         val (repeatInterval, timeUnit) = if (BuildConfig.DEBUG) {
-            Log.d("StreakReminder", "DEBUG MODE: Scheduling notification every 1 minute")
-            1L to TimeUnit.MINUTES
+            Log.d("StreakReminder", "DEBUG MODE: Scheduling notification every 30 seconds")
+            30L to TimeUnit.SECONDS
         } else {
-            24L to TimeUnit.HOURS
+            Log.d("StreakReminder", "PRODUCTION MODE: Scheduling notification every 30 seconds")
+            30L to TimeUnit.SECONDS
         }
         
         val reminderRequest = PeriodicWorkRequestBuilder<StreakReminderWorker>(
             repeatInterval, timeUnit
         )
             .setConstraints(constraints)
-            .setInitialDelay(if (BuildConfig.DEBUG) 0 else calculateInitialDelay(), TimeUnit.MILLISECONDS)
+            .setInitialDelay(0, TimeUnit.MILLISECONDS)
             .build()
         
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
