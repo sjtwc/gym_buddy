@@ -1,5 +1,6 @@
 package com.example.gymbuddy.data.repository
 
+import com.example.gymbuddy.data.local.dao.DailyVolumeResult
 import com.example.gymbuddy.data.local.dao.SetDao
 import com.example.gymbuddy.data.local.dao.WorkoutDao
 import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
@@ -11,6 +12,7 @@ import com.example.gymbuddy.domain.model.WorkoutExercise
 import com.example.gymbuddy.domain.model.WorkoutSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.*
 import javax.inject.Inject
 
 class WorkoutRepository @Inject constructor(
@@ -56,6 +58,69 @@ class WorkoutRepository @Inject constructor(
     suspend fun deleteWorkout(workout: Workout) =
         workoutDao.deleteWorkout(workout.toEntity())
     
+    suspend fun getWeeklyVolumePerMuscle(): Map<String, Float> {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val startOfWeek = calendar.timeInMillis
+        
+        calendar.add(Calendar.WEEK_OF_YEAR, 1)
+        val endOfWeek = calendar.timeInMillis - 1
+        
+        val muscleGroups = listOf("Chest", "Back", "Shoulders", "Arms", "Legs", "Core")
+        return muscleGroups.associateWith { muscle ->
+            setDao.getVolumeForMuscleGroup(startOfWeek, endOfWeek, muscle)
+        }
+    }
+    
+    suspend fun getDailyVolumesForLast10Days(): List<DailyVolume> {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        val endDate = calendar.timeInMillis
+        
+        calendar.add(Calendar.DAY_OF_YEAR, -9)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        val startDate = calendar.timeInMillis
+        
+        val results = setDao.getDailyVolumes(startDate, endDate)
+        
+        val volumeByDay = results.associate { result ->
+            val cal = Calendar.getInstance().apply { timeInMillis = result.workoutDate }
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            cal.timeInMillis to result.dailyVolume
+        }
+        
+        val dailyVolumes = mutableListOf<DailyVolume>()
+        val currentCal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        
+        for (i in 9 downTo 0) {
+            val dayCal = Calendar.getInstance().apply {
+                timeInMillis = currentCal.timeInMillis
+                add(Calendar.DAY_OF_YEAR, -i)
+            }
+            val dayStart = dayCal.timeInMillis
+            val volume = volumeByDay[dayStart] ?: 0f
+            dailyVolumes.add(DailyVolume(dayStart, volume))
+        }
+        
+        return dailyVolumes
+    }
+    
     private fun WorkoutEntity.toDomain() = Workout(
         id = id,
         name = name,
@@ -78,6 +143,11 @@ class WorkoutRepository @Inject constructor(
         createdAt = createdAt
     )
 }
+
+data class DailyVolume(
+    val date: Long,
+    val volume: Float
+)
 
 class SetRepository @Inject constructor(
     private val setDao: SetDao

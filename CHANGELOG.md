@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Location-Based Search** - Uses device GPS to find nearest gym location
 - **WebView Map Display** - Embedded Google Maps via WebView showing nearest gym (no API key required)
 - **40+ HK Gym Locations** - Pre-defined database of gym locations across Hong Kong
+- **Full Body Muscle Focus** - Now shows all 6 muscle groups (Chest, Back, Shoulders, Arms, Legs, Core) with real volume data from current week's workouts
+- **10-Day Volume Chart** - Line graph showing daily training volume for the last 10 days with tap-to-view data points
 
 ### Fixed
 - **XP/Level Calculation** - Fixed level calculation logic with proper exponential formula
@@ -48,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `build.gradle.kts` - Added WebView dependency, removed Google Maps dependencies
 - `AndroidManifest.xml` - Added location and internet permissions
 - `HomeViewModel.kt` - Added gym selection state and location handling
+- `SetDao.kt` - Added queries: getVolumeForMuscleGroup, getDailyVolumes
 
 ### New Files
 - `AchievementType.kt` - Enum with all achievement types and XP rewards
@@ -65,79 +68,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.4.0] - 2026-04-13
 
 ### Added
-- **Exercise Insight Dialog** - New popup dialog (75% screen size) triggered by tapping exercise card
-  - **About Tab**: Description, target muscles, equipment type, instructions, secondary muscles
-  - **History Tab**: Past workout sessions with date, sets, reps, weights
-  - **Graph Tab**: Line charts showing progress over time
-    - Best Set (Est. 1RM) using Epley formula
-    - Best Set (Max Weight)
-    - Total Training Volume
-    - Max Reps
-  - **Record Tab**: Summary cards + 3-column table (RM, Best Record, Predicted)
-- **Epley Formula Prediction** - Sophisticated prediction using recent best performance with 0.5% weekly progression
-- **Vico Charting Library** - Integrated for progress visualization graphs
-- **Workout Queries** - Added database queries for fetching workouts with specific exercises
-
-### Updated
-- `ExerciseScreen.kt` - Now opens insight dialog on tap instead of navigating to detail
-- `build.gradle.kts` - Added Vico and Foundation dependencies
-
-
-
-
----
-
-## [1.3.0] - 2026-04-13
-
-### Added
-- **Achievement Screen** - New screen with 2x6 grid of achievement badges showing progress
-- **Streak Reminder Notifications** - Duolingo-style blackmail notifications to encourage workout streaks
-- **WorkManager Integration** - Background worker for scheduled daily notifications
-
-### Fixed
-- **Achievement Section Unreachable** - Made AchievementBadgesSection clickable to navigate to new AchievementScreen
+- **Full Body Muscle Focus** - Now shows all 6 muscle groups (Chest, Back, Shoulders, Arms, Legs, Core) with real volume data from current week's workouts
+- **Muscle Goal Setting** - Click on any muscle to set weekly volume goal via dialog; goals stored in SharedPreferences
+- **10-Day Volume Chart** - Line graph showing daily training volume for the last 10 days with tap-to-view data points
+- **Personal Records Enhancement** - Improved card styling with trophy icons, date achieved, and PR type badges
+- **Progress Page Data** - All cards now load real data from database instead of hardcoded values
 
 ### Changed
-- **Notification Timing**:
-  - Debug mode: Every 1 minute for quick testing
-  - Production: Daily at 7 PM
-- **Notification Messages** - Escalating guilt-trip messages based on streak length (3-30+ days)
+- **Muscle Focus Calculation** - Now aggregates (reps × weight) by targetMuscle for current week
+- **Volume Chart** - Replaced static weekly volume with interactive 10-day line graph
+- **PR Display** - Enhanced visual design with proper formatting and icons
 
 ### Updated
-- `Screen.kt` - Added Achievement route
-- `GymBuddyNavigation.kt` - Added AchievementScreen composable
-- `ProfileScreen.kt` - Added clickable modifier to AchievementBadgesSection
-- `MainActivity.kt` - Added WorkManager scheduler for streak reminders
-- `StreakReminderWorker.kt` - New worker with guilt-trip notification messages
-- `app/build.gradle.kts` - Added WorkManager + Hilt worker dependencies
-
-
----
-
-## [1.2.0] - 2026-04-13
-
-### Added
-- **Workout Session System** - Foreground service with non-dismissible notification for active workouts
-- **Workout Overlay** - Expandable/collapsed UI panel for tracking active workout sessions
-- **Set Type Management** - Support for Normal, Warmup, Drop, and Failure set types
-- **Rest Timer Configuration** - Per-exercise timer settings (warmup, work, drop, failure)
-- **Set Type Toggle** - Dropdown to change set type for each row independently
-
-### Changed
-- **Timer Display Logic**:
-  - Timer now shows between sets based on the CURRENT set's type
-  - Matches timer by type AND abbreviation fallback (W matches both WORK and WARMUP)
-- **Set Renumbering**:
-  - NORMAL sets display as sequential numbers: 1, 2, 3...
-  - Non-NORMAL sets display type abbreviation: W, D, F
-  - Numbers auto-adjust when changing set types
-- **Swipe Delete** - Background now red when swiping to delete
-
-### Fixed
-- **Timer matching** - Timer now correctly matches set type (was only showing for some types)
-- **Cross-exercise timer pollution** - Each exercise has independent timers (adding timer to Bicep Curls doesn't affect other exercises)
-- **Set type toggle** - Only the specific set is modified (was affecting all sets in exercise)
-- **Timer callback chain** - Fixed type mismatches causing build errors
+- `SetDao.kt` - Added queries: getVolumeForMuscleGroup, getDailyVolumes, getTotalVolumeForDateRange
+- `WorkoutRepository.kt` - Added: getWeeklyVolumePerMuscle(), getDailyVolumesForLast10Days()
+- `MuscleGoalPreferences.kt` - New SharedPreferences manager for weekly volume goals
+- `ProgressViewModel.kt` - Updated to load muscle focus, daily volumes, and PRs from database
+- `ProgressScreen.kt` - Complete UI overhaul with Canvas-based line chart, muscle grid, goal dialog
+- `build.gradle.kts` - Added buildConfig = true for BuildConfig reference
+- `AchievementScreen.kt` - Added @OptIn(ExperimentalMaterial3Api::class) for TopAppBar
+- `StreakReminderWorker.kt` - Fixed import: MainActivity now in correct package
 
 ---
 
