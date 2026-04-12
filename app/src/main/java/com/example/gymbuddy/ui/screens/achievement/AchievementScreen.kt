@@ -1,5 +1,6 @@
 package com.example.gymbuddy.ui.screens.achievement
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -30,6 +31,7 @@ data class Achievement(
     val progress: Int = 0
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AchievementScreen(navController: NavController) {
     val achievements = listOf(

@@ -12,7 +12,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.gymbuddy.R
 import com.example.gymbuddy.data.repository.UserProfileRepository
-import com.example.gymbuddy.ui.MainActivity
+import com.example.gymbuddy.MainActivity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
