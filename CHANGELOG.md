@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-04-13
+
+### Added
+- **Gym Finder Section** - New section on home screen to find nearest gym location
+- **Gym Chain Selection** - Dropdown to select from 5 gym chains: HK, 247, Anytime, Snap Fitness, EFX Fitness
+- **Location-Based Search** - Uses device GPS to find nearest gym location
+- **WebView Map Display** - Embedded Google Maps via WebView showing nearest gym (no API key required)
+- **40+ HK Gym Locations** - Pre-defined database of gym locations across Hong Kong
+
+### New Files
+- `GymLocation.kt` - Data model for gym locations and gym chain enum
+- `LocationService.kt` - Service for getting device GPS location
+- `GymLocationHelper.kt` - Helper with gym data and nearest location search logic
+
+### Updated
+- `build.gradle.kts` - Added WebView dependency, removed Google Maps dependencies
+- `AndroidManifest.xml` - Added location and internet permissions
+- `HomeViewModel.kt` - Added gym selection state and location handling
+- `HomeScreen.kt` - Added gym finder UI with dropdown and WebView map
+
+
+---
+
 ## [1.4.0] - 2026-04-13
 
 ### Added

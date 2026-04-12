@@ -66,6 +66,7 @@ dependencies {
     
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0")
     
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
@@ -75,6 +76,8 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
+
+    implementation("androidx.webkit:webkit:1.10.0")
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.hilt:hilt-work:1.1.0")
