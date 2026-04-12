@@ -33,8 +33,17 @@ data class GraphPoint(
 
 data class PredictedRecords(
     val oneRM: Float?,
+    val twoRM: Float?,
     val threeRM: Float?,
-    val fiveRM: Float?
+    val fourRM: Float?,
+    val fiveRM: Float?,
+    val sixRM: Float?,
+    val sevenRM: Float?,
+    val eightRM: Float?,
+    val nineRM: Float?,
+    val tenRM: Float?,
+    val elevenRM: Float?,
+    val twelveRM: Float?
 )
 
 data class PersonalRecord(

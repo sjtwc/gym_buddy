@@ -30,6 +30,7 @@ data class Achievement(
     val progress: Int = 0
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AchievementScreen(navController: NavController) {
     val achievements = listOf(
