@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Immortal (Level 100+)
 - **Workout XP System** - 100 XP per workout completion
 - **Volume Tracking** - Tracks total gym volume (weight × reps) across all workouts
+- **Gym Finder Section** - New section on home screen to find nearest gym location
+- **Gym Chain Selection** - Dropdown to select from 5 gym chains: HK, 247, Anytime, Snap Fitness, EFX Fitness
+- **Location-Based Search** - Uses device GPS to find nearest gym location
+- **WebView Map Display** - Embedded Google Maps via WebView showing nearest gym (no API key required)
+- **40+ HK Gym Locations** - Pre-defined database of gym locations across Hong Kong
 
 ### Fixed
 - **XP/Level Calculation** - Fixed level calculation logic with proper exponential formula
@@ -38,8 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `WorkoutRepository.kt` - Added getWorkoutVolume() method
 - `WorkoutSessionManager.kt` - Passes volume through to profile
 - `ProfileScreen.kt` - Shows user title with gold badge
-- `HomeScreen.kt` - Shows user title in greeting section
+- `HomeScreen.kt` - Shows user title in greeting section + gym finder
 - `AchievementScreen.kt` - Fetches from DB, shows claim count and progress
+- `build.gradle.kts` - Added WebView dependency, removed Google Maps dependencies
+- `AndroidManifest.xml` - Added location and internet permissions
+- `HomeViewModel.kt` - Added gym selection state and location handling
 
 ### New Files
 - `AchievementType.kt` - Enum with all achievement types and XP rewards
@@ -48,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AchievementRepository.kt` - Repository with achievement checking logic
 - `AchievementViewModel.kt` - ViewModel for AchievementScreen
 - `NotificationService.kt` - Service for achievement notifications
+- `GymLocation.kt` - Data model for gym locations and gym chain enum
+- `LocationService.kt` - Service for getting device GPS location
+- `GymLocationHelper.kt` - Helper with gym data and nearest location search logic
 
 ---
 
