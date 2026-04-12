@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Gym Buddy</string>
     <string name="widget_description">Shows workout streak, weekly progress, and quick start</string>
+    <string name="widget_streak_description">Shows current workout streak with fire emoji</string>
+    <string name="widget_today_description">Shows today\'s workout status</string>
+    <string name="widget_weekly_description">Shows weekly workout progress</string>
+    <string name="widget_quick_start_description">Quick start workout button</string>
 </resources>

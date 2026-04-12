@@ -194,7 +194,7 @@ class WorkoutSessionManager @Inject constructor(
                 }
                 
                 // Update widget
-                com.example.gymbuddy.widget.WidgetDataManager.updateWidgetData(context)
+                com.example.gymbuddy.widget.WidgetPreferences.updateFromDatabase(context)
             }
         }
         
