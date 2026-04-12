@@ -1,0 +1,24 @@
+# <type>[optional scope]: <short description>
+#
+# Type must be one of:
+#   feat     - new feature
+#   fix      - bug fix
+#   docs     - documentation changes
+#   style    - code style / formatting
+#   refactor - code restructuring (no feature or bug fix)
+#   perf     - performance improvements
+#   test     - adding or updating tests
+#   build    - build system or dependencies
+#   ci       - CI configuration changes
+#   chore    - maintenance tasks
+#   revert   - revert a previous commit
+#
+# Subject line: imperative, present tense, no period at end.
+# Limit to 50 characters. Example: "feat: add user authentication flow"
+#
+# Leave a blank line above the body.
+# Body: explain what and why (not how). Wrap at 72 characters.
+#
+# Optional footer:
+# Fixes #123
+# BREAKING CHANGE: description of breaking change
