@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import com.example.gymbuddy.domain.model.WorkoutSession
+import com.example.gymbuddy.domain.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,10 +77,11 @@ class WorkoutSessionManager @Inject constructor(
     }
     
     fun startSession(workoutId: Long, workoutName: String) {
+        val defaultName = workoutName.ifEmpty { WorkoutSession.generateDefaultName() }
         val intent = Intent(context, WorkoutSessionService::class.java).apply {
             action = WorkoutSessionService.ACTION_START
             putExtra(WorkoutSessionService.EXTRA_WORKOUT_ID, workoutId)
-            putExtra(WorkoutSessionService.EXTRA_WORKOUT_NAME, workoutName)
+            putExtra(WorkoutSessionService.EXTRA_WORKOUT_NAME, defaultName)
         }
         context.startForegroundService(intent)
         bindService()
@@ -91,33 +92,12 @@ class WorkoutSessionManager @Inject constructor(
         context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
     
-    fun updateProgress(
-        exerciseName: String,
-        exerciseIndex: Int,
-        totalExercises: Int,
-        setIndex: Int,
-        totalSets: Int
-    ) {
-        service?.updateSession(
-            exerciseName = exerciseName,
-            exerciseIndex = exerciseIndex,
-            totalExercises = totalExercises,
-            setIndex = setIndex,
-            totalSets = totalSets
-        )
-    }
-    
     fun startRestTimer(seconds: Int) {
         val intent = Intent(context, WorkoutSessionService::class.java).apply {
             action = WorkoutSessionService.ACTION_START_REST
             putExtra(WorkoutSessionService.EXTRA_REST_TIME, seconds)
         }
         context.startService(intent)
-    }
-    
-    fun completeWorkout() {
-        service?.completeWorkout()
-        resetState()
     }
     
     fun stopSession() {
@@ -134,6 +114,72 @@ class WorkoutSessionManager @Inject constructor(
     
     fun collapse() {
         _isExpanded.value = false
+    }
+    
+    fun showExercisePicker() {
+        _isExpanded.value = true
+    }
+    
+    fun addExercise(exercise: Exercise) {
+        service?.addExercise(exercise)
+    }
+    
+    fun removeExercise(exerciseIndex: Int) {
+        service?.removeExercise(exerciseIndex)
+    }
+    
+    fun swapExercise(exerciseIndex: Int) {
+        service?.swapExercise(exerciseIndex)
+    }
+    
+    fun addSet(exerciseIndex: Int) {
+        service?.addSet(exerciseIndex)
+    }
+    
+    fun updateSet(exerciseIndex: Int, setIndex: Int, set: WorkoutSetData) {
+        service?.updateSet(exerciseIndex, setIndex, set)
+    }
+    
+    fun deleteSet(exerciseIndex: Int, setIndex: Int) {
+        service?.deleteSet(exerciseIndex, setIndex)
+    }
+    
+    fun toggleSetType(exerciseIndex: Int, setType: SetType) {
+        service?.toggleSetType(exerciseIndex, setType)
+    }
+    
+    fun completeSet(exerciseIndex: Int, setIndex: Int) {
+        service?.completeSet(exerciseIndex, setIndex)
+    }
+    
+    fun addRestTimer(type: SetType, durationSeconds: Int) {
+        service?.addRestTimer(0, type, durationSeconds)
+    }
+    
+    fun updateRestTimer(exerciseIndex: Int, type: SetType, durationSeconds: Int) {
+        service?.updateRestTimer(exerciseIndex, type, durationSeconds)
+    }
+    
+    fun deleteRestTimer(type: SetType) {
+        service?.deleteRestTimer(0)
+    }
+    
+    fun finishWorkout() {
+        service?.finishWorkout()
+        resetState()
+    }
+    
+    fun cancelWorkout() {
+        service?.cancelWorkout()
+        resetState()
+    }
+    
+    fun updateWorkoutName(name: String) {
+        service?.updateWorkoutName(name)
+    }
+    
+    fun updateStartTime(startTime: Long) {
+        service?.updateStartTime(startTime)
     }
     
     private fun resetState() {
