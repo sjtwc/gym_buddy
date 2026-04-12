@@ -9,7 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.gymbuddy.R
 import com.example.gymbuddy.domain.model.AchievementType
-import com.example.gymbuddy.ui.MainActivity
+import com.example.gymbuddy.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
