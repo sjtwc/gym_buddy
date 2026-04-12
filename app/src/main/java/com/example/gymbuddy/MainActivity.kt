@@ -51,6 +51,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         requestNotificationPermission()
         scheduleStreakReminder()
+        
+        if (savedInstanceState == null) {
+            intent?.getBooleanExtra("expand_overlay", false)?.let { shouldExpand ->
+                if (shouldExpand) {
+                    sessionManager.expand()
+                }
+            }
+        }
+        
         setContent {
             GymBuddyTheme {
                 Surface(

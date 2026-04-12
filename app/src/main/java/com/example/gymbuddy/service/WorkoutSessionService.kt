@@ -49,6 +49,7 @@ class WorkoutSessionService : Service() {
         const val EXTRA_WORKOUT_ID = "extra_workout_id"
         const val EXTRA_WORKOUT_NAME = "extra_workout_name"
         const val EXTRA_REST_TIME = "extra_rest_time"
+        const val EXTRA_EXPAND_OVERLAY = "expand_overlay"
     }
     
     override fun onCreate() {
@@ -468,7 +469,9 @@ class WorkoutSessionService : Service() {
     private fun createNotification(): Notification {
         val session = _workoutSession.value ?: return createBasicNotification()
         
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra(EXTRA_EXPAND_OVERLAY, true)
+        }
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

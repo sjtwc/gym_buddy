@@ -84,6 +84,7 @@ class WorkoutSessionManager @Inject constructor(
     }
     
     fun startSession(workoutId: Long, workoutName: String) {
+        _isExpanded.value = true
         val defaultName = workoutName.ifEmpty { WorkoutSession.generateDefaultName() }
         val intent = Intent(context, WorkoutSessionService::class.java).apply {
             action = WorkoutSessionService.ACTION_START
@@ -121,6 +122,10 @@ class WorkoutSessionManager @Inject constructor(
     
     fun collapse() {
         _isExpanded.value = false
+    }
+    
+    fun expand() {
+        _isExpanded.value = true
     }
     
     fun showExercisePicker() {
