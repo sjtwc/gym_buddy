@@ -1,6 +1,7 @@
 package com.example.gymbuddy.ui.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -60,7 +61,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        AchievementBadgesSection()
+        AchievementBadgesSection(navController = navController)
     }
 }
 
@@ -140,9 +141,11 @@ fun StatItem(label: String, value: String, icon: String, modifier: Modifier = Mo
 }
 
 @Composable
-fun AchievementBadgesSection() {
+fun AchievementBadgesSection(navController: NavController) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navController.navigate(Screen.Achievement.route) },
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
         shape = RoundedCornerShape(16.dp)
     ) {

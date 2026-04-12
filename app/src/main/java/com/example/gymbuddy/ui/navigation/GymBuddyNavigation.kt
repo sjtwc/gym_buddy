@@ -29,6 +29,7 @@ import com.example.gymbuddy.ui.screens.exercise.ExerciseScreen
 import com.example.gymbuddy.ui.screens.progress.ProgressScreen
 import com.example.gymbuddy.ui.screens.profile.ProfileScreen
 import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
+import com.example.gymbuddy.ui.screens.achievement.AchievementScreen
 
 @Composable
 fun GymBuddyNavigation(
@@ -98,6 +99,10 @@ fun GymBuddyNavigation(
                 
                 composable(Screen.Profile.route) {
                     ProfileScreen(navController = navController)
+                }
+                
+                composable(Screen.Achievement.route) {
+                    AchievementScreen(navController = navController)
                 }
                 
                 composable(
