@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-04-13
+
+### Added
+- **Notification Permission Fix** - Add runtime notification permission request for Android 13+
+- **Notification Sync** - Sync method for workouts and notification service
+- **Quick Testing Mode** - Set notification interval to 30 seconds for quick testing
+
+### Updated
+- `NotificationService.kt` - Fixed MainActivity import
+- `StreakReminderWorker.kt` - Notification permission handling
+
+---
+
 ## [1.5.0] - 2026-04-13
 
 ### Added
