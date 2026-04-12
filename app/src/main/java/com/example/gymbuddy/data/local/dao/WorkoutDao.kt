@@ -21,6 +21,15 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE isCompleted = 1 ORDER BY date DESC LIMIT :limit")
     fun getRecentCompletedWorkouts(limit: Int): Flow<List<WorkoutEntity>>
     
+    @Query("""
+        SELECT w.* FROM workouts w
+        INNER JOIN workout_exercises we ON w.id = we.workoutId
+        WHERE we.exerciseId = :exerciseId AND w.isCompleted = 1
+        ORDER BY w.date DESC
+        LIMIT :limit
+    """)
+    fun getWorkoutsWithExercise(exerciseId: Long, limit: Int): Flow<List<WorkoutEntity>>
+    
     @Query("SELECT COUNT(*) FROM workouts WHERE isCompleted = 1")
     fun getCompletedWorkoutCount(): Flow<Int>
     
