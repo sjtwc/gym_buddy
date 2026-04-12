@@ -99,7 +99,7 @@ class AchievementViewModel @Inject constructor(
             AchievementType.MARATHONER -> (totalWorkouts * 100 / type.targetValue).coerceIn(0, 100)
             AchievementType.STRENGTH_MASTER -> (currentLevel * 100 / type.targetValue).coerceIn(0, 100)
             AchievementType.SOCIAL_BUTTERFLY -> 0
-            AchievementType.PERFECTIONIST -> 100
+            AchievementType.PERFECTIONIST -> 0
             AchievementType.VARIETY -> (uniqueExercises * 100 / type.targetValue).coerceIn(0, 100)
             AchievementType.BEAST_MODE -> (totalWorkouts * 100 / type.targetValue).coerceIn(0, 100)
             AchievementType.CHAMPIONSHIP -> 0

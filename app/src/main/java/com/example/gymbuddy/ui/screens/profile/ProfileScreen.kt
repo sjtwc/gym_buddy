@@ -159,7 +159,9 @@ fun AchievementBadgesSection(navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate(Screen.Achievement.route) },
+            .clickable { navController.navigate(Screen.Achievement.route) {
+                    popUpTo(Screen.Profile.route) { inclusive = false }
+                } },
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
         shape = RoundedCornerShape(16.dp)
     ) {

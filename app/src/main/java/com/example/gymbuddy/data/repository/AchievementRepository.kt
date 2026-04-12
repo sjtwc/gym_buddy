@@ -33,8 +33,8 @@ class AchievementRepository @Inject constructor(
                 AchievementWithProgress(
                     type = AchievementType.entries.find { it.name == entity.achievementType } ?: AchievementType.FIRST_WORKOUT,
                     claimCount = entity.claimCount,
-                    isUnlocked = true,
-                    progress = 100
+                    isUnlocked = entity.claimCount > 0,
+                    progress = if (entity.claimCount > 0) 100 else 0
                 )
             }
         }
