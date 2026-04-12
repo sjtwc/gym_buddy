@@ -27,7 +27,8 @@ fun ExerciseScreen(
     viewModel: ExerciseViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    var selectedExerciseId by remember { mutableStateOf<Long?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,11 +89,18 @@ fun ExerciseScreen(
                 items(uiState.exercises) { exercise ->
                     ExerciseCard(
                         exercise = exercise,
-                        onClick = { navController.navigate(Screen.ExerciseDetail.createRoute(exercise.id)) }
+                        onClick = { selectedExerciseId = exercise.id }
                     )
                 }
             }
         }
+    }
+
+    selectedExerciseId?.let { exerciseId ->
+        ExerciseInsightDialog(
+            exerciseId = exerciseId,
+            onDismiss = { selectedExerciseId = null }
+        )
     }
 }
 
