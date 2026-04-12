@@ -148,6 +148,10 @@ class WorkoutSessionManager @Inject constructor(
         service?.toggleSetType(exerciseIndex, setType)
     }
     
+    fun toggleSetTypeForSet(exerciseIndex: Int, setIndex: Int, setType: SetType) {
+        service?.toggleSetTypeForSet(exerciseIndex, setIndex, setType)
+    }
+    
     fun completeSet(exerciseIndex: Int, setIndex: Int) {
         service?.completeSet(exerciseIndex, setIndex)
     }

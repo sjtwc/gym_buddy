@@ -187,9 +187,40 @@ class WorkoutSessionService : Service() {
                 val exerciseSession = updatedExercises[exerciseIndex]
                 val updatedSets = exerciseSession.sets.toMutableList()
                 if (updatedSets.isNotEmpty()) {
+                    // If we have at least one set, update the first (or add new logic for specific set)
+                    // For now, just use first set - each exercise shares same first set type in UI
                     val currentSet = updatedSets[0]
                     updatedSets[0] = currentSet.copy(setType = setType)
                     updatedExercises[exerciseIndex] = exerciseSession.copy(sets = updatedSets)
+                    _workoutSession.value = session.copy(exercises = updatedExercises)
+                }
+            }
+        }
+    }
+    
+    // New specific toggle function for individual sets
+    fun toggleSetTypeForSet(exerciseIndex: Int, setIndex: Int, setType: SetType) {
+        _workoutSession.value?.let { session ->
+            val updatedExercises = session.exercises.toMutableList()
+            if (exerciseIndex < updatedExercises.size) {
+                val exerciseSession = updatedExercises[exerciseIndex]
+                val updatedSets = exerciseSession.sets.toMutableList()
+                if (setIndex < updatedSets.size) {
+                    // Update the set type
+                    val currentSet = updatedSets[setIndex]
+                    updatedSets[setIndex] = currentSet.copy(setType = setType)
+                    
+                    // Renumber: NORMAL sets get 1,2,3..., non-NORMAL use position
+                    var normalNum = 1
+                    val renumberedSets = updatedSets.mapIndexed { idx, set ->
+                        if (set.setType == SetType.NORMAL) {
+                            set.copy(setNumber = normalNum++)
+                        } else {
+                            set.copy(setNumber = idx + 1)
+                        }
+                    }
+                    
+                    updatedExercises[exerciseIndex] = exerciseSession.copy(sets = renumberedSets)
                     _workoutSession.value = session.copy(exercises = updatedExercises)
                 }
             }

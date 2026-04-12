@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-04-13
+
+### Added
+- **Workout Session System** - Foreground service with non-dismissible notification for active workouts
+- **Workout Overlay** - Expandable/collapsed UI panel for tracking active workout sessions
+- **Set Type Management** - Support for Normal, Warmup, Drop, and Failure set types
+- **Rest Timer Configuration** - Per-exercise timer settings (warmup, work, drop, failure)
+- **Set Type Toggle** - Dropdown to change set type for each row independently
+
+### Changed
+- **Timer Display Logic**:
+  - Timer now shows between sets based on the CURRENT set's type
+  - Matches timer by type AND abbreviation fallback (W matches both WORK and WARMUP)
+- **Set Renumbering**:
+  - NORMAL sets display as sequential numbers: 1, 2, 3...
+  - Non-NORMAL sets display type abbreviation: W, D, F
+  - Numbers auto-adjust when changing set types
+- **Swipe Delete** - Background now red when swiping to delete
+
+### Fixed
+- **Timer matching** - Timer now correctly matches set type (was only showing for some types)
+- **Cross-exercise timer pollution** - Each exercise has independent timers (adding timer to Bicep Curls doesn't affect other exercises)
+- **Set type toggle** - Only the specific set is modified (was affecting all sets in exercise)
+- **Timer callback chain** - Fixed type mismatches causing build errors
+
+---
+
 ## [1.1.0] - 2026-04-12
 
 ### Added
@@ -99,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.2.0]: https://github.com/example/gymbuddy/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/example/gymbuddy/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/example/gymbuddy/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/example/gymbuddy/releases/tag/v1.0.0

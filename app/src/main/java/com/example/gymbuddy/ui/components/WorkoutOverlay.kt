@@ -87,7 +87,7 @@ fun WorkoutOverlay(
                     onAddSet = { sessionManager.addSet(it) },
                     onUpdateSet = { exerciseIndex, setIndex, set -> sessionManager.updateSet(exerciseIndex, setIndex, set) },
                     onDeleteSet = { exerciseIndex, setIndex -> sessionManager.deleteSet(exerciseIndex, setIndex) },
-                    onToggleSetType = { exerciseIndex, type -> sessionManager.toggleSetType(exerciseIndex, type) },
+                    onToggleSetType = { exerciseIndex, setIndex, type -> sessionManager.toggleSetTypeForSet(exerciseIndex, setIndex, type) },
                     onCompleteSet = { exerciseIndex, setIndex -> sessionManager.completeSet(exerciseIndex, setIndex) },
                     onAddRestTimer = { type, duration -> sessionManager.addRestTimer(type, duration) },
                     onUpdateRestTimer = { exIdx, type, duration -> sessionManager.updateRestTimer(exIdx, type, duration) },
@@ -182,7 +182,7 @@ fun ExpandedOverlay(
     onAddSet: (Int) -> Unit,
     onUpdateSet: (Int, Int, WorkoutSetData) -> Unit,
     onDeleteSet: (Int, Int) -> Unit,
-    onToggleSetType: (Int, SetType) -> Unit,
+    onToggleSetType: (Int, Int, SetType) -> Unit,
     onCompleteSet: (Int, Int) -> Unit,
     onAddRestTimer: (SetType, Int) -> Unit,
     onUpdateRestTimer: (Int, SetType, Int) -> Unit,
@@ -250,7 +250,7 @@ fun ExpandedOverlay(
                         onAddSet = { onAddSet(exerciseIndex) },
                         onUpdateSet = { setIndex, set -> onUpdateSet(exerciseIndex, setIndex, set) },
                         onDeleteSet = { setIndex -> onDeleteSet(exerciseIndex, setIndex) },
-                        onToggleSetType = { setIdx, type -> onToggleSetType(setIdx, type) },
+                        onToggleSetType = { setIdx, type -> onToggleSetType(exerciseIndex, setIdx, type) },
                         onCompleteSet = onCompleteSet,
                         onRemoveExercise = { onRemoveExercise(exerciseIndex) },
                         onSwapExercise = { onSwapExercise(exerciseIndex) },
@@ -536,11 +536,13 @@ fun ExerciseCard(
                 }
                 
                 if (setIndex < exerciseSession.sets.lastIndex) {
-                    val nextSet = exerciseSession.sets[setIndex + 1]
-                    val timerForNextSet = exerciseSession.restTimers.find { 
-                        it.type == nextSet.setType && it.durationSeconds > 0 
-                    }
-                    timerForNextSet?.let {
+                    val currentSet = exerciseSession.sets[setIndex]
+                    val timerDuration = exerciseSession.restTimers.find { 
+                        (it.type == currentSet.setType || it.type.abbreviation == currentSet.setType.abbreviation) 
+                        && it.durationSeconds > 0 
+                    }?.durationSeconds
+                    
+                    if (timerDuration != null && timerDuration > 0) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -548,7 +550,7 @@ fun ExerciseCard(
                             horizontalArrangement = Arrangement.Start
                         ) {
                             Text(
-                                text = "Timer: ${formatTime(it.durationSeconds)}",
+                                text = "Timer: ${formatTime(timerDuration)}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = NeonCyan.copy(alpha = 0.7f)
                             )
@@ -629,7 +631,7 @@ fun SwipeableSetRow(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(if (offsetX < stage1Threshold) WarningOrange else DarkSurfaceElevated)
+                .background(if (offsetX < stage1Threshold) ErrorRed else DarkSurfaceElevated)
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterEnd
         ) {

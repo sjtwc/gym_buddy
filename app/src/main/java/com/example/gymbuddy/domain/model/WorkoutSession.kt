@@ -59,9 +59,11 @@ data class WorkoutExerciseSession(
     val exercise: Exercise,
     val sets: List<WorkoutSetData> = listOf(WorkoutSetData(setNumber = 1)),
     val restTimers: List<RestTimer> = listOf(
+        RestTimer(SetType.NORMAL, 0, false),
         RestTimer(SetType.WARMUP, 0, false),
         RestTimer(SetType.WORK, 0, false),
-        RestTimer(SetType.DROP, 0, false)
+        RestTimer(SetType.DROP, 0, false),
+        RestTimer(SetType.FAILURE, 0, false)
     )
 ) {
     val previousData: Pair<Double, Int>?
