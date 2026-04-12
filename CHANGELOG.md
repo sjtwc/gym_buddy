@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-04-13
+
+### Added
+- **Exercise Insight Dialog** - New popup dialog (75% screen size) triggered by tapping exercise card
+  - **About Tab**: Description, target muscles, equipment type, instructions, secondary muscles
+  - **History Tab**: Past workout sessions with date, sets, reps, weights
+  - **Graph Tab**: Line charts showing progress over time
+    - Best Set (Est. 1RM) using Epley formula
+    - Best Set (Max Weight)
+    - Total Training Volume
+    - Max Reps
+  - **Record Tab**: Summary cards + 3-column table (RM, Best Record, Predicted)
+- **Epley Formula Prediction** - Sophisticated prediction using recent best performance with 0.5% weekly progression
+- **Vico Charting Library** - Integrated for progress visualization graphs
+- **Workout Queries** - Added database queries for fetching workouts with specific exercises
+
+### Updated
+- `ExerciseScreen.kt` - Now opens insight dialog on tap instead of navigating to detail
+- `build.gradle.kts` - Added Vico and Foundation dependencies
+
+---
+
 ## [1.1.0] - 2026-04-12
 
 ### Added
@@ -99,6 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.1.0]: https://github.com/example/gymbuddy/compare/v1.0.1...v1.1.0
-[1.0.1]: https://github.com/example/gymbuddy/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/example/gymbuddy/releases/tag/v1.0.0
+[1.2.0]: https://github.com/sjtwc/gym_buddy/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/sjtwc/gym_buddy/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/sjtwc/gym_buddy/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/sjtwc/gym_buddy/releases/tag/v1.0.0
