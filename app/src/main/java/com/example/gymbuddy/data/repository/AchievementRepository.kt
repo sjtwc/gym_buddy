@@ -95,6 +95,10 @@ class AchievementRepository @Inject constructor(
         return earnedAchievements
     }
     
+    suspend fun resetAllAchievements() {
+        achievementDao.deleteAllAchievements()
+    }
+    
     private suspend fun addXpToProfile(xpAmount: Int) {
         val profile = userProfileDao.getUserProfileSync() ?: return
         val newTotalXp = profile.xp + xpAmount

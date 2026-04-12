@@ -127,4 +127,10 @@ class AchievementViewModel @Inject constructor(
         }
         return exerciseIds.size
     }
+    
+    fun resetAllAchievements() {
+        viewModelScope.launch {
+            achievementDao.deleteAllAchievements()
+        }
+    }
 }

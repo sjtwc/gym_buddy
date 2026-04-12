@@ -23,4 +23,7 @@ interface AchievementDao {
     
     @Query("SELECT COUNT(*) FROM achievements WHERE achievementType = :type")
     suspend fun getAchievementCount(type: String): Int
+    
+    @Query("DELETE FROM achievements")
+    suspend fun deleteAllAchievements()
 }
