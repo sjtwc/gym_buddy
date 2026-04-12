@@ -584,7 +584,7 @@ fun NearestGymMap(
     userLng: Double?
 ) {
     val mapUrl = remember(gymLocation) {
-        "https://www.google.com/maps/search/?api=1&query=${gymLocation.latitude},${gymLocation.longitude}"
+        "https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15"
     }
 
     Column {
@@ -644,6 +644,8 @@ fun NearestGymMap(
                         settings.domStorageEnabled = true
                         settings.loadWithOverviewMode = true
                         settings.useWideViewPort = true
+                        settings.allowFileAccess = true
+                        settings.allowContentAccess = true
                         loadUrl(mapUrl)
                     }
                 },
