@@ -5,12 +5,15 @@ data class UserProfile(
     val name: String = "Trainer",
     val level: Int = 1,
     val xp: Int = 0,
+    val title: String = "Novice",
     val currentStreak: Int = 0,
     val longestStreak: Int = 0,
     val totalWorkouts: Int = 0,
     val totalVolume: Float = 0f,
     val pet: VirtualPet = VirtualPet()
-)
+) {
+    fun getTitle(): String = UserTitle.fromLevel(level).title
+}
 
 data class VirtualPet(
     val name: String = "GymBot",

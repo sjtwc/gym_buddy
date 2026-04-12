@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-04-13
+
+### Added
+- **Achievement System** - Full badge/achievement system with XP rewards
+  - 17 achievement types (12 original + 5 new weekly achievements)
+  - Database storage with claim count tracking (can earn multiple times)
+  - XP rewards per badge (50-1000 XP based on difficulty)
+  - Badge earned notifications when completing workouts
+- **User Title System** - Fancy gym-themed titles based on level
+  - New Year's Resolution (Level 1-4)
+  - Gym Rat (Level 5-9)
+  - Iron Pumper (Level 10-19)
+  - Beast (Level 20-29)
+  - Swolefather (Level 30-49)
+  - Greek God (Level 50-74)
+  - Mountain (Level 75-99)
+  - Immortal (Level 100+)
+- **Workout XP System** - 100 XP per workout completion
+- **Volume Tracking** - Tracks total gym volume (weight × reps) across all workouts
+
+### Fixed
+- **XP/Level Calculation** - Fixed level calculation logic with proper exponential formula
+- **Streak Calculation** - Fixed streak increment/reset logic
+- **Achievement Screen** - Now fetches from database with real-time progress
+
+### Updated
+- `UserProfileEntity.kt` - Added title field
+- `UserProfileRepository.kt` - Added volume tracking and streak fix
+- `WorkoutRepository.kt` - Added getWorkoutVolume() method
+- `WorkoutSessionManager.kt` - Passes volume through to profile
+- `ProfileScreen.kt` - Shows user title with gold badge
+- `HomeScreen.kt` - Shows user title in greeting section
+- `AchievementScreen.kt` - Fetches from DB, shows claim count and progress
+
+### New Files
+- `AchievementType.kt` - Enum with all achievement types and XP rewards
+- `AchievementEntity.kt` - Database entity for storing earned achievements
+- `AchievementDao.kt` - DAO for CRUD operations
+- `AchievementRepository.kt` - Repository with achievement checking logic
+- `AchievementViewModel.kt` - ViewModel for AchievementScreen
+- `NotificationService.kt` - Service for achievement notifications
+
+---
+
 ## [1.4.0] - 2026-04-13
 
 ### Added
@@ -208,6 +252,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.5.0]: https://github.com/example/gymbuddy/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/example/gymbuddy/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/example/gymbuddy/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/example/gymbuddy/compare/v1.1.0...v1.2.0

@@ -10,6 +10,8 @@ import com.example.gymbuddy.domain.model.Routine
 import com.example.gymbuddy.domain.model.UserProfile
 import com.example.gymbuddy.domain.model.VirtualPet
 import com.example.gymbuddy.domain.model.PetMood
+import com.example.gymbuddy.domain.model.XpConfig
+import com.example.gymbuddy.domain.model.AchievementType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -77,7 +79,8 @@ class RoutineRepository @Inject constructor(
 }
 
 class UserProfileRepository @Inject constructor(
-    private val userProfileDao: UserProfileDao
+    private val userProfileDao: UserProfileDao,
+    private val achievementRepository: AchievementRepository
 ) {
     fun getUserProfile(): Flow<UserProfile?> =
         userProfileDao.getUserProfile().map { entity ->
@@ -102,9 +105,9 @@ class UserProfileRepository @Inject constructor(
         userProfileDao.updatePetStatus(happiness, mood.name.lowercase())
     }
     
-    suspend fun recordWorkout() {
-        val profile = userProfileDao.getUserProfileSync() ?: return
-        val newStreak = calculateStreak(profile.lastWorkoutDate)
+    suspend fun recordWorkout(totalVolume: Float = 0f): List<AchievementType> {
+        val profile = userProfileDao.getUserProfileSync() ?: return emptyList()
+        val newStreak = calculateStreak(profile.lastWorkoutDate, profile.currentStreak)
         val totalWorkouts = profile.totalWorkouts + 1
         
         userProfileDao.updateUserProfile(
@@ -112,19 +115,29 @@ class UserProfileRepository @Inject constructor(
                 currentStreak = newStreak,
                 longestStreak = maxOf(newStreak, profile.longestStreak),
                 totalWorkouts = totalWorkouts,
+                totalVolume = profile.totalVolume + totalVolume,
                 lastWorkoutDate = System.currentTimeMillis()
             )
         )
         
         val happinessBoost = minOf(20, 100 - profile.petHappiness)
         userProfileDao.updatePetStatus(profile.petHappiness + happinessBoost, "happy")
+        
+        val currentTotalXp = profile.xp + XpConfig.XP_PER_WORKOUT
+        val newLevel = XpConfig.calculateLevel(currentTotalXp)
+        val newXpInLevel = XpConfig.xpInCurrentLevel(currentTotalXp)
+        userProfileDao.updateXpAndLevel(newXpInLevel, newLevel)
+        
+        val earnedAchievements = achievementRepository.checkAndGrantAchievements()
+        
+        return earnedAchievements
     }
     
-    private fun calculateStreak(lastWorkoutDate: Long?): Int {
+    private fun calculateStreak(lastWorkoutDate: Long?, currentStreak: Int): Int {
         if (lastWorkoutDate == null) return 1
         val daysSinceLastWorkout = (System.currentTimeMillis() - lastWorkoutDate) / (1000 * 60 * 60 * 24)
         return if (daysSinceLastWorkout <= 1) {
-            1
+            currentStreak + 1
         } else {
             1
         }
@@ -135,6 +148,7 @@ class UserProfileRepository @Inject constructor(
         name = name,
         level = level,
         xp = xp,
+        title = title,
         currentStreak = currentStreak,
         longestStreak = longestStreak,
         totalWorkouts = totalWorkouts,
@@ -149,6 +163,7 @@ class UserProfileRepository @Inject constructor(
     private fun UserProfile.toEntity() = UserProfileEntity(
         id = id,
         name = name,
+        title = getTitle(),
         level = level,
         xp = xp,
         currentStreak = currentStreak,

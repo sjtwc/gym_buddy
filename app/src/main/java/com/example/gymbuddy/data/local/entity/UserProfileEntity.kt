@@ -8,6 +8,7 @@ data class UserProfileEntity(
     @PrimaryKey
     val id: Long = 1,
     val name: String = "Trainer",
+    val title: String = "Novice",
     val level: Int = 1,
     val xp: Int = 0,
     val currentStreak: Int = 0,
