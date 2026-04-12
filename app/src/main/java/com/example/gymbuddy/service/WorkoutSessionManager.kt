@@ -5,18 +5,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import com.example.gymbuddy.data.repository.WorkoutRepository
 import com.example.gymbuddy.domain.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class WorkoutSessionManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val workoutRepository: WorkoutRepository
 ) {
     private var service: WorkoutSessionService? = null
     private var bound = false
@@ -169,7 +172,16 @@ class WorkoutSessionManager @Inject constructor(
     }
     
     fun finishWorkout() {
+        val workoutId = _currentSession.value?.workoutId
+        val duration = (_elapsedTime.value / 60).toInt()
         service?.finishWorkout()
+        
+        scope.launch {
+            workoutId?.let { id ->
+                workoutRepository.completeWorkout(id, duration)
+            }
+        }
+        
         resetState()
     }
     
