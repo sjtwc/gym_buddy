@@ -29,14 +29,57 @@ class AchievementRepository @Inject constructor(
 ) {
     fun getAllAchievementsWithProgress(): Flow<List<AchievementWithProgress>> {
         return achievementDao.getAllAchievements().map { entities ->
-            entities.map { entity ->
+            val earnedTypes = entities.associate { it.achievementType to it.claimCount }
+            
+            AchievementType.entries.map { type ->
+                val claimCount = earnedTypes[type.name] ?: 0
+                val isUnlocked = claimCount > 0
+                
+                // Calculate progress based on actual user stats
+                val progress = if (isUnlocked) {
+                    100
+                } else {
+                    calculateProgressForType(type)
+                }
+                
                 AchievementWithProgress(
-                    type = AchievementType.entries.find { it.name == entity.achievementType } ?: AchievementType.FIRST_WORKOUT,
-                    claimCount = entity.claimCount,
-                    isUnlocked = entity.claimCount > 0,
-                    progress = if (entity.claimCount > 0) 100 else 0
+                    type = type,
+                    claimCount = claimCount,
+                    isUnlocked = isUnlocked,
+                    progress = progress
                 )
             }
+        }
+    }
+    
+    private suspend fun calculateProgressForType(type: AchievementType): Int {
+        val profile = userProfileDao.getUserProfileSync()
+        val totalWorkouts = profile?.totalWorkouts ?: 0
+        val currentStreak = profile?.currentStreak ?: 0
+        val currentLevel = profile?.level ?: 1
+        val totalVolume = profile?.totalVolume ?: 0f
+        
+        val workoutsThisWeek = getWorkoutsThisWeek()
+        val uniqueExercises = getUniqueExercisesCount()
+        
+        return when (type) {
+            AchievementType.FIRST_WORKOUT -> if (totalWorkouts >= 1) 100 else (totalWorkouts * 100).coerceIn(0, 100)
+            AchievementType.STREAK_7_DAYS -> (currentStreak * 100 / 7).coerceIn(0, 100)
+            AchievementType.HEAVY_LIFTER -> if (type.targetValue > 0) ((totalVolume / type.targetValue) * 100).toInt().coerceIn(0, 100) else 0
+            AchievementType.EARLY_BIRD -> if (totalWorkouts >= 1) 100 else 0
+            AchievementType.NIGHT_OWL -> if (totalWorkouts >= 1) 100 else 0
+            AchievementType.MARATHONER -> if (type.targetValue > 0) (totalWorkouts * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.STRENGTH_MASTER -> if (type.targetValue > 0) (currentLevel * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.SOCIAL_BUTTERFLY -> 0
+            AchievementType.PERFECTIONIST -> 0
+            AchievementType.VARIETY -> if (type.targetValue > 0) (uniqueExercises * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.BEAST_MODE -> if (type.targetValue > 0) (totalWorkouts * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.CHAMPIONSHIP -> 0
+            AchievementType.WEEK_2_WORKOUTS -> if (type.targetValue > 0) (workoutsThisWeek * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.WEEK_3_WORKOUTS -> if (type.targetValue > 0) (workoutsThisWeek * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.WEEK_4_WORKOUTS -> if (type.targetValue > 0) (workoutsThisWeek * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.WEEK_5_WORKOUTS -> if (type.targetValue > 0) (workoutsThisWeek * 100 / type.targetValue).coerceIn(0, 100) else 0
+            AchievementType.WEEK_6_WORKOUTS -> if (type.targetValue > 0) (workoutsThisWeek * 100 / type.targetValue).coerceIn(0, 100) else 0
         }
     }
     
