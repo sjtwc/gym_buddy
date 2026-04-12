@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-04-13
+
+### Added
+- **Achievement Screen** - New screen with 2x6 grid of achievement badges showing progress
+- **Streak Reminder Notifications** - Duolingo-style blackmail notifications to encourage workout streaks
+- **WorkManager Integration** - Background worker for scheduled daily notifications
+
+### Fixed
+- **Achievement Section Unreachable** - Made AchievementBadgesSection clickable to navigate to new AchievementScreen
+
+### Changed
+- **Notification Timing**:
+  - Debug mode: Every 1 minute for quick testing
+  - Production: Daily at 7 PM
+- **Notification Messages** - Escalating guilt-trip messages based on streak length (3-30+ days)
+
+### Updated
+- `Screen.kt` - Added Achievement route
+- `GymBuddyNavigation.kt` - Added AchievementScreen composable
+- `ProfileScreen.kt` - Added clickable modifier to AchievementBadgesSection
+- `MainActivity.kt` - Added WorkManager scheduler for streak reminders
+- `StreakReminderWorker.kt` - New worker with guilt-trip notification messages
+- `app/build.gradle.kts` - Added WorkManager + Hilt worker dependencies
+
+---
+
 ## [1.1.0] - 2026-04-12
 
 ### Added
@@ -99,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.2.0]: https://github.com/example/gymbuddy/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/example/gymbuddy/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/example/gymbuddy/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/example/gymbuddy/releases/tag/v1.0.0
