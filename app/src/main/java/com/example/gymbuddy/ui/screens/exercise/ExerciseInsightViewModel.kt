@@ -2,8 +2,10 @@ package com.example.gymbuddy.ui.screens.exercise
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymbuddy.data.local.dao.PersonalRecordDao
 import com.example.gymbuddy.data.local.dao.SetDao
 import com.example.gymbuddy.data.local.dao.WorkoutDao
+import com.example.gymbuddy.data.local.entity.PersonalRecordEntity
 import com.example.gymbuddy.data.repository.ExerciseRepository
 import com.example.gymbuddy.data.repository.SetRepository
 import com.example.gymbuddy.domain.model.WorkoutSet
@@ -17,13 +19,17 @@ class ExerciseInsightViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val setRepository: SetRepository,
     private val workoutDao: WorkoutDao,
-    private val setDao: SetDao
+    private val setDao: SetDao,
+    private val personalRecordDao: PersonalRecordDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseInsightState())
     val uiState: StateFlow<ExerciseInsightState> = _uiState.asStateFlow()
 
+    private var currentExerciseId: Long = 0
+
     fun loadExerciseData(exerciseId: Long) {
+        currentExerciseId = exerciseId
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
@@ -33,6 +39,7 @@ class ExerciseInsightViewModel @Inject constructor(
 
                 loadHistoricalData(exerciseId)
                 calculateGraphData()
+                calculateAndSaveRepMaxRecords(exerciseId)
                 calculatePredictedRecords()
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
@@ -81,6 +88,35 @@ class ExerciseInsightViewModel @Inject constructor(
 
     private suspend fun getWorkoutExerciseIds(workoutId: Long, exerciseId: Long): List<Long> {
         return emptyList()
+    }
+
+    private suspend fun calculateAndSaveRepMaxRecords(exerciseId: Long) {
+        val sets = _uiState.value.historicalSets
+        if (sets.isEmpty()) return
+
+        val allSets = sets.flatMap { it.sets }.filter { !it.isWarmUp }
+        
+        val repMaxRecords = (1..12).mapNotNull { targetReps ->
+            val matchingSets = allSets.filter { it.reps == targetReps }
+            if (matchingSets.isEmpty()) return@mapNotNull null
+            
+            val bestSet = matchingSets.maxByOrNull { it.weight } ?: return@mapNotNull null
+            val estimated1RM = calculateEstimated1RM(bestSet.weight, bestSet.reps)
+            
+            PersonalRecordEntity(
+                exerciseId = exerciseId,
+                type = "REP_MAX",
+                reps = targetReps,
+                value = estimated1RM,
+                weight = bestSet.weight,
+                date = sets.first().date,
+                workoutId = sets.first().workoutId
+            )
+        }
+        
+        if (repMaxRecords.isNotEmpty()) {
+            personalRecordDao.insertRecords(repMaxRecords)
+        }
     }
 
     private fun calculateGraphData() {
@@ -142,18 +178,33 @@ class ExerciseInsightViewModel @Inject constructor(
             ((System.currentTimeMillis() - sets.first().date) / (1000 * 60 * 60 * 24)).toInt()
         } else 0
 
-        val predicted1RM = predictRecordEpley(best1RM, daysSinceLast)
-        
-        val predicted3RM = predictRecordEpley(best1RM * 0.93f, daysSinceLast)
-        val predicted5RM = predictRecordEpley(best1RM * 0.87f, daysSinceLast)
+        val predictedRecords = (1..12).map { reps ->
+            val estimatedRM = epleyFormula(best1RM, reps)
+            predictRecordEpley(estimatedRM, daysSinceLast)
+        }
 
         _uiState.update {
             it.copy(predictedRecords = PredictedRecords(
-                oneRM = predicted1RM,
-                threeRM = predicted3RM,
-                fiveRM = predicted5RM
+                oneRM = predictedRecords.getOrNull(0),
+                twoRM = predictedRecords.getOrNull(1),
+                threeRM = predictedRecords.getOrNull(2),
+                fourRM = predictedRecords.getOrNull(3),
+                fiveRM = predictedRecords.getOrNull(4),
+                sixRM = predictedRecords.getOrNull(5),
+                sevenRM = predictedRecords.getOrNull(6),
+                eightRM = predictedRecords.getOrNull(7),
+                nineRM = predictedRecords.getOrNull(8),
+                tenRM = predictedRecords.getOrNull(9),
+                elevenRM = predictedRecords.getOrNull(10),
+                twelveRM = predictedRecords.getOrNull(11)
             ))
         }
+    }
+
+    private fun epleyFormula(oneRM: Float, reps: Int): Float {
+        if (reps <= 0 || oneRM <= 0) return 0f
+        if (reps == 1) return oneRM
+        return oneRM * (1 + reps / 30f)
     }
 
     private fun calculateEstimated1RM(weight: Float, reps: Int): Float {

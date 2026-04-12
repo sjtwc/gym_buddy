@@ -631,8 +631,17 @@ private fun RecordTable(
 
             val rows = listOf(
                 Triple("1RM", calculateBestForReps(historicalSets, 1), predictedRecords?.oneRM),
+                Triple("2RM", calculateBestForReps(historicalSets, 2), predictedRecords?.twoRM),
                 Triple("3RM", calculateBestForReps(historicalSets, 3), predictedRecords?.threeRM),
-                Triple("5RM", calculateBestForReps(historicalSets, 5), predictedRecords?.fiveRM)
+                Triple("4RM", calculateBestForReps(historicalSets, 4), predictedRecords?.fourRM),
+                Triple("5RM", calculateBestForReps(historicalSets, 5), predictedRecords?.fiveRM),
+                Triple("6RM", calculateBestForReps(historicalSets, 6), predictedRecords?.sixRM),
+                Triple("7RM", calculateBestForReps(historicalSets, 7), predictedRecords?.sevenRM),
+                Triple("8RM", calculateBestForReps(historicalSets, 8), predictedRecords?.eightRM),
+                Triple("9RM", calculateBestForReps(historicalSets, 9), predictedRecords?.nineRM),
+                Triple("10RM", calculateBestForReps(historicalSets, 10), predictedRecords?.tenRM),
+                Triple("11RM", calculateBestForReps(historicalSets, 11), predictedRecords?.elevenRM),
+                Triple("12RM", calculateBestForReps(historicalSets, 12), predictedRecords?.twelveRM)
             )
 
             rows.forEach { (rm, best, predicted) ->
