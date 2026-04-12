@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.7.0] - 2026-04-13
+## [1.8.0] - 2026-04-13
 
 ### Added
-- **Home Screen Widget** - Workout tracking widget for home screen
-  - Shows current streak with fire emoji
-  - Shows today's workout status (Done/Pending)
-  - Shows weekly progress bar with workout count
-  - Quick Start button to open app
+- **Split Home Screen Widgets** - 4 separate widgets for flexible placement
+  - **Streak Widget** - Shows current streak with fire emoji 🔥
+  - **Today Status Widget** - Shows today's workout status (✓ Done / ○ Pending)
+  - **Weekly Progress Widget** - Shows weekly workout progress bar with count
+  - **Quick Start Widget** - Quick start workout button 🏋️
   - Auto-updates when workout is completed
 
 ### Updated
