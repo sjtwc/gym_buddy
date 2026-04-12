@@ -192,6 +192,9 @@ class WorkoutSessionManager @Inject constructor(
                         notificationService.showMultipleAchievementsNotification(earnedAchievements)
                     }
                 }
+                
+                // Update widget
+                com.example.gymbuddy.widget.WidgetDataManager.updateWidgetData(context)
             }
         }
         

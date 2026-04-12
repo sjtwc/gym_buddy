@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Gym Buddy</string>
+    <string name="widget_description">Shows workout streak, weekly progress, and quick start</string>
 </resources>
