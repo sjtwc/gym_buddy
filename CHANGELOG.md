@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-04-13
+
+### Added
+- **Home Screen Widget** - Workout tracking widget for home screen
+  - Shows current streak with fire emoji
+  - Shows today's workout status (Done/Pending)
+  - Shows weekly progress bar with workout count
+  - Quick Start button to open app
+  - Auto-updates when workout is completed
+
+### Updated
+- `WorkoutSessionManager.kt` - Update widget on workout completion
+
+---
+
 ## [1.6.0] - 2026-04-13
 
 ### Added
