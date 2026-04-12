@@ -30,6 +30,7 @@ import com.example.gymbuddy.ui.screens.progress.ProgressScreen
 import com.example.gymbuddy.ui.screens.profile.ProfileScreen
 import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
 import com.example.gymbuddy.ui.screens.achievement.AchievementScreen
+import com.example.gymbuddy.ui.screens.routines.RoutineEditScreen
 
 @Composable
 fun GymBuddyNavigation(
@@ -111,6 +112,14 @@ fun GymBuddyNavigation(
                 ) { backStackEntry ->
                     val exerciseId = backStackEntry.arguments?.getLong("exerciseId") ?: 0L
                     ExerciseDetailScreen(exerciseId = exerciseId, navController = navController)
+                }
+                
+                composable(
+                    route = Screen.RoutineEdit.route,
+                    arguments = listOf(navArgument("routineId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val routineId = backStackEntry.arguments?.getLong("routineId") ?: 0L
+                    RoutineEditScreen(routineId = routineId, navController = navController)
                 }
             }
             
