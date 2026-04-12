@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
         BodyMeasurementEntity::class,
         AchievementEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class GymBuddyDatabase : RoomDatabase() {
@@ -50,6 +50,7 @@ abstract class GymBuddyDatabase : RoomDatabase() {
                     "gym_buddy_database"
                 )
                 .addCallback(DatabaseCallback())
+                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance
