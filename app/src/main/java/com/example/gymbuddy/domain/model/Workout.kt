@@ -4,6 +4,7 @@ data class Workout(
     val id: Long = 0,
     val name: String,
     val date: Long,
+    val startedAt: Long? = null,
     val duration: Int = 0,
     val notes: String? = null,
     val routineId: Long? = null,
@@ -19,6 +20,8 @@ data class WorkoutExercise(
     val orderIndex: Int,
     val notes: String? = null,
     val restTimerSeconds: Int = 90,
+    val startedAt: Long? = null,
+    val completedAt: Long? = null,
     val sets: List<WorkoutSet> = emptyList()
 )
 
@@ -34,6 +37,7 @@ data class WorkoutSet(
     val isFailureSet: Boolean = false,
     val isSuperset: Boolean = false,
     val notes: String? = null,
+    val startedAt: Long? = null,
     val completedAt: Long? = null,
     val previousSet: WorkoutSet? = null
 )

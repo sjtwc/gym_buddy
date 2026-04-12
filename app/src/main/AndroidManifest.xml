@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".GymBuddyApplication"
@@ -27,6 +28,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Rest Timer Service -->
         <service
             android:name=".service.RestTimerService"
             android:exported="false"
@@ -34,6 +36,16 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="workout_timer" />
+        </service>
+
+        <!-- Workout Session Service -->
+        <service
+            android:name=".service.WorkoutSessionService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="workout_session" />
         </service>
     </application>
 

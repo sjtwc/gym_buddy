@@ -60,9 +60,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        AchievementBadgesSection(
-            onClick = { navController.navigate(Screen.Achievements.route) }
-        )
+        AchievementBadgesSection()
     }
 }
 
@@ -142,12 +140,11 @@ fun StatItem(label: String, value: String, icon: String, modifier: Modifier = Mo
 }
 
 @Composable
-fun AchievementBadgesSection(onClick: () -> Unit) {
+fun AchievementBadgesSection() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
-        shape = RoundedCornerShape(16.dp),
-        onClick = onClick
+        shape = RoundedCornerShape(16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),

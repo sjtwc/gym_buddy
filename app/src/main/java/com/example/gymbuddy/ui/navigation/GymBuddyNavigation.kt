@@ -1,10 +1,17 @@
 package com.example.gymbuddy.ui.navigation
 
+import android.app.Application
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -14,23 +21,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.gymbuddy.service.WorkoutSessionManager
+import com.example.gymbuddy.ui.components.WorkoutOverlay
 import com.example.gymbuddy.ui.screens.home.HomeScreen
 import com.example.gymbuddy.ui.screens.workout.WorkoutScreen
-import com.example.gymbuddy.ui.screens.routines.RoutinesScreen
+import com.example.gymbuddy.ui.screens.exercise.ExerciseScreen
 import com.example.gymbuddy.ui.screens.progress.ProgressScreen
 import com.example.gymbuddy.ui.screens.profile.ProfileScreen
 import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
-import com.example.gymbuddy.ui.screens.workout.ActiveWorkoutScreen
 
 @Composable
 fun GymBuddyNavigation(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    sessionManager: WorkoutSessionManager
 ) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    
+    val isSessionActive by sessionManager.isActive.collectAsState()
+    
     Scaffold(
         bottomBar = {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-            
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface
             ) {
@@ -60,35 +71,52 @@ fun GymBuddyNavigation(
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            composable(Screen.Home.route) {
-                HomeScreen(navController = navController)
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route
+            ) {
+                composable(Screen.Home.route) {
+                    HomeScreen(navController = navController)
+                }
+                
+                composable(Screen.Workout.route) {
+                    WorkoutScreen(navController = navController, sessionManager = sessionManager)
+                }
+                
+                composable(Screen.Exercise.route) {
+                    ExerciseScreen(navController = navController)
+                }
+                
+                composable(Screen.Progress.route) {
+                    ProgressScreen(navController = navController)
+                }
+                
+                composable(Screen.Profile.route) {
+                    ProfileScreen(navController = navController)
+                }
+                
+                composable(
+                    route = Screen.ExerciseDetail.route,
+                    arguments = listOf(navArgument("exerciseId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val exerciseId = backStackEntry.arguments?.getLong("exerciseId") ?: 0L
+                    ExerciseDetailScreen(exerciseId = exerciseId, navController = navController)
+                }
             }
-            composable(Screen.Workout.route) {
-                WorkoutScreen(navController = navController)
-            }
-            composable(Screen.Routines.route) {
-                RoutinesScreen(navController = navController)
-            }
-            composable(Screen.Progress.route) {
-                ProgressScreen(navController = navController)
-            }
-            composable(Screen.Profile.route) {
-                ProfileScreen(navController = navController)
-            }
-            composable(
-                route = Screen.ExerciseDetail.route,
-                arguments = listOf(navArgument("exerciseId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val exerciseId = backStackEntry.arguments?.getLong("exerciseId") ?: 0L
-                ExerciseDetailScreen(exerciseId = exerciseId, navController = navController)
-            }
-            composable(Screen.ActiveWorkout.route) {
-                ActiveWorkoutScreen(navController = navController)
+            
+            if (isSessionActive) {
+                WorkoutOverlay(
+                    sessionManager = sessionManager,
+                    isVisible = isSessionActive,
+                    onExpandToggle = { sessionManager.toggleExpanded() },
+                    onCollapse = { sessionManager.collapse() },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
         }
     }

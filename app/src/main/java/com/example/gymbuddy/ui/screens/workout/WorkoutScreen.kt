@@ -13,15 +13,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.domain.model.Workout
+import com.example.gymbuddy.domain.model.Routine
+import com.example.gymbuddy.service.WorkoutSessionManager
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun WorkoutScreen(
     navController: NavController,
+    sessionManager: WorkoutSessionManager,
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -33,24 +33,49 @@ fun WorkoutScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "Workout History",
+            text = "Start Workout",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         
+        Spacer(modifier = Modifier.height(20.dp))
+        
+        // Start Workout Button
+        Button(
+            onClick = { viewModel.startQuickWorkout(sessionManager) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = "START QUICK WORKOUT",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+        
         Spacer(modifier = Modifier.height(24.dp))
         
-        if (uiState.workouts.isEmpty()) {
-            EmptyWorkoutState(onStartWorkout = { navController.navigate(Screen.ActiveWorkout.route) })
+        Text(
+            text = "Routines",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        if (uiState.routines.isEmpty()) {
+            EmptyRoutinesState()
         } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(uiState.workouts) { workout ->
-                    WorkoutHistoryCard(
-                        workout = workout,
-                        onClick = { navController.navigate(Screen.WorkoutLog.createRoute(workout.id)) }
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(uiState.routines) { routine ->
+                    RoutineCard(
+                        routine = routine,
+                        onStart = { viewModel.startWorkoutWithRoutine(routine, sessionManager) }
                     )
                 }
             }
@@ -59,18 +84,11 @@ fun WorkoutScreen(
 }
 
 @Composable
-fun WorkoutHistoryCard(
-    workout: Workout,
-    onClick: () -> Unit
-) {
-    val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-    
+fun RoutineCard(routine: Routine, onStart: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
-        shape = RoundedCornerShape(12.dp),
-        onClick = onClick
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
@@ -83,86 +101,97 @@ fun WorkoutHistoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = workout.name,
+                    text = routine.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                if (workout.isCompleted) {
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = SuccessGreen.copy(alpha = 0.2f)
-                    ) {
-                        Text(
-                            text = "Completed",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = SuccessGreen
-                        )
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = when (routine.type) {
+                        "Push" -> NeonCyan.copy(alpha = 0.2f)
+                        "Pull" -> NeonPurple.copy(alpha = 0.2f)
+                        "Legs" -> NeonTeal.copy(alpha = 0.2f)
+                        else -> TextTertiary.copy(alpha = 0.2f)
                     }
+                ) {
+                    Text(
+                        text = routine.type,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = when (routine.type) {
+                            "Push" -> NeonCyan
+                            "Pull" -> NeonPurple
+                            "Legs" -> NeonTeal
+                            else -> TextTertiary
+                        }
+                    )
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            routine.description?.let { desc ->
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = dateFormat.format(Date(workout.date)),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "${workout.duration} min",
+                    text = desc,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
-            workout.notes?.let { notes ->
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = notes,
+                    text = "${routine.exercises.size} exercises",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
+                    color = TextTertiary
                 )
+                Text(
+                    text = "${routine.estimatedMinutes} min",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextTertiary
+                )
+                Text(
+                    text = routine.difficulty,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextTertiary
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            OutlinedButton(
+                onClick = onStart,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonTeal),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Start ${routine.name}")
             }
         }
     }
 }
 
 @Composable
-fun EmptyWorkoutState(onStartWorkout: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+fun EmptyRoutinesState() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Text(
-            text = "🏋️",
-            style = MaterialTheme.typography.displayLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No workouts yet",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Start your fitness journey today!",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = onStartWorkout,
-            colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
-            shape = RoundedCornerShape(12.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Start Workout")
+            Text(text = "📋", style = MaterialTheme.typography.displaySmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "No routines available",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
         }
     }
 }

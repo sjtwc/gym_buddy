@@ -123,13 +123,6 @@ The app features a cyber-futuristic dark theme with:
 - Glowing progress indicators
 - Virtual pet with mood messages
 
-## Recent Changes
-
-### v1.0.1 - Bug Fixes
-- **Added GymBuddyApplication.kt** - Fixed app crash on startup by adding Hilt Application class
-- **Added JVM Toolchain** - Fixed inconsistent JVM-target compatibility (17 for both Kotlin and Java)
-- **Updated Typography** - Added full Typography definitions to fix Material3 theme issues
-
 ## License
 
 MIT License

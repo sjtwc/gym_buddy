@@ -61,12 +61,6 @@ fun HomeScreen(
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        StartWorkoutButton(
-            onClick = { navController.navigate(Screen.ActiveWorkout.route) }
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
         val nextRoutine = uiState.nextWorkout
         if (nextRoutine != null) {
             NextWorkoutCard(

@@ -6,19 +6,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
     data object Home : Screen("home", "Home", Icons.Default.Home)
-    data object Workout : Screen("workout", "Workout", Icons.Default.SportsGymnastics)
-    data object Exercises : Screen("exercises", "Exercises", Icons.Default.List)
-    data object Routines : Screen("routines", "Routines", Icons.Default.Folder)
+    
+    // Renamed: Routines -> Workout (now has Start Workout button)
+    data object Workout : Screen("workout", "Workout", Icons.Default.Folder)
+    
+    // Renamed: Workout -> Exercise (Exercise Library)
+    data object Exercise : Screen("exercise", "Exercise", Icons.Default.List)
+    
     data object Progress : Screen("progress", "Progress", Icons.Default.ShowChart)
-    data object Achievements : Screen("achievements", "Badges", Icons.Default.Star)
     data object Profile : Screen("profile", "Profile", Icons.Default.Person)
     
     data object ExerciseDetail : Screen("exercise/{exerciseId}", "Exercise Detail") {
         fun createRoute(exerciseId: Long) = "exercise/$exerciseId"
-    }
-    
-    data object WorkoutLog : Screen("workout/log/{workoutId}", "Workout") {
-        fun createRoute(workoutId: Long) = "workout/log/$workoutId"
     }
     
     data object RoutineDetail : Screen("routine/{routineId}", "Routine") {
@@ -31,7 +30,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
 val bottomNavItems = listOf(
     Screen.Home,
     Screen.Workout,
-    Screen.Routines,
+    Screen.Exercise,
     Screen.Progress,
     Screen.Profile
 )
