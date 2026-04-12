@@ -9,6 +9,7 @@ import com.example.gymbuddy.domain.model.AchievementType
 import com.example.gymbuddy.domain.model.XpConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +28,16 @@ class AchievementRepository @Inject constructor(
     private val userProfileDao: UserProfileDao
 ) {
     fun getAllAchievementsWithProgress(): Flow<List<AchievementWithProgress>> {
-        return achievementDao.getAllAchievements()
+        return achievementDao.getAllAchievements().map { entities ->
+            entities.map { entity ->
+                AchievementWithProgress(
+                    type = AchievementType.entries.find { it.name == entity.achievementType } ?: AchievementType.FIRST_WORKOUT,
+                    claimCount = entity.claimCount,
+                    isUnlocked = true,
+                    progress = 100
+                )
+            }
+        }
     }
     
     suspend fun checkAndGrantAchievements(): List<AchievementType> {

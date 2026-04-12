@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.gymbuddy.domain.model.GymChain
@@ -75,7 +76,7 @@ fun HomeScreen(
             userName = uiState.userProfile?.name ?: "Trainer",
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
-            title = uiState.userProfile?.getTitle() ?: "Novice"
+            title = uiState.userProfile?.title ?: "Novice"
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -100,6 +101,7 @@ fun HomeScreen(
             gymChains = viewModel.gymChains,
             selectedChain = uiState.selectedGymChain,
             nearestGym = uiState.nearestGym,
+            userLocation = uiState.userLocation,
             isLoading = uiState.isLoadingLocation,
             error = uiState.locationError,
             onGymSelected = { viewModel.selectGymChain(it) },
@@ -452,6 +454,7 @@ fun GymFinderSection(
     gymChains: List<GymChain>,
     selectedChain: GymChain?,
     nearestGym: GymLocation?,
+    userLocation: android.location.Location?,
     isLoading: Boolean,
     error: String?,
     onGymSelected: (GymChain) -> Unit,
@@ -565,8 +568,8 @@ fun GymFinderSection(
                 Spacer(modifier = Modifier.height(16.dp))
                 NearestGymMap(
                     gymLocation = nearestGym,
-                    userLat = uiState.userLocation?.latitude,
-                    userLng = uiState.userLocation?.longitude
+                    userLat = userLocation?.latitude,
+                    userLng = userLocation?.longitude
                 )
             }
         }

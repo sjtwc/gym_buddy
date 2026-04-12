@@ -47,7 +47,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
             name = uiState.userProfile?.name ?: "Trainer",
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
-            title = uiState.userProfile?.getTitle() ?: "Novice",
+            title = uiState.userProfile?.title ?: "Novice",
             petMood = uiState.userProfile?.pet?.mood ?: PetMood.NEUTRAL
         )
         

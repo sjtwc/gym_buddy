@@ -79,6 +79,7 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
 
     implementation("androidx.webkit:webkit:1.10.0")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.hilt:hilt-work:1.1.0")

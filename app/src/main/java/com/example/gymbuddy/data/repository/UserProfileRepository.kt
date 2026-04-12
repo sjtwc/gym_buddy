@@ -13,6 +13,7 @@ import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.XpConfig
 import com.example.gymbuddy.domain.model.AchievementType
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.pow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -94,7 +95,22 @@ class UserProfileRepository @Inject constructor(
         userProfileDao.updateUserProfile(userProfile.toEntity())
     
     suspend fun addXp(xpAmount: Int) {
-        userProfileDao.addXp(xpAmount)
+        val profile = userProfileDao.getUserProfileSync() ?: return
+        val newXp = profile.xp + xpAmount
+        val level = calculateLevel(newXp)
+        userProfileDao.updateXpAndLevel(newXp, level)
+    }
+    
+    private fun calculateLevel(xp: Int): Int {
+        var level = 1
+        var xpRequired = 100
+        var totalXp = 0
+        while (totalXp + xpRequired <= xp) {
+            totalXp += xpRequired
+            level++
+            xpRequired = (100 * 1.5.pow((level - 1).toDouble())).toInt()
+        }
+        return level
     }
     
     suspend fun updateStreak(streak: Int) {
@@ -163,7 +179,7 @@ class UserProfileRepository @Inject constructor(
     private fun UserProfile.toEntity() = UserProfileEntity(
         id = id,
         name = name,
-        title = getTitle(),
+        title = title,
         level = level,
         xp = xp,
         currentStreak = currentStreak,
