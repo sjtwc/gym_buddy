@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-04-13
+
+### Fixed
+- **Workout History Not Showing** - Completed workouts now properly persist to the database so they appear in the Progress page history section
+- `WorkoutSessionManager.kt` - Now calls `WorkoutRepository.completeWorkout()` when finishing a workout to mark it as completed with duration
+
+---
+
 ## [1.1.0] - 2026-04-12
 
 ### Added
@@ -99,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.1.1]: https://github.com/example/gymbuddy/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/example/gymbuddy/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/example/gymbuddy/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/example/gymbuddy/releases/tag/v1.0.0
