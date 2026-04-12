@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.gymbuddy.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
+
 data class Achievement(
     val id: Int,
     val title: String,
@@ -30,6 +32,7 @@ data class Achievement(
     val progress: Int = 0
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AchievementScreen(navController: NavController) {
     val achievements = listOf(
