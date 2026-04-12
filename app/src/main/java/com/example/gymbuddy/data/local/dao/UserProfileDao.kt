@@ -21,8 +21,8 @@ interface UserProfileDao {
     @Query("UPDATE user_profile SET currentStreak = :streak, longestStreak = CASE WHEN :streak > longestStreak THEN :streak ELSE longestStreak END WHERE id = 1")
     suspend fun updateStreak(streak: Int)
     
-    @Query("UPDATE user_profile SET xp = xp + :xpAmount, level = CASE WHEN xp + :xpAmount >= level * 1000 THEN level + 1 ELSE level END WHERE id = 1")
-    suspend fun addXp(xpAmount: Int)
+    @Query("UPDATE user_profile SET xp = :newXp, level = :newLevel WHERE id = 1")
+    suspend fun updateXpAndLevel(newXp: Int, newLevel: Int)
     
     @Query("UPDATE user_profile SET petHappiness = :happiness, petMood = :mood WHERE id = 1")
     suspend fun updatePetStatus(happiness: Int, mood: String)

@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import com.example.gymbuddy.data.repository.WorkoutRepository
+import com.example.gymbuddy.data.repository.UserProfileRepository
+import com.example.gymbuddy.data.repository.AchievementRepository
 import com.example.gymbuddy.domain.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -19,7 +21,9 @@ import javax.inject.Singleton
 @Singleton
 class WorkoutSessionManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val workoutRepository: WorkoutRepository
+    private val workoutRepository: WorkoutRepository,
+    private val userProfileRepository: UserProfileRepository,
+    private val notificationService: NotificationService
 ) {
     private var service: WorkoutSessionService? = null
     private var bound = false
@@ -178,7 +182,16 @@ class WorkoutSessionManager @Inject constructor(
         
         scope.launch {
             workoutId?.let { id ->
-                workoutRepository.completeWorkout(id, duration)
+                val volume = workoutRepository.completeWorkout(id, duration)
+                val earnedAchievements = userProfileRepository.recordWorkout(totalVolume = volume)
+                
+                if (earnedAchievements.isNotEmpty()) {
+                    if (earnedAchievements.size == 1) {
+                        notificationService.showAchievementNotification(earnedAchievements.first())
+                    } else {
+                        notificationService.showMultipleAchievementsNotification(earnedAchievements)
+                    }
+                }
             }
         }
         

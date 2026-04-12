@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.gymbuddy.domain.model.PetMood
+import com.example.gymbuddy.domain.model.UserTitle
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
 
@@ -40,7 +41,8 @@ fun HomeScreen(
         GreetingSection(
             userName = uiState.userProfile?.name ?: "Trainer",
             level = uiState.userProfile?.level ?: 1,
-            xp = uiState.userProfile?.xp ?: 0
+            xp = uiState.userProfile?.xp ?: 0,
+            title = uiState.userProfile?.getTitle() ?: "Novice"
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -75,7 +77,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun GreetingSection(userName: String, level: Int, xp: Int) {
+fun GreetingSection(userName: String, level: Int, xp: Int, title: String) {
     Column {
         Text(
             text = "Welcome back,",
@@ -88,6 +90,22 @@ fun GreetingSection(userName: String, level: Int, xp: Int) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
+        
+        if (title.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Surface(
+                shape = RoundedCornerShape(4.dp),
+                color = XpGold.copy(alpha = 0.2f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = XpGold,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
         
         Spacer(modifier = Modifier.height(16.dp))
         

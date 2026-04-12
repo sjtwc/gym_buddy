@@ -47,6 +47,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
             name = uiState.userProfile?.name ?: "Trainer",
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
+            title = uiState.userProfile?.getTitle() ?: "Novice",
             petMood = uiState.userProfile?.pet?.mood ?: PetMood.NEUTRAL
         )
         
@@ -66,7 +67,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
 }
 
 @Composable
-fun ProfileHeader(name: String, level: Int, xp: Int, petMood: PetMood) {
+fun ProfileHeader(name: String, level: Int, xp: Int, title: String, petMood: PetMood) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
@@ -91,6 +92,19 @@ fun ProfileHeader(name: String, level: Int, xp: Int, petMood: PetMood) {
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(text = name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            
+            if (title.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(shape = RoundedCornerShape(4.dp), color = XpGold.copy(alpha = 0.2f)) {
+                    Text(
+                        text = title,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = XpGold,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             

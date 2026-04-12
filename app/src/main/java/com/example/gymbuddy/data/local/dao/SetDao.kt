@@ -35,4 +35,13 @@ interface SetDao {
     
     @Query("DELETE FROM sets WHERE workoutExerciseId = :workoutExerciseId")
     suspend fun deleteAllForWorkoutExercise(workoutExerciseId: Long)
+    
+    @Query("""
+        SELECT COALESCE(SUM(s.weight * s.reps), 0) 
+        FROM sets s
+        WHERE s.workoutExerciseId IN (
+            SELECT id FROM workout_exercises WHERE workoutId = :workoutId
+        )
+    """)
+    suspend fun getWorkoutVolume(workoutId: Long): Float
 }

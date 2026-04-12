@@ -45,10 +45,12 @@ class WorkoutRepository @Inject constructor(
     suspend fun updateWorkout(workout: Workout) =
         workoutDao.updateWorkout(workout.toEntity())
     
-    suspend fun completeWorkout(workoutId: Long, duration: Int) {
+    suspend fun completeWorkout(workoutId: Long, duration: Int): Float {
+        val volume = setDao.getWorkoutVolume(workoutId)
         workoutDao.getWorkoutById(workoutId)?.let { workout ->
             workoutDao.updateWorkout(workout.copy(isCompleted = true, duration = duration))
         }
+        return volume
     }
     
     suspend fun deleteWorkout(workout: Workout) =
