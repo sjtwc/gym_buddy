@@ -92,17 +92,18 @@ class MainActivity : ComponentActivity() {
             .build()
         
         val (repeatInterval, timeUnit) = if (BuildConfig.DEBUG) {
-            Log.d("StreakReminder", "DEBUG MODE: Scheduling notification every 1 minute")
-            1L to TimeUnit.MINUTES
+            Log.d("StreakReminder", "DEBUG MODE: Scheduling notification every 30 seconds")
+            30L to TimeUnit.SECONDS
         } else {
-            24L to TimeUnit.HOURS
+            Log.d("StreakReminder", "PRODUCTION MODE: Scheduling notification every 30 seconds")
+            30L to TimeUnit.SECONDS
         }
         
         val reminderRequest = PeriodicWorkRequestBuilder<StreakReminderWorker>(
             repeatInterval, timeUnit
         )
             .setConstraints(constraints)
-            .setInitialDelay(if (BuildConfig.DEBUG) 0 else calculateInitialDelay(), TimeUnit.MILLISECONDS)
+            .setInitialDelay(0, TimeUnit.MILLISECONDS)
             .build()
         
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
