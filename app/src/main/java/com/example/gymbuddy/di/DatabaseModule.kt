@@ -1,0 +1,62 @@
+package com.example.gymbuddy.di
+
+import android.content.Context
+import com.example.gymbuddy.data.local.GymBuddyDatabase
+import com.example.gymbuddy.data.local.dao.*
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+    
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): GymBuddyDatabase {
+        return GymBuddyDatabase.getDatabase(context)
+    }
+    
+    @Provides
+    fun provideExerciseDao(database: GymBuddyDatabase): ExerciseDao {
+        return database.exerciseDao()
+    }
+    
+    @Provides
+    fun provideWorkoutDao(database: GymBuddyDatabase): WorkoutDao {
+        return database.workoutDao()
+    }
+    
+    @Provides
+    fun provideWorkoutExerciseDao(database: GymBuddyDatabase): WorkoutExerciseDao {
+        return database.workoutExerciseDao()
+    }
+    
+    @Provides
+    fun provideSetDao(database: GymBuddyDatabase): SetDao {
+        return database.setDao()
+    }
+    
+    @Provides
+    fun provideRoutineDao(database: GymBuddyDatabase): RoutineDao {
+        return database.routineDao()
+    }
+    
+    @Provides
+    fun provideRoutineExerciseDao(database: GymBuddyDatabase): RoutineExerciseDao {
+        return database.routineExerciseDao()
+    }
+    
+    @Provides
+    fun provideUserProfileDao(database: GymBuddyDatabase): UserProfileDao {
+        return database.userProfileDao()
+    }
+    
+    @Provides
+    fun providePersonalRecordDao(database: GymBuddyDatabase): PersonalRecordDao {
+        return database.personalRecordDao()
+    }
+}
