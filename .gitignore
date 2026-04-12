@@ -16,6 +16,7 @@
 /.idea/runConfigurations.xml
 /.idea/vcs.xml
 /.idea/inspectionProfiles/
+/.idea/gradle.xml
 .DS_Store
 /build
 /captures
