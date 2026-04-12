@@ -15,6 +15,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getWorkoutsByDateRange(startDate: Long, endDate: Long): Flow<List<WorkoutEntity>>
     
+    @Query("SELECT * FROM workouts WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    suspend fun getWorkoutsByDateRangeSync(startDate: Long, endDate: Long): List<WorkoutEntity>
+    
     @Query("SELECT * FROM workouts WHERE isCompleted = 0 ORDER BY date DESC LIMIT 1")
     suspend fun getActiveWorkout(): WorkoutEntity?
     
