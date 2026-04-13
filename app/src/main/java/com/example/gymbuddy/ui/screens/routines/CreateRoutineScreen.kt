@@ -110,7 +110,24 @@ fun CreateRoutineScreen(
                     value = uiState.routineTypes.firstOrNull() ?: "Type",
                     onValueChange = {},
                     readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                    trailingIcon = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (uiState.routineTypes.isNotEmpty()) {
+                                IconButton(
+                                    onClick = { viewModel.clearRoutineTypes() },
+                                    modifier = Modifier.size(18.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Clear type",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = TextSecondary
+                                    )
+                                }
+                            }
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded)
+                        }
+                    },
                     modifier = Modifier.menuAnchor(),
                     shape = RoundedCornerShape(8.dp),
                     textStyle = MaterialTheme.typography.bodyMedium,
@@ -124,10 +141,25 @@ fun CreateRoutineScreen(
                 ) {
                     muscleOptions.forEach { type ->
                         DropdownMenuItem(
-                            text = { Text(type, style = MaterialTheme.typography.bodyMedium) },
+                            text = { 
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(type, style = MaterialTheme.typography.bodyMedium)
+                                    if (type in uiState.routineTypes) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Selected",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = NeonTeal
+                                        )
+                                    }
+                                }
+                            },
                             onClick = {
                                 viewModel.toggleRoutineType(type)
-                                typeExpanded = false
                             }
                         )
                     }
@@ -215,23 +247,38 @@ fun CreateRoutineScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        var isSaving by remember { mutableStateOf(false) }
+
         Button(
             onClick = {
-                viewModel.saveRoutine()
-                navController.popBackStack()
+                isSaving = true
+                viewModel.saveRoutine { success ->
+                    isSaving = false
+                    if (success) {
+                        navController.popBackStack()
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
             shape = RoundedCornerShape(16.dp),
-            enabled = uiState.routineName.isNotBlank() && uiState.exercises.isNotEmpty()
+            enabled = uiState.routineName.isNotBlank() && uiState.exercises.isNotEmpty() && !isSaving
         ) {
-            Text(
-                text = "SAVE ROUTINE",
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleMedium
-            )
+            if (isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = DarkBackground,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "SAVE ROUTINE",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 

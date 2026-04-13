@@ -90,6 +90,10 @@ class CreateRoutineViewModel @Inject constructor(
         }
     }
 
+    fun clearRoutineTypes() {
+        _uiState.update { it.copy(routineTypes = emptyList()) }
+    }
+
     fun updateEstimatedMinutes(minutes: Int) {
         _uiState.update { it.copy(estimatedMinutes = minutes.coerceAtLeast(1)) }
     }
@@ -160,11 +164,15 @@ class CreateRoutineViewModel @Inject constructor(
         }
     }
 
-    fun saveRoutine() {
+    fun saveRoutine(onComplete: (Boolean) -> Unit = {}) {
         viewModelScope.launch {
             try {
                 val state = _uiState.value
+                android.util.Log.d("CreateRoutineViewModel", "Saving routine: name=${state.routineName}, types=${state.routineTypes}, exercises=${state.exercises.size}")
+                android.util.Log.d("CreateRoutineViewModel", "Exercise IDs: ${state.exercises.map { it.id to it.name }}")
+                
                 val routineExercises = state.exercises.mapIndexed { index, exercise ->
+                    android.util.Log.d("CreateRoutineViewModel", "Processing exercise $index: ${exercise.name}, id=${exercise.id}")
                     RoutineExercise(
                         routineId = state.routineId,
                         exercise = exercise,
@@ -189,13 +197,19 @@ class CreateRoutineViewModel @Inject constructor(
                     exercises = routineExercises
                 )
 
+                android.util.Log.d("CreateRoutineViewModel", "Calling repository to save routine...")
                 if (state.routineId > 0) {
                     routineRepository.updateRoutine(routine)
+                    android.util.Log.d("CreateRoutineViewModel", "Updated routine with id ${routine.id}")
                 } else {
-                    routineRepository.insertRoutine(routine)
+                    val newId = routineRepository.insertRoutine(routine)
+                    android.util.Log.d("CreateRoutineViewModel", "Inserted routine with new id $newId")
                 }
+                onComplete(true)
             } catch (e: Exception) {
+                android.util.Log.e("CreateRoutineViewModel", "Error saving routine", e)
                 e.printStackTrace()
+                onComplete(false)
             }
         }
     }

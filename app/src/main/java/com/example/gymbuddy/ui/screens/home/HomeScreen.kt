@@ -519,60 +519,18 @@ fun GymFinderSection(
                     }
                 }
             }
-
-            if (error != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = error,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = ErrorRed
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = onRequestPermission,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = NeonTeal)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Enable Location")
-                }
-            }
-
-            if (isLoading) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = NeonTeal,
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Finding nearest location...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            if (nearestGym != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                NearestGymMap(
-                    gymLocation = nearestGym,
-                    userLat = userLocation?.latitude,
-                    userLng = userLocation?.longitude
-                )
-            }
         }
+    }
+}
+
+private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): String {
+    val results = FloatArray(1)
+    android.location.Location.distanceBetween(lat1, lon1, lat2, lon2, results)
+    val distanceMeters = results[0]
+    return if (distanceMeters < 1000) {
+        "${distanceMeters.toInt()}m"
+    } else {
+        String.format("%.1fkm", distanceMeters / 1000)
     }
 }
 
@@ -583,8 +541,13 @@ fun NearestGymMap(
     userLat: Double?,
     userLng: Double?
 ) {
-    val mapUrl = remember(gymLocation) {
-        "https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15"
+    val mapUrl = remember(gymLocation, userLat, userLng) {
+        buildString {
+            append("https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15")
+            if (userLat != null && userLng != null) {
+                append("&mlat=${userLat}&mlon=${userLng}")
+            }
+        }
     }
 
     Column {
@@ -595,30 +558,56 @@ fun NearestGymMap(
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = NeonTeal,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = gymLocation.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = NeonTeal,
+                        modifier = Modifier.size(24.dp)
                     )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = gymLocation.name,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = gymLocation.address,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (userLat != null && userLng != null) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = NeonTeal.copy(alpha = 0.2f)
+                        ) {
+                            Text(
+                                text = "Your Location",
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = NeonTeal
+                            )
+                        }
+                    }
+                }
+                
+                if (userLat != null && userLng != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = gymLocation.address,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Distance: ${calculateDistance(userLat, userLng, gymLocation.latitude, gymLocation.longitude)} away",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
                     )
                 }
             }
@@ -629,7 +618,7 @@ fun NearestGymMap(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(280.dp)
                 .clip(RoundedCornerShape(12.dp))
         ) {
             AndroidView(
