@@ -519,6 +519,59 @@ fun GymFinderSection(
                     }
                 }
             }
+
+            if (error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ErrorRed
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = onRequestPermission,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = NeonTeal)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Enable Location")
+                }
+            }
+
+            if (isLoading) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = NeonTeal,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Finding nearest location...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (nearestGym != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                NearestGymMap(
+                    gymLocation = nearestGym,
+                    userLat = userLocation?.latitude,
+                    userLng = userLocation?.longitude
+                )
+            }
         }
     }
 }
