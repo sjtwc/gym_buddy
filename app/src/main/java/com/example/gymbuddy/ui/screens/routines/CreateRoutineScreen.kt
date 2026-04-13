@@ -283,12 +283,14 @@ fun CreateRoutineScreen(
     }
 
     if (showExercisePicker) {
+        val alreadyAddedIds = uiState.exercises.map { it.id }.toSet()
         ExercisePickerPage(
             onDismiss = { showExercisePicker = false },
             onAddExercises = { exercises ->
                 viewModel.addExercises(exercises)
                 showExercisePicker = false
-            }
+            },
+            alreadyAddedExerciseIds = alreadyAddedIds
         )
     }
 }

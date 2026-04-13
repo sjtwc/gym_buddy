@@ -100,7 +100,11 @@ class CreateRoutineViewModel @Inject constructor(
 
     fun addExercises(exercises: List<Exercise>) {
         _uiState.update { current ->
-            val newExercises = current.exercises + exercises
+            val existingIds = current.exercises.map { it.id }.toSet()
+            val uniqueExercises = exercises.filter { it.id !in existingIds }
+            if (uniqueExercises.isEmpty()) return@update current
+            
+            val newExercises = current.exercises + uniqueExercises
             val defaultTimers = listOf(
                 RoutineExerciseTimer(SetType.NORMAL, 90),
                 RoutineExerciseTimer(SetType.WARMUP, 60),
@@ -108,7 +112,7 @@ class CreateRoutineViewModel @Inject constructor(
                 RoutineExerciseTimer(SetType.DROP, 60),
                 RoutineExerciseTimer(SetType.FAILURE, 90)
             )
-            val newSets = current.exerciseSets + exercises.map { _ ->
+            val newSets = current.exerciseSets + uniqueExercises.map { _ ->
                 List(3) { i ->
                     RoutineSetData(
                         setNumber = i + 1,
@@ -118,8 +122,8 @@ class CreateRoutineViewModel @Inject constructor(
                     )
                 }
             }
-            val newBodyFocus = current.exerciseBodyFocus + exercises.map { "" }
-            val newTimers = current.exerciseTimers + exercises.map { defaultTimers }
+            val newBodyFocus = current.exerciseBodyFocus + uniqueExercises.map { "" }
+            val newTimers = current.exerciseTimers + uniqueExercises.map { defaultTimers }
             current.copy(
                 exercises = newExercises,
                 exerciseSets = newSets,

@@ -27,6 +27,7 @@ import com.example.gymbuddy.ui.theme.*
 fun ExercisePickerPage(
     onDismiss: () -> Unit,
     onAddExercises: (List<Exercise>) -> Unit,
+    alreadyAddedExerciseIds: Set<Long> = emptySet(),
     viewModel: ExercisePickerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -51,7 +52,10 @@ fun ExercisePickerPage(
                     selectedCount = uiState.selectedExercises.size,
                     onClose = onDismiss,
                     onAdd = {
-                        onAddExercises(viewModel.getSelectedExercises())
+                        val selectedToAdd = uiState.selectedExercises
+                            .filter { it.id !in alreadyAddedExerciseIds }
+                            .filter { ex -> uiState.exercises.any { it.id == ex.id } }
+                        onAddExercises(selectedToAdd)
                     }
                 )
 

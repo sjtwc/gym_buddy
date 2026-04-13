@@ -356,6 +356,7 @@ fun ExpandedOverlay(
     }
 
     if (showExercisePicker) {
+        val alreadyAddedIds = session?.exercises?.map { it.exercise.id }?.toSet() ?: emptySet()
         ExercisePickerPage(
             onDismiss = { showExercisePicker = false },
             onAddExercises = { selected ->
@@ -363,7 +364,8 @@ fun ExpandedOverlay(
                     sessionManager.addExercise(exercise)
                 }
                 showExercisePicker = false
-            }
+            },
+            alreadyAddedExerciseIds = alreadyAddedIds
         )
     }
 }
