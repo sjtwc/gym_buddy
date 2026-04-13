@@ -64,10 +64,25 @@ data class WorkoutExerciseSession(
         RestTimer(SetType.WORK, 0, false),
         RestTimer(SetType.DROP, 0, false),
         RestTimer(SetType.FAILURE, 0, false)
-    )
+    ),
+    val isRestTimerEnabled: Boolean = false
 ) {
     val previousData: Pair<Double, Int>?
         get() = null
+    
+    companion object {
+        const val DEFAULT_WORK_TIMER = 120      // 2:00
+        const val DEFAULT_WARMUP_TIMER = 60    // 1:00
+        const val DEFAULT_DROP_TIMER = 90       // 1:30
+        const val DEFAULT_FAILURE_TIMER = 120   // 2:00
+        
+        fun getDefaultTimers(): List<RestTimer> = listOf(
+            RestTimer(SetType.WARMUP, DEFAULT_WARMUP_TIMER, false),
+            RestTimer(SetType.WORK, DEFAULT_WORK_TIMER, false),
+            RestTimer(SetType.DROP, DEFAULT_DROP_TIMER, false),
+            RestTimer(SetType.FAILURE, DEFAULT_FAILURE_TIMER, false)
+        )
+    }
 }
 
 data class WorkoutSetData(

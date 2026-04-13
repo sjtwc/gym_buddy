@@ -47,6 +47,12 @@ class WorkoutSessionManager @Inject constructor(
     private val _restTimeRemaining = MutableStateFlow(0)
     val restTimeRemaining: StateFlow<Int> = _restTimeRemaining.asStateFlow()
     
+    private val _isTimerMinimized = MutableStateFlow(false)
+    val isTimerMinimized: StateFlow<Boolean> = _isTimerMinimized.asStateFlow()
+    
+    private val _timerTotalTime = MutableStateFlow(0)
+    val timerTotalTime: StateFlow<Int> = _timerTotalTime.asStateFlow()
+    
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val serviceBinder = binder as WorkoutSessionService.WorkoutSessionBinder
@@ -78,6 +84,16 @@ class WorkoutSessionManager @Inject constructor(
                 svc.restTime.collect { time ->
                     _restTimeRemaining.value = time
                     _isResting.value = time > 0
+                }
+            }
+            scope.launch {
+                svc.isTimerMinimized.collect { minimized ->
+                    _isTimerMinimized.value = minimized
+                }
+            }
+            scope.launch {
+                svc.timerTotalTime.collect { total ->
+                    _timerTotalTime.value = total
                 }
             }
         }
@@ -178,6 +194,26 @@ class WorkoutSessionManager @Inject constructor(
     
     fun deleteRestTimer(type: SetType) {
         service?.deleteRestTimer(0)
+    }
+    
+    fun minimizeTimer() {
+        service?.minimizeTimer()
+    }
+    
+    fun restoreTimer() {
+        service?.restoreTimer()
+    }
+    
+    fun adjustTimerTime(seconds: Int) {
+        service?.adjustTimerTime(seconds)
+    }
+    
+    fun enableRestTimer(exerciseIndex: Int) {
+        service?.enableRestTimer(exerciseIndex)
+    }
+    
+    fun disableRestTimer(exerciseIndex: Int) {
+        service?.disableRestTimer(exerciseIndex)
     }
     
     fun finishWorkout() {

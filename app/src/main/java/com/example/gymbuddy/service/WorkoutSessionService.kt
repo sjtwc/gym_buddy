@@ -36,6 +36,12 @@ class WorkoutSessionService : Service() {
     private val _restTime = MutableStateFlow(0)
     val restTime: StateFlow<Int> = _restTime.asStateFlow()
     
+    private val _isTimerMinimized = MutableStateFlow(false)
+    val isTimerMinimized: StateFlow<Boolean> = _isTimerMinimized.asStateFlow()
+    
+    private val _timerTotalTime = MutableStateFlow(0)
+    val timerTotalTime: StateFlow<Int> = _timerTotalTime.asStateFlow()
+    
     companion object {
         const val CHANNEL_ID = "workout_session_channel"
         const val NOTIFICATION_ID = 1002
@@ -331,13 +337,15 @@ class WorkoutSessionService : Service() {
     }
     
     private var timerStartTime: Long = 0
-    private var timerTotalTime: Int = 0
+    private var _timerTotalTimePrivate: Int = 0
     
     private fun startRestTimer(seconds: Int, timerType: SetType = SetType.WORK) {
         restTimerJob?.cancel()
         _restTime.value = seconds
         timerStartTime = System.currentTimeMillis()
-        timerTotalTime = seconds
+        _timerTotalTimePrivate = seconds
+        _timerTotalTime.value = seconds
+        _isTimerMinimized.value = false
         _workoutSession.value = _workoutSession.value?.copy(
             isResting = true,
             restTimerType = timerType
@@ -350,6 +358,7 @@ class WorkoutSessionService : Service() {
                 updateNotification()
             }
             _workoutSession.value = _workoutSession.value?.copy(isResting = false)
+            _isTimerMinimized.value = false
             sendTimerEndNotification()
             playTimerSound()
             updateNotification()
@@ -370,13 +379,52 @@ class WorkoutSessionService : Service() {
     private fun adjustRestTimer(seconds: Int) {
         val newTime = (_restTime.value + seconds).coerceIn(0, 600)
         _restTime.value = newTime
-        timerTotalTime = (timerTotalTime + seconds).coerceIn(0, 600)
+        _timerTotalTimePrivate = (_timerTotalTimePrivate + seconds).coerceIn(0, 600)
+        _timerTotalTime.value = _timerTotalTimePrivate
     }
     
     private fun stopRestTimer() {
         restTimerJob?.cancel()
         _workoutSession.value = _workoutSession.value?.copy(isResting = false)
         _restTime.value = 0
+        _isTimerMinimized.value = false
+    }
+    
+    fun minimizeTimer() {
+        _isTimerMinimized.value = true
+    }
+    
+    fun restoreTimer() {
+        _isTimerMinimized.value = false
+    }
+    
+    fun adjustTimerTime(seconds: Int) {
+        adjustRestTimer(seconds)
+    }
+    
+    fun enableRestTimer(exerciseIndex: Int) {
+        _workoutSession.value?.let { session ->
+            val updatedExercises = session.exercises.toMutableList()
+            if (exerciseIndex < updatedExercises.size) {
+                val exerciseSession = updatedExercises[exerciseIndex]
+                updatedExercises[exerciseIndex] = exerciseSession.copy(
+                    isRestTimerEnabled = true,
+                    restTimers = WorkoutExerciseSession.getDefaultTimers()
+                )
+                _workoutSession.value = session.copy(exercises = updatedExercises)
+            }
+        }
+    }
+    
+    fun disableRestTimer(exerciseIndex: Int) {
+        _workoutSession.value?.let { session ->
+            val updatedExercises = session.exercises.toMutableList()
+            if (exerciseIndex < updatedExercises.size) {
+                val exerciseSession = updatedExercises[exerciseIndex]
+                updatedExercises[exerciseIndex] = exerciseSession.copy(isRestTimerEnabled = false)
+                _workoutSession.value = session.copy(exercises = updatedExercises)
+            }
+        }
     }
     
     private fun playTimerSound() {

@@ -44,6 +44,8 @@ fun WorkoutOverlay(
     val elapsedTime by sessionManager.elapsedTime.collectAsState()
     val isResting by sessionManager.isResting.collectAsState()
     val restTime by sessionManager.restTimeRemaining.collectAsState()
+    val isTimerMinimized by sessionManager.isTimerMinimized.collectAsState()
+    val timerTotalTime by sessionManager.timerTotalTime.collectAsState()
 
     AnimatedVisibility(
         visible = isVisible,
@@ -74,29 +76,48 @@ fun WorkoutOverlay(
             )
         ) {
             if (isExpanded) {
-                ExpandedOverlay(
-                    session = currentSession,
-                    sessionManager = sessionManager,
-                    elapsedTime = elapsedTime,
-                    isResting = isResting,
-                    restTime = restTime,
-                    onCollapse = onCollapse,
-                    onAddExercise = { sessionManager.showExercisePicker() },
-                    onRemoveExercise = { sessionManager.removeExercise(it) },
-                    onSwapExercise = { sessionManager.swapExercise(it) },
-                    onAddSet = { sessionManager.addSet(it) },
-                    onUpdateSet = { exerciseIndex, setIndex, set -> sessionManager.updateSet(exerciseIndex, setIndex, set) },
-                    onDeleteSet = { exerciseIndex, setIndex -> sessionManager.deleteSet(exerciseIndex, setIndex) },
-                    onToggleSetType = { exerciseIndex, setIndex, type -> sessionManager.toggleSetTypeForSet(exerciseIndex, setIndex, type) },
-                    onCompleteSet = { exerciseIndex, setIndex -> sessionManager.completeSet(exerciseIndex, setIndex) },
-                    onAddRestTimer = { type, duration -> sessionManager.addRestTimer(type, duration) },
-                    onUpdateRestTimer = { exIdx, type, duration -> sessionManager.updateRestTimer(exIdx, type, duration) },
-                    onDeleteRestTimer = { type -> sessionManager.deleteRestTimer(type) },
-                    onFinishWorkout = { sessionManager.finishWorkout() },
-                    onCancelWorkout = { sessionManager.cancelWorkout() },
-                    onUpdateWorkoutName = { sessionManager.updateWorkoutName(it) },
-                    onEditStartTime = { sessionManager.updateStartTime(it) }
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    ExpandedOverlay(
+                        session = currentSession,
+                        sessionManager = sessionManager,
+                        elapsedTime = elapsedTime,
+                        isResting = isResting,
+                        restTime = restTime,
+                        isTimerMinimized = isTimerMinimized,
+                        timerTotalTime = timerTotalTime,
+                        onCollapse = onCollapse,
+                        onAddExercise = { sessionManager.showExercisePicker() },
+                        onRemoveExercise = { sessionManager.removeExercise(it) },
+                        onSwapExercise = { sessionManager.swapExercise(it) },
+                        onAddSet = { sessionManager.addSet(it) },
+                        onUpdateSet = { exerciseIndex, setIndex, set -> sessionManager.updateSet(exerciseIndex, setIndex, set) },
+                        onDeleteSet = { exerciseIndex, setIndex -> sessionManager.deleteSet(exerciseIndex, setIndex) },
+                        onToggleSetType = { exerciseIndex, setIndex, type -> sessionManager.toggleSetTypeForSet(exerciseIndex, setIndex, type) },
+                        onCompleteSet = { exerciseIndex, setIndex -> sessionManager.completeSet(exerciseIndex, setIndex) },
+                        onAddRestTimer = { type, duration -> sessionManager.addRestTimer(type, duration) },
+                        onUpdateRestTimer = { exIdx, type, duration -> sessionManager.updateRestTimer(exIdx, type, duration) },
+                        onDeleteRestTimer = { type -> sessionManager.deleteRestTimer(type) },
+                        onFinishWorkout = { sessionManager.finishWorkout() },
+                        onCancelWorkout = { sessionManager.cancelWorkout() },
+                        onUpdateWorkoutName = { sessionManager.updateWorkoutName(it) },
+                        onEditStartTime = { sessionManager.updateStartTime(it) },
+                        onEnableRestTimer = { sessionManager.enableRestTimer(it) },
+                        onMinimizeTimer = { sessionManager.minimizeTimer() },
+                        onRestoreTimer = { sessionManager.restoreTimer() },
+                        onAdjustTimerTime = { sessionManager.adjustTimerTime(it) }
+                    )
+                    
+                    if (isResting && !isTimerMinimized) {
+                        RestTimerPopup(
+                            remainingSeconds = restTime,
+                            totalSeconds = timerTotalTime,
+                            onMinimize = { sessionManager.minimizeTimer() },
+                            onAdjustTime = { sessionManager.adjustTimerTime(it) },
+                            onClose = { sessionManager.adjustTimerTime(-restTime) },
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        )
+                    }
+                }
             } else {
                 CollapsedOverlayBar(
                     session = currentSession,
@@ -175,6 +196,8 @@ fun ExpandedOverlay(
     elapsedTime: Long,
     isResting: Boolean,
     restTime: Int,
+    isTimerMinimized: Boolean,
+    timerTotalTime: Int,
     onCollapse: () -> Unit,
     onAddExercise: () -> Unit,
     onRemoveExercise: (Int) -> Unit,
@@ -190,7 +213,11 @@ fun ExpandedOverlay(
     onFinishWorkout: () -> Unit,
     onCancelWorkout: () -> Unit,
     onUpdateWorkoutName: (String) -> Unit,
-    onEditStartTime: (Long) -> Unit
+    onEditStartTime: (Long) -> Unit,
+    onEnableRestTimer: (Int) -> Unit,
+    onMinimizeTimer: () -> Unit,
+    onRestoreTimer: () -> Unit,
+    onAdjustTimerTime: (Int) -> Unit
 ) {
     var showSettingsMenu by remember { mutableStateOf(false) }
     var showNameDialog by remember { mutableStateOf(false) }
@@ -256,7 +283,13 @@ fun ExpandedOverlay(
                         onSwapExercise = { onSwapExercise(exerciseIndex) },
                         onAddRestTimer = { type, duration -> onAddRestTimer(type, duration) },
                         onUpdateRestTimer = { _, type, duration -> onUpdateRestTimer(exerciseIndex, type, duration) },
-                        onDeleteRestTimer = { type -> onDeleteRestTimer(type) }
+                        onDeleteRestTimer = { type -> onDeleteRestTimer(type) },
+                        isResting = isResting,
+                        isTimerMinimized = isTimerMinimized,
+                        restTime = restTime,
+                        timerTotalTime = timerTotalTime,
+                        onEnableRestTimer = onEnableRestTimer,
+                        onRestoreTimer = onRestoreTimer
                     )
                 }
             }
@@ -268,15 +301,6 @@ fun ExpandedOverlay(
             onAddExercise = { showExercisePicker = true },
             onCancelWorkout = onCancelWorkout
         )
-
-        if (isResting) {
-            Spacer(modifier = Modifier.height(16.dp))
-            RestTimerCard(
-                restTime = restTime,
-                onAddTime = { /* TODO */ },
-                onSkip = { /* TODO */ }
-            )
-        }
     }
 
     if (showExercisePicker) {
@@ -448,10 +472,15 @@ fun ExerciseCard(
     onSwapExercise: () -> Unit,
     onAddRestTimer: (SetType, Int) -> Unit,
     onUpdateRestTimer: (Int, SetType, Int) -> Unit,
-    onDeleteRestTimer: (SetType) -> Unit
+    onDeleteRestTimer: (SetType) -> Unit,
+    isResting: Boolean = false,
+    isTimerMinimized: Boolean = false,
+    restTime: Int = 0,
+    timerTotalTime: Int = 0,
+    onEnableRestTimer: (Int) -> Unit = {},
+    onRestoreTimer: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    var showRestTimerDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -498,11 +527,11 @@ fun ExerciseCard(
                             )
                             DropdownMenuItem(
                                 text = { 
-                                    Text(if (hasAnyTimer) "Configure Rest Timer" else "Add Rest Timer")
+                                    Text(if (exerciseSession.isRestTimerEnabled) "Timer Enabled" else "Add Rest Timer")
                                 },
                                 onClick = {
                                     showMenu = false
-                                    showRestTimerDialog = true
+                                    onEnableRestTimer(exerciseIndex)
                                 }
                             )
                         }
@@ -532,24 +561,18 @@ fun ExerciseCard(
                     )
                 }
                 
-                if (setIndex < exerciseSession.sets.lastIndex) {
+                if (exerciseSession.isRestTimerEnabled) {
                     val currentSet = exerciseSession.sets[setIndex]
                     val timerDuration = exerciseSession.restTimers.find { 
                         (it.type == currentSet.setType || it.type.abbreviation == currentSet.setType.abbreviation) 
-                        && it.durationSeconds > 0 
-                    }?.durationSeconds
+                    }?.durationSeconds ?: 0
                     
-                    if (timerDuration != null && timerDuration > 0) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            Text(
-                                text = "Timer: ${formatTime(timerDuration)}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = NeonCyan.copy(alpha = 0.7f)
+                    if (timerDuration > 0) {
+                        if (isResting && isTimerMinimized) {
+                            TimerRow(
+                                remainingSeconds = restTime,
+                                totalSeconds = timerTotalTime,
+                                onClick = onRestoreTimer
                             )
                         }
                     }
@@ -567,17 +590,6 @@ fun ExerciseCard(
         }
     }
 
-    if (showRestTimerDialog) {
-        ConfigureRestTimerDialog(
-            restTimers = exerciseSession.restTimers,
-            onDismiss = { showRestTimerDialog = false },
-            onSave = { timers ->
-                timers.forEach { timer ->
-                    onUpdateRestTimer(exerciseIndex, timer.type, timer.durationSeconds)
-                }
-            }
-        )
-    }
 }
 
 @Composable
