@@ -80,8 +80,7 @@ class RoutineEditViewModel @Inject constructor(
             id = 0,
             routineId = _uiState.value.routineId,
             exercise = exercise,
-            orderIndex = _uiState.value.exercises.size,
-            timers = defaultTimers()
+            orderIndex = _uiState.value.exercises.size
         )
         _uiState.update {
             it.copy(exercises = it.exercises + newExercise)
@@ -93,6 +92,33 @@ class RoutineEditViewModel @Inject constructor(
             removeAt(index)
         }.mapIndexed { idx, ex -> ex.copy(orderIndex = idx) }
         _uiState.update { it.copy(exercises = updatedList) }
+    }
+
+    fun updateExerciseSets(index: Int, sets: Int) {
+        val updatedList = _uiState.value.exercises.toMutableList()
+        if (index < updatedList.size) {
+            updatedList[index] = updatedList[index].copy(targetSets = sets)
+            _uiState.update { it.copy(exercises = updatedList) }
+        }
+    }
+
+    fun updateExerciseReps(index: Int, reps: String) {
+        val updatedList = _uiState.value.exercises.toMutableList()
+        if (index < updatedList.size) {
+            updatedList[index] = updatedList[index].copy(targetReps = reps)
+            _uiState.update { it.copy(exercises = updatedList) }
+        }
+    }
+
+    fun updateExerciseBodyPart(index: Int, bodyPart: String) {
+        val updatedList = _uiState.value.exercises.toMutableList()
+        if (index < updatedList.size) {
+            val currentExercise = updatedList[index].exercise
+            updatedList[index] = updatedList[index].copy(
+                exercise = currentExercise.copy(targetMuscle = bodyPart)
+            )
+            _uiState.update { it.copy(exercises = updatedList) }
+        }
     }
 
     fun updateExerciseTimers(index: Int, timers: List<RoutineExerciseTimer>) {

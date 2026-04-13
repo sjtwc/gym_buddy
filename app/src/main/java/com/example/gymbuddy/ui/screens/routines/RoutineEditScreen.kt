@@ -1,11 +1,14 @@
 package com.example.gymbuddy.ui.screens.routines
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,13 +16,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.gymbuddy.domain.model.SetType
 import com.example.gymbuddy.domain.model.RoutineExercise
-import com.example.gymbuddy.domain.model.RoutineExerciseTimer
-import com.example.gymbuddy.ui.components.ConfigureRestTimerDialog
 import com.example.gymbuddy.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +36,6 @@ fun RoutineEditScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showExercisePicker by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf(false) }
-    var editingExerciseIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(routineId) {
         if (routineId > 0) {
@@ -75,28 +78,17 @@ fun RoutineEditScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Text(
-                    text = "Routine Name",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = uiState.routineName.ifEmpty { "New Routine" },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (uiState.routineName.isEmpty()) TextTertiary else NeonTeal
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Exercises",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Set", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(48.dp))
+                    Text("Muscle", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(60.dp))
+                    Text("Sets", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.weight(1f))
+                    Text("Reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(56.dp))
+                    Spacer(modifier = Modifier.width(32.dp))
+                }
             }
 
             if (uiState.exercises.isEmpty()) {
@@ -129,9 +121,11 @@ fun RoutineEditScreen(
             }
 
             itemsIndexed(uiState.exercises) { index, exercise ->
-                RoutineExerciseCard(
+                RoutineExerciseRow(
                     exercise = exercise,
-                    onConfigureTimer = { editingExerciseIndex = index },
+                    onUpdateSets = { viewModel.updateExerciseSets(index, it) },
+                    onUpdateReps = { viewModel.updateExerciseReps(index, it) },
+                    onUpdateBodyPart = { viewModel.updateExerciseBodyPart(index, it) },
                     onRemove = { viewModel.removeExercise(index) }
                 )
             }
@@ -190,133 +184,151 @@ fun RoutineEditScreen(
             }
         )
     }
-
-    editingExerciseIndex?.let { index ->
-        val exercise = uiState.exercises[index]
-        ConfigureRoutineTimerDialog(
-            timers = exercise.timers,
-            onDismiss = { editingExerciseIndex = null },
-            onSave = { timers ->
-                viewModel.updateExerciseTimers(index, timers)
-                editingExerciseIndex = null
-            }
-        )
-    }
 }
 
 @Composable
-fun RoutineExerciseCard(
+fun RoutineExerciseRow(
     exercise: RoutineExercise,
-    onConfigureTimer: () -> Unit,
+    onUpdateSets: (Int) -> Unit,
+    onUpdateReps: (String) -> Unit,
+    onUpdateBodyPart: (String) -> Unit,
     onRemove: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var setsText by remember(exercise.targetSets) { mutableStateOf(exercise.targetSets.toString()) }
+    var repsText by remember(exercise.targetReps) { mutableStateOf(exercise.targetReps) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(36.dp)
+                    .background(getSetTypeColor(exercise.setType).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                    .clickable { showMenu = true },
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = exercise.exercise.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    text = exercise.exercise.targetMuscle.take(3).uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                    modifier = Modifier.weight(1f)
+                    color = getSetTypeColor(exercise.setType)
                 )
-
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = TextSecondary)
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    listOf("Chest", "Back", "Shoulders", "Arms", "Legs", "Core").forEach { muscle ->
                         DropdownMenuItem(
-                            text = { Text("Configure Timer") },
+                            text = { Text(muscle) },
                             onClick = {
+                                onUpdateBodyPart(muscle)
                                 showMenu = false
-                                onConfigureTimer()
-                            },
-                            leadingIcon = {
-                                Icon(Icons.Default.Timer, contentDescription = null)
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Remove", color = ErrorRed) },
-                            onClick = {
-                                showMenu = false
-                                onRemove()
-                            },
-                            leadingIcon = {
-                                Icon(Icons.Default.Delete, contentDescription = null, tint = ErrorRed)
                             }
                         )
                     }
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("Remove", color = ErrorRed) },
+                        onClick = {
+                            showMenu = false
+                            onRemove()
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Delete, contentDescription = null, tint = ErrorRed)
+                        }
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = exercise.exercise.targetMuscle,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary,
+                modifier = Modifier.width(60.dp)
+            )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(36.dp)
+                    .background(DarkSurface, RoundedCornerShape(4.dp))
+                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Timer: ${formatTimerDisplay(exercise.timers)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = NeonCyan
+                BasicTextField(
+                    value = setsText,
+                    onValueChange = { newValue ->
+                        setsText = newValue
+                        newValue.toIntOrNull()?.let { onUpdateSets(it) }
+                    },
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = TextPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
+
+            Box(
+                modifier = Modifier
+                    .width(56.dp)
+                    .height(36.dp)
+                    .background(DarkSurface, RoundedCornerShape(4.dp))
+                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                BasicTextField(
+                    value = repsText,
+                    onValueChange = { newValue ->
+                        repsText = newValue
+                        onUpdateReps(newValue)
+                    },
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = TextPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Text(
+                text = exercise.exercise.name.take(3),
+                style = MaterialTheme.typography.bodySmall,
+                color = TextTertiary,
+                modifier = Modifier.width(32.dp)
+            )
         }
     }
 }
 
 @Composable
-fun formatTimerDisplay(timers: List<RoutineExerciseTimer>): String {
-    val workTimer = timers.find { it.type == SetType.WORK }?.durationSeconds ?: 0
-    val mins = workTimer / 60
-    val secs = workTimer % 60
-    return if (workTimer > 0) "$mins:${secs.toString().padStart(2, '0')}" else "Not set"
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ExercisePickerDialog(
-    onDismiss: () -> Unit,
-    onSelect: (com.example.gymbuddy.domain.model.Exercise) -> Unit
-) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Select Exercise") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search exercises...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
+private fun getSetTypeColor(setType: SetType): androidx.compose.ui.graphics.Color {
+    return when (setType) {
+        SetType.NORMAL -> NeonTeal
+        SetType.WORK -> NeonCyan
+        SetType.WARMUP -> WarningOrange
+        SetType.DROP -> NeonPurple
+        SetType.FAILURE -> NeonPink
+    }
 }
 
 @Composable
@@ -355,89 +367,32 @@ fun RenameDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfigureRoutineTimerDialog(
-    timers: List<RoutineExerciseTimer>,
+fun ExercisePickerDialog(
     onDismiss: () -> Unit,
-    onSave: (List<RoutineExerciseTimer>) -> Unit
+    onSelect: (com.example.gymbuddy.domain.model.Exercise) -> Unit
 ) {
-    var editedTimers by remember { mutableStateOf(timers) }
+    var searchQuery by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Configure Timers") },
+        title = { Text("Select Exercise") },
         text = {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(editedTimers.size) { index ->
-                    val timer = editedTimers[index]
-                    TimerInputRow(
-                        timer = timer,
-                        onDurationChange = { newDuration ->
-                            editedTimers = editedTimers.toMutableList().apply {
-                                this[index] = timer.copy(durationSeconds = newDuration)
-                            }
-                        }
-                    )
-                }
+            Column {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search exercises...") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(editedTimers) }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }
     )
-}
-
-@Composable
-fun TimerInputRow(
-    timer: RoutineExerciseTimer,
-    onDurationChange: (Int) -> Unit
-) {
-    var timerText by remember(timer.durationSeconds) {
-        mutableStateOf(formatTimerSeconds(timer.durationSeconds))
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = timer.type.displayName,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextPrimary,
-            modifier = Modifier.weight(1f)
-        )
-
-        OutlinedTextField(
-            value = timerText,
-            onValueChange = { newValue ->
-                timerText = newValue
-                val parts = newValue.split(":")
-                val seconds = when (parts.size) {
-                    2 -> (parts[0].toIntOrNull() ?: 0) * 60 + (parts[1].toIntOrNull() ?: 0)
-                    1 -> parts[0].toIntOrNull() ?: 0
-                    else -> 0
-                }
-                onDurationChange(seconds)
-            },
-            modifier = Modifier.width(80.dp),
-            singleLine = true,
-            placeholder = { Text("0:00") }
-        )
-    }
-}
-
-fun formatTimerSeconds(seconds: Int): String {
-    val mins = seconds / 60
-    val secs = seconds % 60
-    return "$mins:${secs.toString().padStart(2, '0')}"
 }

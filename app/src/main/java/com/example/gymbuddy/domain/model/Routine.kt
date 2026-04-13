@@ -20,17 +20,12 @@ data class RoutineExercise(
     val routineId: Long,
     val exercise: Exercise,
     val orderIndex: Int,
+    val setType: SetType = SetType.NORMAL,
     val targetSets: Int = 3,
     val targetReps: String = "8-12",
     val restSeconds: Int = 90,
     val notes: String? = null,
-    val timers: List<RoutineExerciseTimer> = listOf(
-        RoutineExerciseTimer(SetType.NORMAL, 60),
-        RoutineExerciseTimer(SetType.WARMUP, 60),
-        RoutineExerciseTimer(SetType.WORK, 90),
-        RoutineExerciseTimer(SetType.DROP, 60),
-        RoutineExerciseTimer(SetType.FAILURE, 60)
-    )
+    val timers: List<RoutineExerciseTimer> = emptyList()
 )
 
 data class RoutineExerciseTimer(
