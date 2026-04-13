@@ -32,6 +32,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     
     data object ActiveWorkout : Screen("active_workout", "Active Workout")
     data object CreateRoutine : Screen("create_routine", "Create Routine")
+    data object Settings : Screen("settings", "Settings")
 }
 
 val bottomNavItems = listOf(

@@ -32,6 +32,7 @@ import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
 import com.example.gymbuddy.ui.screens.achievement.AchievementScreen
 import com.example.gymbuddy.ui.screens.routines.RoutineEditScreen
 import com.example.gymbuddy.ui.screens.routines.CreateRoutineScreen
+import com.example.gymbuddy.ui.screens.settings.SettingsScreen
 
 @Composable
 fun GymBuddyNavigation(
@@ -125,6 +126,10 @@ fun GymBuddyNavigation(
                 
                 composable(Screen.CreateRoutine.route) { 
                     CreateRoutineScreen(navController = navController)
+                }
+                
+                composable(Screen.Settings.route) {
+                    SettingsScreen(navController = navController)
                 }
             }
             
