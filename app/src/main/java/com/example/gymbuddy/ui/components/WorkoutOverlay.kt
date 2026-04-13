@@ -910,13 +910,19 @@ fun SetRow(
                     newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
                 },
                 modifier = Modifier.weight(1f).height(36.dp),
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp, color = TextPrimary),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp,
+                    color = TextPrimary
+                ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 placeholder = { Text("kg", style = MaterialTheme.typography.labelSmall, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
-                    unfocusedBorderColor = TextTertiary
+                    unfocusedBorderColor = TextTertiary,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
                 )
             )
 
@@ -927,13 +933,19 @@ fun SetRow(
                     newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
                 },
                 modifier = Modifier.width(56.dp).height(36.dp),
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp, color = TextPrimary),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp,
+                    color = TextPrimary
+                ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 placeholder = { Text("reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
-                    unfocusedBorderColor = TextTertiary
+                    unfocusedBorderColor = TextTertiary,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
                 )
             )
 
