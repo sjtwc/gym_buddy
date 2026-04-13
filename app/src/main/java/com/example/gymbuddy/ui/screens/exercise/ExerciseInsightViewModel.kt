@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymbuddy.data.local.dao.PersonalRecordDao
 import com.example.gymbuddy.data.local.dao.SetDao
 import com.example.gymbuddy.data.local.dao.WorkoutDao
+import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
 import com.example.gymbuddy.data.local.entity.PersonalRecordEntity
 import com.example.gymbuddy.data.repository.ExerciseRepository
 import com.example.gymbuddy.data.repository.SetRepository
@@ -19,6 +20,7 @@ class ExerciseInsightViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val setRepository: SetRepository,
     private val workoutDao: WorkoutDao,
+    private val workoutExerciseDao: WorkoutExerciseDao,
     private val setDao: SetDao,
     private val personalRecordDao: PersonalRecordDao
 ) : ViewModel() {
@@ -87,7 +89,7 @@ class ExerciseInsightViewModel @Inject constructor(
     }
 
     private suspend fun getWorkoutExerciseIds(workoutId: Long, exerciseId: Long): List<Long> {
-        return emptyList()
+        return workoutExerciseDao.getWorkoutExerciseIdsForWorkout(workoutId, exerciseId)
     }
 
     private suspend fun calculateAndSaveRepMaxRecords(exerciseId: Long) {

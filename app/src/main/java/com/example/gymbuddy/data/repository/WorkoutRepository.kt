@@ -7,8 +7,10 @@ import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
 import com.example.gymbuddy.data.local.entity.SetEntity
 import com.example.gymbuddy.data.local.entity.WorkoutEntity
 import com.example.gymbuddy.data.local.entity.WorkoutExerciseEntity
+import com.example.gymbuddy.domain.model.SetType
 import com.example.gymbuddy.domain.model.Workout
 import com.example.gymbuddy.domain.model.WorkoutExercise
+import com.example.gymbuddy.domain.model.WorkoutSession
 import com.example.gymbuddy.domain.model.WorkoutSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -53,6 +55,39 @@ class WorkoutRepository @Inject constructor(
             workoutDao.updateWorkout(workout.copy(isCompleted = true, duration = duration))
         }
         return volume
+    }
+    
+    suspend fun saveCompletedWorkout(session: WorkoutSession, duration: Int): Float {
+        val workout = getWorkoutById(session.workoutId) ?: return 0f
+        updateWorkout(workout.copy(
+            name = session.workoutName.ifEmpty { workout.name },
+            duration = duration,
+            isCompleted = true
+        ))
+        workoutExerciseDao.deleteAllForWorkout(session.workoutId)
+        session.exercises.forEachIndexed { index, exSession ->
+            val weEntity = WorkoutExerciseEntity(
+                workoutId = session.workoutId,
+                exerciseId = exSession.exercise.id,
+                orderIndex = index
+            )
+            val weId = workoutExerciseDao.insertWorkoutExercise(weEntity)
+            val setEntities = exSession.sets.map { set ->
+                SetEntity(
+                    workoutExerciseId = weId,
+                    setNumber = set.setNumber,
+                    reps = set.reps ?: 8,
+                    weight = set.weight?.toFloat() ?: 0f,
+                    isCompleted = set.isCompleted,
+                    isWarmUp = set.setType == SetType.WARMUP,
+                    isDropSet = set.setType == SetType.DROP,
+                    isFailureSet = set.setType == SetType.FAILURE,
+                    isSuperset = false
+                )
+            }
+            setDao.insertSets(setEntities)
+        }
+        return setDao.getWorkoutVolume(session.workoutId)
     }
     
     suspend fun deleteWorkout(workout: Workout) =
