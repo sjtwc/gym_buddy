@@ -3,7 +3,9 @@ package com.example.gymbuddy.ui.screens.workout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -89,7 +91,11 @@ fun WorkoutScreen(
         if (uiState.routines.isEmpty()) {
             EmptyRoutinesState()
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 items(uiState.routines) { routine ->
                     RoutineCard(
                         routine = routine,
@@ -111,7 +117,7 @@ fun RoutineCard(routine: Routine, onStart: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -120,71 +126,60 @@ fun RoutineCard(routine: Routine, onStart: () -> Unit) {
             ) {
                 Text(
                     text = routine.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
                 )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = when (routine.type) {
-                        "Push" -> NeonCyan.copy(alpha = 0.2f)
-                        "Pull" -> NeonPurple.copy(alpha = 0.2f)
-                        "Legs" -> NeonTeal.copy(alpha = 0.2f)
-                        else -> TextTertiary.copy(alpha = 0.2f)
-                    }
-                ) {
-                    Text(
-                        text = routine.type,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = when (routine.type) {
-                            "Push" -> NeonCyan
-                            "Pull" -> NeonPurple
-                            "Legs" -> NeonTeal
-                            else -> TextTertiary
-                        }
-                    )
+            }
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = when (routine.type) {
+                    "Push" -> NeonCyan.copy(alpha = 0.2f)
+                    "Pull" -> NeonPurple.copy(alpha = 0.2f)
+                    "Legs" -> NeonTeal.copy(alpha = 0.2f)
+                    else -> TextTertiary.copy(alpha = 0.2f)
                 }
-            }
-            
-            routine.description?.let { desc ->
-                Spacer(modifier = Modifier.height(8.dp))
+            ) {
                 Text(
-                    text = desc,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = routine.type,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = when (routine.type) {
+                        "Push" -> NeonCyan
+                        "Pull" -> NeonPurple
+                        "Legs" -> NeonTeal
+                        else -> TextTertiary
+                    }
                 )
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(
-                    text = "${routine.exercises.size} exercises",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextTertiary
-                )
-                Text(
-                    text = "${routine.estimatedMinutes} min",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextTertiary
-                )
-                Text(
-                    text = routine.difficulty,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextTertiary
-                )
-            }
+            Text(
+                text = "${routine.exercises.size} exercises • ${routine.estimatedMinutes} min",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextTertiary,
+                maxLines = 1
+            )
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
-            OutlinedButton(
+            Button(
                 onClick = onStart,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonTeal),
-                shape = RoundedCornerShape(12.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                Text("Start ${routine.name}")
+                Text(
+                    text = "Start",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
