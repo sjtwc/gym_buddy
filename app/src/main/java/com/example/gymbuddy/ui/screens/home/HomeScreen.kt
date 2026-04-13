@@ -683,8 +683,12 @@ fun NearestGymMap(
                         settings.useWideViewPort = true
                         settings.allowFileAccess = true
                         settings.allowContentAccess = true
+                        settings.setGeolocationEnabled(true)
                         loadUrl(mapUrl)
                     }
+                },
+                update = { webView ->
+                    webView.loadUrl(mapUrl)
                 },
                 modifier = Modifier.fillMaxSize()
             )

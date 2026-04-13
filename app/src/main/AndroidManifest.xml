@@ -106,6 +106,13 @@
         <receiver
             android:name=".service.StreakAlarmReceiver"
             android:exported="false" />
+
+        <!-- User Stats Content Provider -->
+        <provider
+            android:name=".provider.UserStatsContentProvider"
+            android:authorities="com.example.gymbuddy.provider"
+            android:exported="true"
+            android:readPermission="com.example.gymbuddy.permission.READ_STATS" />
     </application>
 
 </manifest>
