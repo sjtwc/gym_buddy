@@ -50,47 +50,47 @@ class ExerciseInsightViewModel @Inject constructor(
     }
 
     private suspend fun loadHistoricalData(exerciseId: Long) {
-        workoutDao.getWorkoutsWithExercise(exerciseId, 50).collect { workouts ->
-            val historicalSets = workouts.mapNotNull { workout ->
-                val workoutExerciseIds = getWorkoutExerciseIds(workout.id, exerciseId)
-                if (workoutExerciseIds.isEmpty()) return@mapNotNull null
-                
-                val allSets = workoutExerciseIds.flatMap { weId ->
-                    setDao.getSetsForWorkoutExerciseOnce(weId)
-                }
-                
-                if (allSets.isEmpty()) {
-                    null
-                } else {
-                    HistoricalSetWithDate(
-                        date = workout.date,
-                        sets = allSets.map { entity ->
-                            WorkoutSet(
-                                id = entity.id,
-                                workoutExerciseId = entity.workoutExerciseId,
-                                setNumber = entity.setNumber,
-                                reps = entity.reps,
-                                weight = entity.weight,
-                                rpe = entity.rpe,
-                                isWarmUp = entity.isWarmUp,
-                                isDropSet = entity.isDropSet,
-                                isFailureSet = entity.isFailureSet,
-                                isSuperset = entity.isSuperset,
-                                notes = entity.notes,
-                                completedAt = entity.completedAt
-                            )
-                        },
-                        workoutId = workout.id
-                    )
-                }
-            }.sortedByDescending { it.date }
-
-            _uiState.update { 
-                it.copy(
-                    historicalSets = historicalSets,
-                    isLoading = false
-                ) 
+        val workouts = workoutDao.getWorkoutsWithExercise(exerciseId, 50).first()
+        
+        val historicalSets = workouts.mapNotNull { workout ->
+            val workoutExerciseIds = getWorkoutExerciseIds(workout.id, exerciseId)
+            if (workoutExerciseIds.isEmpty()) return@mapNotNull null
+            
+            val allSets = workoutExerciseIds.flatMap { weId ->
+                setDao.getSetsForWorkoutExerciseOnce(weId)
             }
+            
+            if (allSets.isEmpty()) {
+                null
+            } else {
+                HistoricalSetWithDate(
+                    date = workout.date,
+                    sets = allSets.map { entity ->
+                        WorkoutSet(
+                            id = entity.id,
+                            workoutExerciseId = entity.workoutExerciseId,
+                            setNumber = entity.setNumber,
+                            reps = entity.reps,
+                            weight = entity.weight,
+                            rpe = entity.rpe,
+                            isWarmUp = entity.isWarmUp,
+                            isDropSet = entity.isDropSet,
+                            isFailureSet = entity.isFailureSet,
+                            isSuperset = entity.isSuperset,
+                            notes = entity.notes,
+                            completedAt = entity.completedAt
+                        )
+                    },
+                    workoutId = workout.id
+                )
+            }
+        }.sortedByDescending { it.date }
+
+        _uiState.update { 
+            it.copy(
+                historicalSets = historicalSets,
+                isLoading = false
+            ) 
         }
     }
 
