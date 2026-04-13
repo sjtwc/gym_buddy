@@ -913,7 +913,8 @@ fun SetRow(
                 textStyle = androidx.compose.ui.text.TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
-                    color = TextPrimary
+                    color = TextPrimary,
+                    lineHeight = 20.sp
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
@@ -937,7 +938,8 @@ fun SetRow(
                 textStyle = androidx.compose.ui.text.TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
-                    color = TextPrimary
+                    color = TextPrimary,
+                    lineHeight = 20.sp
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
