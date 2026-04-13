@@ -32,5 +32,6 @@ data class RoutineExerciseEntity(
     val targetSets: Int = 3,
     val targetReps: String = "8-12",
     val restSeconds: Int = 90,
-    val notes: String? = null
+    val notes: String? = null,
+    val bodyFocus: String = ""
 )

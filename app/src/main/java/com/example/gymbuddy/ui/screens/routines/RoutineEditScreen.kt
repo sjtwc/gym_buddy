@@ -22,8 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.gymbuddy.domain.model.Exercise
+import com.example.gymbuddy.domain.model.RoutineExercise as DomainRoutineExercise
+import com.example.gymbuddy.domain.model.RoutineSetData
 import com.example.gymbuddy.domain.model.SetType
-import com.example.gymbuddy.domain.model.RoutineExercise
 import com.example.gymbuddy.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,11 +37,17 @@ fun RoutineEditScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showExercisePicker by remember { mutableStateOf(false) }
-    var showRenameDialog by remember { mutableStateOf(false) }
+    var editingExerciseIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(routineId) {
         if (routineId > 0) {
             viewModel.loadRoutine(routineId)
+        }
+    }
+
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            navController.popBackStack()
         }
     }
 
@@ -58,12 +66,12 @@ fun RoutineEditScreen(
             },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextPrimary)
                 }
             },
             actions = {
-                IconButton(onClick = { showRenameDialog = true }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Rename", tint = TextPrimary)
+                IconButton(onClick = { viewModel.saveRoutine() }) {
+                    Icon(Icons.Default.Check, contentDescription = "Save", tint = NeonTeal)
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -75,58 +83,38 @@ fun RoutineEditScreen(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Set", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(48.dp))
-                    Text("Muscle", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(60.dp))
-                    Text("Sets", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.weight(1f))
-                    Text("Reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(56.dp))
-                    Spacer(modifier = Modifier.width(32.dp))
-                }
+                Spacer(modifier = Modifier.height(8.dp))
+                RoutineNameInput(
+                    name = uiState.routineName,
+                    onNameChange = { viewModel.updateRoutineName(it) }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Exercises",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
             }
 
             if (uiState.exercises.isEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "No exercises added",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextTertiary
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Tap + to add exercises",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextTertiary
-                            )
-                        }
-                    }
+                    EmptyRoutineCard(onAddClick = { showExercisePicker = true })
                 }
             }
 
             itemsIndexed(uiState.exercises) { index, exercise ->
-                RoutineExerciseRow(
+                RoutineExerciseCard(
                     exercise = exercise,
-                    onUpdateSets = { viewModel.updateExerciseSets(index, it) },
-                    onUpdateReps = { viewModel.updateExerciseReps(index, it) },
-                    onUpdateBodyPart = { viewModel.updateExerciseBodyPart(index, it) },
-                    onRemove = { viewModel.removeExercise(index) }
+                    onUpdateSets = { sets -> viewModel.updateExerciseSets(index, sets) },
+                    onRemove = { viewModel.removeExercise(index) },
+                    onSetBodyFocus = { bodyFocus -> viewModel.updateExerciseBodyFocus(index, bodyFocus) }
                 )
             }
 
@@ -157,9 +145,10 @@ fun RoutineEditScreen(
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Save Routine",
+                text = "SAVE ROUTINE",
                 color = DarkBackground,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
             )
         }
     }
@@ -173,225 +162,454 @@ fun RoutineEditScreen(
             }
         )
     }
+}
 
-    if (showRenameDialog) {
-        RenameDialog(
-            currentName = uiState.routineName,
-            onDismiss = { showRenameDialog = false },
-            onConfirm = { name ->
-                viewModel.updateRoutineName(name)
-                showRenameDialog = false
+@Composable
+private fun RoutineNameInput(
+    name: String,
+    onNameChange: (String) -> Unit
+) {
+    var nameText by remember { mutableStateOf(name) }
+
+    LaunchedEffect(name) {
+        nameText = name
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .background(DarkSurface, RoundedCornerShape(12.dp))
+            .border(1.dp, TextTertiary, RoundedCornerShape(12.dp))
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        BasicTextField(
+            value = nameText,
+            onValueChange = {
+                nameText = it
+                onNameChange(it)
+            },
+            textStyle = androidx.compose.ui.text.TextStyle(
+                fontSize = 16.sp,
+                color = TextPrimary
+            ),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (nameText.isEmpty()) {
+            Text(
+                text = "Routine Name",
+                fontSize = 16.sp,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyRoutineCard(onAddClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onAddClick),
+        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                Icons.Default.FitnessCenter,
+                contentDescription = null,
+                tint = TextTertiary,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "No exercises added",
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextSecondary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Tap + to add exercises",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextTertiary
+            )
+        }
+    }
+}
+
+@Composable
+private fun RoutineExerciseCard(
+    exercise: DomainRoutineExercise,
+    onUpdateSets: (List<RoutineSetData>) -> Unit,
+    onRemove: () -> Unit,
+    onSetBodyFocus: (String) -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    var showBodyFocusDialog by remember { mutableStateOf(false) }
+
+    val sets = remember(exercise) {
+        exercise.sets.ifEmpty {
+            List(exercise.targetSets) { i ->
+                RoutineSetData(
+                    setNumber = i + 1,
+                    reps = exercise.targetReps,
+                    weight = null,
+                    setType = SetType.NORMAL
+                )
+            }
+        }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = exercise.exercise.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                    if (exercise.bodyFocus.isNotEmpty()) {
+                        Text(
+                            text = exercise.bodyFocus,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = NeonTeal
+                        )
+                    }
+                }
+
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = TextSecondary)
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Set Body Focus") },
+                            onClick = {
+                                showMenu = false
+                                showBodyFocusDialog = true
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.FitnessCenter, contentDescription = null)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Edit Sets") },
+                            onClick = {
+                                showMenu = false
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Edit, contentDescription = null)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Remove", color = ErrorRed) },
+                            onClick = {
+                                showMenu = false
+                                onRemove()
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Delete, contentDescription = null, tint = ErrorRed)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Set", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(48.dp))
+                Text("Reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.weight(1f))
+                Text("Weight", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(72.dp))
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            sets.forEachIndexed { index, set ->
+                RoutineSetRow(
+                    set = set,
+                    onUpdateSet = { updatedSet ->
+                        val newSets = sets.toMutableList().apply {
+                            this[index] = updatedSet
+                        }
+                        onUpdateSets(newSets)
+                    }
+                )
+                if (index < sets.lastIndex) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }
+    }
+
+    if (showBodyFocusDialog) {
+        BodyFocusDialog(
+            currentFocus = exercise.bodyFocus,
+            onDismiss = { showBodyFocusDialog = false },
+            onSelect = { focus ->
+                onSetBodyFocus(focus)
+                showBodyFocusDialog = false
             }
         )
     }
 }
 
 @Composable
-fun RoutineExerciseRow(
-    exercise: RoutineExercise,
-    onUpdateSets: (Int) -> Unit,
-    onUpdateReps: (String) -> Unit,
-    onUpdateBodyPart: (String) -> Unit,
-    onRemove: () -> Unit
+private fun RoutineSetRow(
+    set: RoutineSetData,
+    onUpdateSet: (RoutineSetData) -> Unit
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-    var setsText by remember(exercise.targetSets) { mutableStateOf(exercise.targetSets.toString()) }
-    var repsText by remember(exercise.targetReps) { mutableStateOf(exercise.targetReps) }
+    var repsText by remember(set.reps) { mutableStateOf(set.reps) }
+    var weightText by remember(set.weight) { mutableStateOf(set.weight?.toString() ?: "") }
 
-    Card(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
-        shape = RoundedCornerShape(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        RoutineSetTypeButton(
+            setType = set.setType,
+            setNumber = set.setNumber,
+            onToggle = { onUpdateSet(set.copy(setType = it)) },
+            modifier = Modifier.width(48.dp)
+        )
+
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .weight(1f)
+                .height(40.dp)
+                .background(DarkSurface, RoundedCornerShape(4.dp))
+                .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(36.dp)
-                    .background(getSetTypeColor(exercise.setType).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
-                    .clickable { showMenu = true },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = exercise.exercise.targetMuscle.take(3).uppercase(),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = getSetTypeColor(exercise.setType)
-                )
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    listOf("Chest", "Back", "Shoulders", "Arms", "Legs", "Core").forEach { muscle ->
-                        DropdownMenuItem(
-                            text = { Text(muscle) },
-                            onClick = {
-                                onUpdateBodyPart(muscle)
-                                showMenu = false
-                            }
-                        )
-                    }
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text("Remove", color = ErrorRed) },
-                        onClick = {
-                            showMenu = false
-                            onRemove()
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Default.Delete, contentDescription = null, tint = ErrorRed)
-                        }
-                    )
-                }
-            }
-
-            Text(
-                text = exercise.exercise.targetMuscle,
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
-                modifier = Modifier.width(60.dp)
+            BasicTextField(
+                value = repsText,
+                onValueChange = { newValue ->
+                    repsText = newValue
+                    onUpdateSet(set.copy(reps = newValue))
+                },
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp,
+                    color = TextPrimary
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
             )
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(36.dp)
-                    .background(DarkSurface, RoundedCornerShape(4.dp))
-                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BasicTextField(
-                    value = setsText,
-                    onValueChange = { newValue ->
-                        setsText = newValue
-                        newValue.toIntOrNull()?.let { onUpdateSets(it) }
-                    },
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        color = TextPrimary
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            if (repsText.isEmpty()) {
+                Text("Reps", fontSize = 12.sp, color = TextSecondary, textAlign = TextAlign.Center)
             }
+        }
 
-            Box(
-                modifier = Modifier
-                    .width(56.dp)
-                    .height(36.dp)
-                    .background(DarkSurface, RoundedCornerShape(4.dp))
-                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BasicTextField(
-                    value = repsText,
-                    onValueChange = { newValue ->
-                        repsText = newValue
-                        onUpdateReps(newValue)
-                    },
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        color = TextPrimary
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+        Box(
+            modifier = Modifier
+                .width(72.dp)
+                .height(40.dp)
+                .background(DarkSurface, RoundedCornerShape(4.dp))
+                .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            BasicTextField(
+                value = weightText,
+                onValueChange = { newValue ->
+                    weightText = newValue
+                    newValue.toFloatOrNull()?.let { onUpdateSet(set.copy(weight = it)) }
+                },
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp,
+                    color = TextPrimary
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (weightText.isEmpty()) {
+                Text("kg", fontSize = 12.sp, color = TextSecondary, textAlign = TextAlign.Center)
             }
+        }
+    }
+}
 
+@Composable
+private fun RoutineSetTypeButton(
+    setType: SetType,
+    setNumber: Int,
+    onToggle: (SetType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showDropdown by remember { mutableStateOf(false) }
+
+    val displayText = if (setType == SetType.NORMAL) setNumber.toString() else setType.abbreviation
+    val backgroundColor = when (setType) {
+        SetType.NORMAL -> DarkSurfaceElevated
+        SetType.WORK -> NeonTeal.copy(alpha = 0.2f)
+        SetType.WARMUP -> WarningOrange.copy(alpha = 0.2f)
+        SetType.DROP -> NeonCyan.copy(alpha = 0.2f)
+        SetType.FAILURE -> NeonPurple.copy(alpha = 0.2f)
+    }
+    val textColor = when (setType) {
+        SetType.NORMAL -> TextPrimary
+        SetType.WORK -> NeonTeal
+        SetType.WARMUP -> WarningOrange
+        SetType.DROP -> NeonCyan
+        SetType.FAILURE -> NeonPurple
+    }
+
+    Box(modifier = modifier) {
+        Surface(
+            onClick = { showDropdown = true },
+            shape = RoundedCornerShape(4.dp),
+            color = backgroundColor
+        ) {
             Text(
-                text = exercise.exercise.name.take(3),
-                style = MaterialTheme.typography.bodySmall,
-                color = TextTertiary,
-                modifier = Modifier.width(32.dp)
+                text = displayText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
+
+        DropdownMenu(
+            expanded = showDropdown,
+            onDismissRequest = { showDropdown = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Normal") },
+                onClick = {
+                    onToggle(SetType.NORMAL)
+                    showDropdown = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Warmup") },
+                onClick = {
+                    onToggle(SetType.WARMUP)
+                    showDropdown = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Drop Set") },
+                onClick = {
+                    onToggle(SetType.DROP)
+                    showDropdown = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Failure") },
+                onClick = {
+                    onToggle(SetType.FAILURE)
+                    showDropdown = false
+                }
             )
         }
     }
 }
 
 @Composable
-private fun getSetTypeColor(setType: SetType): androidx.compose.ui.graphics.Color {
-    return when (setType) {
-        SetType.NORMAL -> NeonTeal
-        SetType.WORK -> NeonCyan
-        SetType.WARMUP -> WarningOrange
-        SetType.DROP -> NeonPurple
-        SetType.FAILURE -> NeonPink
-    }
-}
-
-@Composable
-fun RenameDialog(
-    currentName: String,
+private fun BodyFocusDialog(
+    currentFocus: String,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onSelect: (String) -> Unit
 ) {
-    var name by remember { mutableStateOf(currentName) }
+    var selected by remember { mutableStateOf(currentFocus) }
+
+    val bodyParts = listOf("Chest", "Back", "Shoulders", "Arms", "Legs", "Core", "Full Body")
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Rename Routine") },
+        containerColor = DarkSurfaceElevated,
+        title = {
+            Text("Body Focus", color = TextPrimary)
+        },
         text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Routine Name") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column {
+                bodyParts.forEach { part ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selected = part }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selected == part,
+                            onClick = { selected = part },
+                            colors = RadioButtonDefaults.colors(selectedColor = NeonTeal)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(part, color = TextPrimary)
+                    }
+                }
+            }
         },
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm(name) },
-                enabled = name.isNotBlank()
-            ) {
-                Text("Save")
+            TextButton(onClick = { onSelect(selected) }) {
+                Text("Save", color = NeonTeal)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = TextSecondary)
             }
         }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExercisePickerDialog(
+private fun ExercisePickerDialog(
     onDismiss: () -> Unit,
-    onSelect: (com.example.gymbuddy.domain.model.Exercise) -> Unit
+    onSelect: (Exercise) -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select Exercise") },
+        containerColor = DarkSurfaceElevated,
+        title = {
+            Text("Select Exercise", color = TextPrimary)
+        },
         text = {
             Column {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search exercises...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                Text(
+                    text = "Use the Exercise Library to add exercises",
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Close", color = TextSecondary)
             }
         }
     )

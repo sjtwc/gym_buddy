@@ -7,7 +7,7 @@ import com.example.gymbuddy.data.repository.RoutineRepository
 import com.example.gymbuddy.domain.model.Exercise
 import com.example.gymbuddy.domain.model.Routine
 import com.example.gymbuddy.domain.model.RoutineExercise
-import com.example.gymbuddy.domain.model.RoutineExerciseTimer
+import com.example.gymbuddy.domain.model.RoutineSetData
 import com.example.gymbuddy.domain.model.SetType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -76,11 +76,23 @@ class RoutineEditViewModel @Inject constructor(
     }
 
     fun addExercise(exercise: Exercise) {
+        val defaultSets = List(3) { i ->
+            RoutineSetData(
+                setNumber = i + 1,
+                reps = "8-12",
+                weight = null,
+                setType = SetType.NORMAL
+            )
+        }
+        
         val newExercise = RoutineExercise(
             id = 0,
             routineId = _uiState.value.routineId,
             exercise = exercise,
-            orderIndex = _uiState.value.exercises.size
+            orderIndex = _uiState.value.exercises.size,
+            targetSets = 3,
+            targetReps = "8-12",
+            sets = defaultSets
         )
         _uiState.update {
             it.copy(exercises = it.exercises + newExercise)
@@ -94,37 +106,21 @@ class RoutineEditViewModel @Inject constructor(
         _uiState.update { it.copy(exercises = updatedList) }
     }
 
-    fun updateExerciseSets(index: Int, sets: Int) {
+    fun updateExerciseSets(index: Int, sets: List<RoutineSetData>) {
         val updatedList = _uiState.value.exercises.toMutableList()
         if (index < updatedList.size) {
-            updatedList[index] = updatedList[index].copy(targetSets = sets)
-            _uiState.update { it.copy(exercises = updatedList) }
-        }
-    }
-
-    fun updateExerciseReps(index: Int, reps: String) {
-        val updatedList = _uiState.value.exercises.toMutableList()
-        if (index < updatedList.size) {
-            updatedList[index] = updatedList[index].copy(targetReps = reps)
-            _uiState.update { it.copy(exercises = updatedList) }
-        }
-    }
-
-    fun updateExerciseBodyPart(index: Int, bodyPart: String) {
-        val updatedList = _uiState.value.exercises.toMutableList()
-        if (index < updatedList.size) {
-            val currentExercise = updatedList[index].exercise
             updatedList[index] = updatedList[index].copy(
-                exercise = currentExercise.copy(targetMuscle = bodyPart)
+                sets = sets,
+                targetSets = sets.size
             )
             _uiState.update { it.copy(exercises = updatedList) }
         }
     }
 
-    fun updateExerciseTimers(index: Int, timers: List<RoutineExerciseTimer>) {
+    fun updateExerciseBodyFocus(index: Int, bodyFocus: String) {
         val updatedList = _uiState.value.exercises.toMutableList()
         if (index < updatedList.size) {
-            updatedList[index] = updatedList[index].copy(timers = timers)
+            updatedList[index] = updatedList[index].copy(bodyFocus = bodyFocus)
             _uiState.update { it.copy(exercises = updatedList) }
         }
     }
@@ -151,12 +147,4 @@ class RoutineEditViewModel @Inject constructor(
             _uiState.update { it.copy(isSaved = true) }
         }
     }
-
-    private fun defaultTimers() = listOf(
-        RoutineExerciseTimer(SetType.NORMAL, 60),
-        RoutineExerciseTimer(SetType.WARMUP, 60),
-        RoutineExerciseTimer(SetType.WORK, 90),
-        RoutineExerciseTimer(SetType.DROP, 60),
-        RoutineExerciseTimer(SetType.FAILURE, 60)
-    )
 }
