@@ -20,8 +20,24 @@ import javax.inject.Inject
 class WorkoutRepository @Inject constructor(
     private val workoutDao: WorkoutDao,
     private val workoutExerciseDao: WorkoutExerciseDao,
-    private val setDao: SetDao
+    private val setDao: SetDao,
+    private val exerciseRepository: ExerciseRepository
 ) {
+    private fun SetEntity.toDomainSet() = WorkoutSet(
+        id = id,
+        workoutExerciseId = workoutExerciseId,
+        setNumber = setNumber,
+        reps = reps,
+        weight = weight,
+        rpe = rpe,
+        isWarmUp = isWarmUp,
+        isDropSet = isDropSet,
+        isFailureSet = isFailureSet,
+        isSuperset = isSuperset,
+        notes = notes,
+        completedAt = completedAt
+    )
+    
     fun getAllWorkouts(): Flow<List<Workout>> =
         workoutDao.getAllWorkouts().map { entities ->
             entities.map { it.toDomain() }
@@ -29,6 +45,29 @@ class WorkoutRepository @Inject constructor(
     
     suspend fun getWorkoutById(id: Long): Workout? =
         workoutDao.getWorkoutById(id)?.toDomain()
+    
+    suspend fun getWorkoutWithDetails(id: Long): WorkoutWithDetails? {
+        val workout = workoutDao.getWorkoutById(id)?.toDomain() ?: return null
+        val weEntities = workoutExerciseDao.getExercisesForWorkoutOnce(id)
+        
+        val exercises = weEntities.mapNotNull { we ->
+            val sets = setDao.getSetsForWorkoutExerciseOnce(we.id)
+            val exercise = exerciseRepository.getExerciseById(we.exerciseId)
+            exercise?.let {
+                WorkoutExercise(
+                    id = we.id,
+                    workoutId = workout.id,
+                    exercise = it,
+                    orderIndex = we.orderIndex,
+                    notes = we.notes,
+                    restTimerSeconds = we.restTimerSeconds,
+                    sets = sets.map { s -> s.toDomainSet() }
+                )
+            }
+        }
+        
+        return WorkoutWithDetails(workout, exercises)
+    }
     
     fun getWorkoutsByDateRange(startDate: Long, endDate: Long): Flow<List<Workout>> =
         workoutDao.getWorkoutsByDateRange(startDate, endDate).map { entities ->
@@ -57,12 +96,13 @@ class WorkoutRepository @Inject constructor(
         return volume
     }
     
-    suspend fun saveCompletedWorkout(session: WorkoutSession, duration: Int): Float {
+    suspend fun saveCompletedWorkout(session: WorkoutSession, duration: Int, feeling: Int? = null): Float {
         val workout = getWorkoutById(session.workoutId) ?: return 0f
         updateWorkout(workout.copy(
             name = session.workoutName.ifEmpty { workout.name },
             duration = duration,
-            isCompleted = true
+            isCompleted = true,
+            feeling = feeling
         ))
         workoutExerciseDao.deleteAllForWorkout(session.workoutId)
         session.exercises.forEachIndexed { index, exSession ->
@@ -164,6 +204,7 @@ class WorkoutRepository @Inject constructor(
         notes = notes,
         routineId = routineId,
         isCompleted = isCompleted,
+        feeling = feeling,
         createdAt = createdAt
     )
     
@@ -175,9 +216,15 @@ class WorkoutRepository @Inject constructor(
         notes = notes,
         routineId = routineId,
         isCompleted = isCompleted,
+        feeling = feeling,
         createdAt = createdAt
     )
 }
+
+data class WorkoutWithDetails(
+    val workout: Workout,
+    val exercises: List<WorkoutExercise>
+)
 
 data class DailyVolume(
     val date: Long,

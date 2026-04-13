@@ -9,6 +9,9 @@ interface WorkoutExerciseDao {
     @Query("SELECT * FROM workout_exercises WHERE workoutId = :workoutId ORDER BY orderIndex")
     fun getExercisesForWorkout(workoutId: Long): Flow<List<WorkoutExerciseEntity>>
     
+    @Query("SELECT * FROM workout_exercises WHERE workoutId = :workoutId ORDER BY orderIndex")
+    suspend fun getExercisesForWorkoutOnce(workoutId: Long): List<WorkoutExerciseEntity>
+    
     @Query("SELECT * FROM workout_exercises WHERE id = :id")
     suspend fun getWorkoutExerciseById(id: Long): WorkoutExerciseEntity?
     

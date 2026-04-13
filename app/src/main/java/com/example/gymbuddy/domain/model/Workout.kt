@@ -9,6 +9,7 @@ data class Workout(
     val notes: String? = null,
     val routineId: Long? = null,
     val isCompleted: Boolean = false,
+    val feeling: Int? = null,
     val exercises: List<WorkoutExercise> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 )

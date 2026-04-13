@@ -6,6 +6,7 @@ import com.example.gymbuddy.data.local.MuscleGoalPreferences
 import com.example.gymbuddy.data.repository.DailyVolume
 import com.example.gymbuddy.data.repository.ExerciseRepository
 import com.example.gymbuddy.data.repository.WorkoutRepository
+import com.example.gymbuddy.data.repository.WorkoutWithDetails
 import com.example.gymbuddy.domain.model.Workout
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -35,6 +36,7 @@ data class ProgressUiState(
     val muscleFocusList: List<MuscleFocus> = emptyList(),
     val dailyVolumes: List<DailyVolume> = emptyList(),
     val personalRecords: List<PersonalRecordItem> = emptyList(),
+    val selectedWorkoutDetails: WorkoutWithDetails? = null,
     val isLoading: Boolean = true
 )
 
@@ -63,7 +65,7 @@ class ProgressViewModel @Inject constructor(
     }
     
     private fun loadWorkouts() {
-        workoutRepository.getRecentCompletedWorkouts(20)
+        workoutRepository.getRecentCompletedWorkouts(14)
             .onEach { workouts ->
                 _uiState.update { it.copy(workouts = workouts) }
             }
@@ -104,6 +106,17 @@ class ProgressViewModel @Inject constructor(
             }
             _uiState.update { it.copy(personalRecords = prList) }
         }
+    }
+    
+    fun selectWorkout(workoutId: Long) {
+        viewModelScope.launch {
+            val details = workoutRepository.getWorkoutWithDetails(workoutId)
+            _uiState.update { it.copy(selectedWorkoutDetails = details) }
+        }
+    }
+    
+    fun clearSelectedWorkout() {
+        _uiState.update { it.copy(selectedWorkoutDetails = null) }
     }
     
     fun updateMuscleGoal(muscleGroup: String, goal: Float) {

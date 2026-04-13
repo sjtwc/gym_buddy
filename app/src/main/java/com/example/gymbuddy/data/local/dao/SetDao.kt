@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 interface SetDao {
     @Query("SELECT * FROM sets WHERE workoutExerciseId = :workoutExerciseId ORDER BY setNumber")
     fun getSetsForWorkoutExercise(workoutExerciseId: Long): Flow<List<SetEntity>>
+
+    @Query("SELECT * FROM sets WHERE workoutExerciseId = :workoutExerciseId ORDER BY setNumber")
+    suspend fun getSetsForWorkoutExerciseOnce(workoutExerciseId: Long): List<SetEntity>
     
     @Query("SELECT * FROM sets WHERE id = :id")
     suspend fun getSetById(id: Long): SetEntity?

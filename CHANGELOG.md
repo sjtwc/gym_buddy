@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.0] - 2026-04-13
+
+### Added
+- **Workout Detail Popup** - Tapping a workout in history now opens a popup showing workout details
+  - Displays workout name, date, duration, and feeling emoji
+  - Shows all exercises with sets, weights, reps, and RPE values
+  - Warmup sets indicator per exercise
+- **Feeling Rating** - After finishing a workout, users rate how they felt (1-5 scale with emoji)
+  - Saved in workout history and displayed in workout detail popup
+- **Swipe-to-Delete Timer Rows** - Timer rows now support swipe-to-delete functionality
+  - Added `SwipeableTimerRow` composable
+- **Reset Exercise** - Changed "Swap Exercise" to "Reset Exercise" in overlay menu
+
+### Fixed
+- **Exercise Graph Data Loading** - Fixed historical data grouping to properly load sets by workout session
+- **1RM-12RM Calculations** - Fixed rep max calculations to use Epley formula properly
+- **Graph Display** - Shows blank graph placeholder when no data instead of "No data to display"
+- **Delete Button Alignment** - Fixed SwipeableSetRow delete button height to match set row height (36dp)
+
+### Updated
+- `WorkoutEntity.kt` - Added `feeling` field
+- `Workout.kt` - Added `feeling` field
+- `WorkoutRepository.kt` - Updated `saveCompletedWorkout()` to accept feeling, added `getWorkoutWithDetails()`
+- `WorkoutSessionManager.kt` - Updated `finishWorkout()` to accept feeling parameter
+- `WorkoutOverlay.kt` - Added `FeelingRatingDialog`, `SwipeableTimerRow`, fixed overlay header menu
+- `ProgressViewModel.kt` - Limited workout history to 14 recent workouts, added `selectWorkout()` method
+- `ProgressScreen.kt` - Added `WorkoutDetailDialog`, workout now opens detail popup on tap
+
+---
+
 ## [1.9.0] - 2026-04-13
 
 ### Added

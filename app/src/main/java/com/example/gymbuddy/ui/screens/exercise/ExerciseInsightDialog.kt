@@ -361,13 +361,6 @@ private fun HistoryCard(date: String, sets: List<WorkoutSet>) {
 
 @Composable
 private fun GraphTab(graphData: GraphData?) {
-    if (graphData == null || graphData.bestEstimated1RM.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No data to display", color = TextSecondary)
-        }
-        return
-    }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -383,7 +376,7 @@ private fun GraphTab(graphData: GraphData?) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             SimpleLineChart(
-                data = graphData.bestEstimated1RM,
+                data = graphData?.bestEstimated1RM ?: emptyList(),
                 lineColor = NeonTeal
             )
         }
@@ -397,7 +390,7 @@ private fun GraphTab(graphData: GraphData?) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             SimpleLineChart(
-                data = graphData.bestMaxWeight,
+                data = graphData?.bestMaxWeight ?: emptyList(),
                 lineColor = NeonCyan
             )
         }
@@ -411,7 +404,7 @@ private fun GraphTab(graphData: GraphData?) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             SimpleLineChart(
-                data = graphData.totalVolume,
+                data = graphData?.totalVolume ?: emptyList(),
                 lineColor = NeonPurple
             )
         }
@@ -425,7 +418,7 @@ private fun GraphTab(graphData: GraphData?) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             SimpleLineChart(
-                data = graphData.maxReps,
+                data = graphData?.maxReps ?: emptyList(),
                 lineColor = NeonPink
             )
         }
@@ -437,24 +430,6 @@ private fun SimpleLineChart(
     data: List<GraphPoint>,
     lineColor: androidx.compose.ui.graphics.Color
 ) {
-    if (data.isEmpty()) return
-
-    val chartEntryModelProducer = remember(data) {
-        ChartEntryModelProducer(
-            data.mapIndexed { index, point ->
-                entryOf(index.toFloat(), point.value)
-            }
-        )
-    }
-
-    val dateFormatter = remember { SimpleDateFormat("MM/dd", Locale.getDefault()) }
-    val bottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
-        data.getOrNull(value.toInt())?.let { dateFormatter.format(Date(it.date)) } ?: ""
-    }
-
-    val minValue = (data.minOfOrNull { it.value } ?: 0f) * 0.9f
-    val maxValue = (data.maxOfOrNull { it.value } ?: 1f) * 1.1f
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -462,33 +437,59 @@ private fun SimpleLineChart(
         colors = CardDefaults.cardColors(containerColor = DarkSurface),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Chart(
-            chart = lineChart(
-                lines = listOf(
-                    lineSpec(
-                        lineColor = lineColor,
-                        lineBackgroundShader = null
+        if (data.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No data yet",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+            }
+        } else {
+            val chartEntryModelProducer = remember(data) {
+                ChartEntryModelProducer(
+                    data.mapIndexed { index, point ->
+                        entryOf(index.toFloat(), point.value)
+                    }
+                )
+            }
+
+            val dateFormatter = remember { SimpleDateFormat("MM/dd", Locale.getDefault()) }
+            val bottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
+                data.getOrNull(value.toInt())?.let { dateFormatter.format(Date(it.date)) } ?: ""
+            }
+
+            Chart(
+                chart = lineChart(
+                    lines = listOf(
+                        lineSpec(
+                            lineColor = lineColor,
+                            lineBackgroundShader = null
+                        )
                     )
-                )
-            ),
-            chartModelProducer = chartEntryModelProducer,
-            startAxis = rememberStartAxis(
-                label = textComponent(
-                    color = TextSecondary,
-                    padding = dimensionsOf(8.dp)
-                )
-            ),
-            bottomAxis = rememberBottomAxis(
-                label = textComponent(
-                    color = TextSecondary,
-                    padding = dimensionsOf(8.dp)
                 ),
-                valueFormatter = bottomAxisValueFormatter
-            ),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        )
+                chartModelProducer = chartEntryModelProducer,
+                startAxis = rememberStartAxis(
+                    label = textComponent(
+                        color = TextSecondary,
+                        padding = dimensionsOf(8.dp)
+                    )
+                ),
+                bottomAxis = rememberBottomAxis(
+                    label = textComponent(
+                        color = TextSecondary,
+                        padding = dimensionsOf(8.dp)
+                    ),
+                    valueFormatter = bottomAxisValueFormatter
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            )
+        }
     }
 }
 
@@ -675,13 +676,17 @@ private fun RecordTable(
 
 private fun calculateBestForReps(sessions: List<HistoricalSetWithDate>, targetReps: Int): String {
     val allSets = sessions.flatMap { it.sets }.filter { !it.isWarmUp }
-    val matchingSets = allSets.filter { it.reps == targetReps }
+    if (allSets.isEmpty()) return "-"
     
-    if (matchingSets.isEmpty()) {
-        val closest = allSets.minByOrNull { kotlin.math.abs(it.reps - targetReps) }
-        return closest?.let { "${it.weight.toInt()} kg" } ?: "-"
-    }
+    val bestSet = allSets.maxByOrNull { calculateEstimated1RM(it.weight, it.reps) } ?: return "-"
+    val bestEstimated1RM = calculateEstimated1RM(bestSet.weight, bestSet.reps)
+    val targetWeight = bestEstimated1RM * (30f / (30f + targetReps))
     
-    val best = matchingSets.maxByOrNull { it.weight }
-    return best?.let { "${it.weight.toInt()} kg" } ?: "-"
+    return "${targetWeight.toInt()} kg"
+}
+
+private fun calculateEstimated1RM(weight: Float, reps: Int): Float {
+    if (reps <= 0 || weight <= 0) return 0f
+    if (reps == 1) return weight
+    return weight * (1 + reps / 30f)
 }

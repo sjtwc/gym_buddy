@@ -14,5 +14,6 @@ data class WorkoutEntity(
     val notes: String? = null,
     val routineId: Long? = null,
     val isCompleted: Boolean = false,
+    val feeling: Int? = null,
     val createdAt: Long = System.currentTimeMillis()
 )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -93,6 +94,7 @@ fun WorkoutOverlay(
                         onAddExercise = { sessionManager.showExercisePicker() },
                         onRemoveExercise = { sessionManager.removeExercise(it) },
                         onSwapExercise = { sessionManager.swapExercise(it) },
+                        onResetExercise = { sessionManager.resetExercise(it) },
                         onAddSet = { sessionManager.addSet(it) },
                         onUpdateSet = { exerciseIndex, setIndex, set -> sessionManager.updateSet(exerciseIndex, setIndex, set) },
                         onDeleteSet = { exerciseIndex, setIndex -> sessionManager.deleteSet(exerciseIndex, setIndex) },
@@ -209,6 +211,7 @@ fun ExpandedOverlay(
     onAddExercise: () -> Unit,
     onRemoveExercise: (Int) -> Unit,
     onSwapExercise: (Int) -> Unit,
+    onResetExercise: (Int) -> Unit,
     onAddSet: (Int) -> Unit,
     onUpdateSet: (Int, Int, WorkoutSetData) -> Unit,
     onDeleteSet: (Int, Int) -> Unit,
@@ -229,7 +232,41 @@ fun ExpandedOverlay(
 ) {
     var showSettingsMenu by remember { mutableStateOf(false) }
     var showNameDialog by remember { mutableStateOf(false) }
+    var showStartTimeDialog by remember { mutableStateOf(false) }
     var showExercisePicker by remember { mutableStateOf(false) }
+    var showFeelingDialog by remember { mutableStateOf(false) }
+
+    if (showNameDialog) {
+        EditNameDialog(
+            currentName = session?.workoutName ?: "",
+            onDismiss = { showNameDialog = false },
+            onConfirm = { newName ->
+                onUpdateWorkoutName(newName)
+                showNameDialog = false
+            }
+        )
+    }
+
+    if (showStartTimeDialog) {
+        EditStartTimeDialog(
+            currentStartTime = session?.startedAt ?: System.currentTimeMillis(),
+            onDismiss = { showStartTimeDialog = false },
+            onConfirm = { newStartTime ->
+                onEditStartTime(newStartTime)
+                showStartTimeDialog = false
+            }
+        )
+    }
+
+    if (showFeelingDialog) {
+        FeelingRatingDialog(
+            onDismiss = { showFeelingDialog = false },
+            onConfirm = { feeling ->
+                showFeelingDialog = false
+                sessionManager.finishWorkout(feeling)
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -254,8 +291,9 @@ fun ExpandedOverlay(
         HeaderSection(
             session = session,
             elapsedTime = elapsedTime,
-            onFinishWorkout = onFinishWorkout,
-            onShowSettingsMenu = { showSettingsMenu = true }
+            onFinishWorkout = { showFeelingDialog = true },
+            onEditName = { showNameDialog = true },
+            onEditStartTime = { showStartTimeDialog = true }
         )
 
         if (showNameDialog) {
@@ -289,6 +327,7 @@ fun ExpandedOverlay(
                         onCompleteSet = onCompleteSet,
                         onRemoveExercise = { onRemoveExercise(exerciseIndex) },
                         onSwapExercise = { onSwapExercise(exerciseIndex) },
+                        onResetExercise = { onResetExercise(exerciseIndex) },
                         onAddRestTimer = { type, duration -> onAddRestTimer(type, duration) },
                         onUpdateRestTimer = { _, type, duration -> onUpdateRestTimer(exerciseIndex, type, duration) },
                         onDeleteRestTimer = { type -> onDeleteRestTimer(type) },
@@ -332,10 +371,9 @@ fun HeaderSection(
     session: WorkoutSession?,
     elapsedTime: Long,
     onFinishWorkout: () -> Unit,
-    onShowSettingsMenu: () -> Unit
+    onEditName: () -> Unit,
+    onEditStartTime: () -> Unit
 ) {
-    val elapsedStr = formatTime(elapsedTime.toInt())
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -382,7 +420,7 @@ fun HeaderSection(
                         text = { Text("Edit Name") },
                         onClick = {
                             showMenu = false
-                            onShowSettingsMenu()
+                            onEditName()
                         },
                         leadingIcon = { Icon(Icons.Default.Edit, null, tint = TextSecondary) }
                     )
@@ -390,17 +428,9 @@ fun HeaderSection(
                         text = { Text("Edit Start Time") },
                         onClick = {
                             showMenu = false
-                            onShowSettingsMenu()
+                            onEditStartTime()
                         },
                         leadingIcon = { Icon(Icons.Default.Schedule, null, tint = TextSecondary) }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Add Photo") },
-                        onClick = {
-                            showMenu = false
-                            onShowSettingsMenu()
-                        },
-                        leadingIcon = { Icon(Icons.Default.PhotoCamera, null, tint = TextSecondary) }
                     )
                 }
             }
@@ -447,6 +477,73 @@ fun EditNameDialog(
 }
 
 @Composable
+fun EditStartTimeDialog(
+    currentStartTime: Long,
+    onDismiss: () -> Unit,
+    onConfirm: (Long) -> Unit
+) {
+    var startTimeText by remember { mutableStateOf("") }
+    var startDateText by remember { mutableStateOf("") }
+    
+    LaunchedEffect(currentStartTime) {
+        val calendar = java.util.Calendar.getInstance().apply { timeInMillis = currentStartTime }
+        val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(java.util.Calendar.MINUTE)
+        val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        val month = calendar.get(java.util.Calendar.MONTH) + 1
+        val year = calendar.get(java.util.Calendar.YEAR)
+        startTimeText = String.format("%02d:%02d", hour, minute)
+        startDateText = String.format("%02d/%02d/%04d", day, month, year)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Start Time") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedTextField(
+                    value = startTimeText,
+                    onValueChange = { startTimeText = it },
+                    label = { Text("Time (HH:mm)") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = startDateText,
+                    onValueChange = { startDateText = it },
+                    label = { Text("Date (dd/MM/yyyy)") },
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val timeParts = startTimeText.split(":")
+                val dateParts = startDateText.split("/")
+                if (timeParts.size == 2 && dateParts.size == 3) {
+                    val calendar = java.util.Calendar.getInstance()
+                    calendar.set(java.util.Calendar.YEAR, dateParts[2].toIntOrNull() ?: calendar.get(java.util.Calendar.YEAR))
+                    calendar.set(java.util.Calendar.MONTH, (dateParts[1].toIntOrNull() ?: 1) - 1)
+                    calendar.set(java.util.Calendar.DAY_OF_MONTH, dateParts[0].toIntOrNull() ?: 1)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, timeParts[0].toIntOrNull() ?: 0)
+                    calendar.set(java.util.Calendar.MINUTE, timeParts[1].toIntOrNull() ?: 0)
+                    calendar.set(java.util.Calendar.SECOND, 0)
+                    onConfirm(calendar.timeInMillis)
+                }
+            }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
 fun EmptyExerciseState() {
     Column(
         modifier = Modifier
@@ -481,6 +578,7 @@ fun ExerciseCard(
     onCompleteSet: (Int, Int) -> Unit,
     onRemoveExercise: () -> Unit,
     onSwapExercise: () -> Unit,
+    onResetExercise: () -> Unit,
     onAddRestTimer: (SetType, Int) -> Unit,
     onUpdateRestTimer: (Int, SetType, Int) -> Unit,
     onDeleteRestTimer: (SetType) -> Unit,
@@ -545,10 +643,10 @@ fun ExerciseCard(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Swap Exercise") },
+                                text = { Text("Reset Exercise") },
                                 onClick = {
                                     showMenu = false
-                                    onSwapExercise()
+                                    onResetExercise()
                                 }
                             )
                             DropdownMenuItem(
@@ -600,16 +698,24 @@ fun ExerciseCard(
                     if (timerDuration > 0) {
                         when {
                             isThisSetActive && isTimerMinimized -> {
-                                TimerRow(
-                                    remainingSeconds = restTime,
-                                    totalSeconds = timerTotalTime,
-                                    onClick = onRestoreTimer
-                                )
+                                SwipeableTimerRow(
+                                    onDelete = { onDeleteRestTimer(currentSet.setType) }
+                                ) {
+                                    TimerRow(
+                                        remainingSeconds = restTime,
+                                        totalSeconds = timerTotalTime,
+                                        onClick = onRestoreTimer
+                                    )
+                                }
                             }
                             isResting && !isTimerMinimized -> {
                             }
                             else -> {
-                                TimerPreviewRow(durationSeconds = timerDuration)
+                                SwipeableTimerRow(
+                                    onDelete = { onDeleteRestTimer(currentSet.setType) }
+                                ) {
+                                    TimerPreviewRow(durationSeconds = timerDuration)
+                                }
                             }
                         }
                     }
@@ -678,6 +784,61 @@ fun SwipeableSetRow(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(36.dp)
+                .background(if (offsetX < stage1Threshold) ErrorRed else DarkSurfaceElevated)
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            if (offsetX < stage1Threshold) {
+                Text(
+                    text = "Delete",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(offsetX.toInt(), 0) }
+                .background(DarkSurface)
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun SwipeableTimerRow(
+    onDelete: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    
+    val stage1Threshold = -50f
+    val stage2Threshold = -120f
+    
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (offsetX < stage2Threshold) {
+                            onDelete()
+                        }
+                        offsetX = 0f
+                    },
+                    onHorizontalDrag = { _, dragAmount ->
+                        offsetX = (offsetX + dragAmount).coerceIn(-200f, 0f)
+                    }
+                )
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
                 .background(if (offsetX < stage1Threshold) ErrorRed else DarkSurfaceElevated)
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterEnd
@@ -1111,6 +1272,94 @@ fun ExercisePickerDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun FeelingRatingDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit
+) {
+    var selectedFeeling by remember { mutableIntStateOf(3) }
+    
+    val feelings = listOf(
+        1 to "😫 Terrible",
+        2 to "😕 Bad", 
+        3 to "😐 Okay",
+        4 to "😊 Good",
+        5 to "🤩 Amazing"
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = DarkSurfaceElevated,
+        title = {
+            Text(
+                text = "How was your workout?",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Rate how you felt during this workout",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    feelings.forEach { (rating, label) ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { selectedFeeling = rating }
+                        ) {
+                            Text(
+                                text = label.split(" ").first(),
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(
+                                        if (selectedFeeling == rating) NeonTeal else TextTertiary,
+                                        CircleShape
+                                    )
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = feelings.find { it.first == selectedFeeling }?.let { "${it.second}!" } ?: "",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = NeonTeal
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(selectedFeeling) },
+                colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Finish Workout")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
             }
         }
     )

@@ -458,6 +458,22 @@ class WorkoutSessionService : Service() {
         }
     }
     
+    fun resetExercise(exerciseIndex: Int) {
+        _workoutSession.value?.let { session ->
+            val updatedExercises = session.exercises.toMutableList()
+            if (exerciseIndex < updatedExercises.size) {
+                val exerciseSession = updatedExercises[exerciseIndex]
+                val resetExerciseSession = exerciseSession.copy(
+                    sets = listOf(WorkoutSetData(setNumber = 1)),
+                    restTimers = emptyList(),
+                    isRestTimerEnabled = false
+                )
+                updatedExercises[exerciseIndex] = resetExerciseSession
+                _workoutSession.value = session.copy(exercises = updatedExercises)
+            }
+        }
+    }
+    
     private fun playTimerSound() {
         try {
             val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)

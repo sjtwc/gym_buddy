@@ -236,13 +236,17 @@ class WorkoutSessionManager @Inject constructor(
         service?.disableRestTimer(exerciseIndex)
     }
     
-    fun finishWorkout() {
+    fun resetExercise(exerciseIndex: Int) {
+        service?.resetExercise(exerciseIndex)
+    }
+    
+    fun finishWorkout(feeling: Int? = null) {
         val session = _currentSession.value ?: return
         val duration = (_elapsedTime.value / 60).toInt()
         service?.finishWorkout()
         
         scope.launch {
-            val volume = workoutRepository.saveCompletedWorkout(session, duration)
+            val volume = workoutRepository.saveCompletedWorkout(session, duration, feeling)
             val earnedAchievements = userProfileRepository.recordWorkout(totalVolume = volume)
             
             val profile = userProfileRepository.getUserProfileSync()

@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,10 +30,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.gymbuddy.data.repository.DailyVolume
+import com.example.gymbuddy.data.repository.WorkoutWithDetails
 import com.example.gymbuddy.domain.model.Workout
+import com.example.gymbuddy.domain.model.WorkoutExercise
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
 import java.text.SimpleDateFormat
@@ -95,11 +100,18 @@ fun ProgressScreen(
                 items(uiState.workouts) { workout ->
                     WorkoutHistoryCard(
                         workout = workout,
-                        onClick = { navController.navigate(Screen.Exercise.route) }
+                        onClick = { viewModel.selectWorkout(workout.id) }
                     )
                 }
             }
         }
+    }
+    
+    uiState.selectedWorkoutDetails?.let { details ->
+        WorkoutDetailDialog(
+            workoutDetails = details,
+            onDismiss = { viewModel.clearSelectedWorkout() }
+        )
     }
 }
 
@@ -577,6 +589,206 @@ fun EmptyWorkoutHistoryCard() {
                 style = MaterialTheme.typography.bodySmall,
                 color = TextTertiary
             )
+        }
+    }
+}
+
+@Composable
+fun WorkoutDetailDialog(
+    workoutDetails: WorkoutWithDetails,
+    onDismiss: () -> Unit
+) {
+    val dateFormat = SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.getDefault())
+    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    
+    val feelingEmoji = when (workoutDetails.workout.feeling) {
+        1 -> "😫"
+        2 -> "😕"
+        3 -> "😐"
+        4 -> "😊"
+        5 -> "🤩"
+        else -> "😐"
+    }
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.85f),
+            colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(DarkSurface)
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = workoutDetails.workout.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = dateFormat.format(Date(workoutDetails.workout.date)),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextSecondary)
+                    }
+                }
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column {
+                        Text("Duration", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(
+                            text = "${workoutDetails.workout.duration} min",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = NeonTeal
+                        )
+                    }
+                    Column {
+                        Text("Feeling", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(
+                            text = "$feelingEmoji (${workoutDetails.workout.feeling ?: 3}/5)",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = NeonCyan
+                        )
+                    }
+                    Column {
+                        Text("Exercises", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(
+                            text = "${workoutDetails.exercises.size}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = NeonPurple
+                        )
+                    }
+                }
+                
+                HorizontalDivider(color = DarkSurface, thickness = 2.dp)
+                
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    items(workoutDetails.exercises.sortedBy { it.orderIndex }) { exercise ->
+                        WorkoutExerciseDetailCard(exercise = exercise)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutExerciseDetailCard(exercise: WorkoutExercise) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = DarkSurface),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = exercise.exercise.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = NeonTeal
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            exercise.sets.filter { !it.isWarmUp }.forEachIndexed { index, set ->
+                val setTypeIcon = when {
+                    set.isDropSet -> "↓"
+                    set.isFailureSet -> "!"
+                    else -> "•"
+                }
+                val setTypeColor = when {
+                    set.isDropSet -> NeonPurple
+                    set.isFailureSet -> WarningOrange
+                    else -> TextSecondary
+                }
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = setTypeIcon,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = setTypeColor
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Set ${index + 1}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                    Row {
+                        Text(
+                            text = "${set.weight.toInt()} kg",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "× ${set.reps}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextPrimary
+                        )
+                        if (set.rpe != null) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = NeonCyan.copy(alpha = 0.2f)
+                            ) {
+                                Text(
+                                    text = "RPE ${set.rpe}",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = NeonCyan
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (exercise.sets.any { it.isWarmUp }) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Warmup: ${exercise.sets.filter { it.isWarmUp }.size} sets",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextTertiary
+                )
+            }
         }
     }
 }

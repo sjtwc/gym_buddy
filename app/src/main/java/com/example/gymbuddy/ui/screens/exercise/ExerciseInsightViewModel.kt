@@ -52,13 +52,19 @@ class ExerciseInsightViewModel @Inject constructor(
     private suspend fun loadHistoricalData(exerciseId: Long) {
         workoutDao.getWorkoutsWithExercise(exerciseId, 50).collect { workouts ->
             val historicalSets = workouts.mapNotNull { workout ->
-                val sets = setDao.getPreviousSetsForExercise(exerciseId, 100).first()
-                    .filter { it.workoutExerciseId in getWorkoutExerciseIds(workout.id, exerciseId) }
+                val workoutExerciseIds = getWorkoutExerciseIds(workout.id, exerciseId)
+                if (workoutExerciseIds.isEmpty()) return@mapNotNull null
                 
-                if (sets.isNotEmpty()) {
+                val allSets = workoutExerciseIds.flatMap { weId ->
+                    setDao.getSetsForWorkoutExerciseOnce(weId)
+                }
+                
+                if (allSets.isEmpty()) {
+                    null
+                } else {
                     HistoricalSetWithDate(
                         date = workout.date,
-                        sets = sets.map { entity ->
+                        sets = allSets.map { entity ->
                             WorkoutSet(
                                 id = entity.id,
                                 workoutExerciseId = entity.workoutExerciseId,
@@ -76,7 +82,7 @@ class ExerciseInsightViewModel @Inject constructor(
                         },
                         workoutId = workout.id
                     )
-                } else null
+                }
             }.sortedByDescending { it.date }
 
             _uiState.update { 
