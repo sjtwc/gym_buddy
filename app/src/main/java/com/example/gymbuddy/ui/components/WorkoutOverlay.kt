@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -903,55 +905,63 @@ fun SetRow(
                 modifier = Modifier.width(52.dp)
             )
 
-            OutlinedTextField(
-                value = weightText,
-                onValueChange = { newValue ->
-                    weightText = newValue
-                    newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
-                },
-                modifier = Modifier.weight(1f).height(44.dp),
-                textStyle = androidx.compose.ui.text.TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontSize = 14.sp,
-                    color = TextPrimary,
-                    lineHeight = 28.sp
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                suffix = { Text("kg", fontSize = 8.sp, color = TextSecondary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = NeonTeal,
-                    unfocusedBorderColor = TextTertiary,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    cursorColor = NeonTeal
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+                    .background(DarkSurface, RoundedCornerShape(4.dp))
+                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                BasicTextField(
+                    value = weightText,
+                    onValueChange = { newValue ->
+                        weightText = newValue
+                        newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
+                    },
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = TextPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
-            )
+                if (weightText.isEmpty()) {
+                    Text("kg", fontSize = 14.sp, color = TextSecondary, textAlign = TextAlign.Center)
+                }
+            }
 
-            OutlinedTextField(
-                value = repsText,
-                onValueChange = { newValue ->
-                    repsText = newValue
-                    newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
-                },
-                modifier = Modifier.width(64.dp).height(44.dp),
-                textStyle = androidx.compose.ui.text.TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontSize = 14.sp,
-                    color = TextPrimary,
-                    lineHeight = 28.sp
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                suffix = { Text("reps", fontSize = 8.sp, color = TextSecondary) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = NeonTeal,
-                    unfocusedBorderColor = TextTertiary,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    cursorColor = NeonTeal
+            Box(
+                modifier = Modifier
+                    .width(64.dp)
+                    .height(44.dp)
+                    .background(DarkSurface, RoundedCornerShape(4.dp))
+                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                BasicTextField(
+                    value = repsText,
+                    onValueChange = { newValue ->
+                        repsText = newValue
+                        newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
+                    },
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = TextPrimary
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
-            )
+                if (repsText.isEmpty()) {
+                    Text("reps", fontSize = 14.sp, color = TextSecondary, textAlign = TextAlign.Center)
+                }
+            }
 
             Checkbox(
                 checked = set.isCompleted,
