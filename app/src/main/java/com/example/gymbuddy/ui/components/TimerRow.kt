@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.gymbuddy.ui.theme.*
 
 @Composable
@@ -24,50 +25,128 @@ fun TimerRow(
 ) {
     val progress = if (totalSeconds > 0) remainingSeconds.toFloat() / totalSeconds.toFloat() else 0f
     
-    Row(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = NeonCyan.copy(alpha = 0.15f)
+        ),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Icon(
-            imageVector = Icons.Default.Timer,
-            contentDescription = null,
-            tint = NeonCyan.copy(alpha = 0.7f),
-            modifier = Modifier.size(16.dp)
-        )
-        
-        Spacer(modifier = Modifier.width(8.dp))
-        
-        Box(
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(ProgressBarBackground)
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Surface(
+                shape = RoundedCornerShape(4.dp),
+                color = NeonCyan.copy(alpha = 0.3f)
+            ) {
+                Text(
+                    text = "REST",
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = NeonCyan,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Icon(
+                imageVector = Icons.Default.Timer,
+                contentDescription = null,
+                tint = NeonCyan,
+                modifier = Modifier.size(18.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(progress)
-                    .fillMaxHeight()
-                    .background(
-                        brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                            colors = listOf(NeonTeal, NeonCyan)
-                        ),
-                        shape = RoundedCornerShape(3.dp)
-                    )
+                    .weight(1f)
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(ProgressBarBackground)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress)
+                        .fillMaxHeight()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                colors = listOf(NeonTeal, NeonCyan)
+                            ),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Text(
+                text = formatTime(remainingSeconds),
+                style = MaterialTheme.typography.bodyMedium,
+                color = NeonCyan,
+                fontWeight = FontWeight.Bold
             )
         }
-        
-        Spacer(modifier = Modifier.width(8.dp))
-        
-        Text(
-            text = formatTime(remainingSeconds),
-            style = MaterialTheme.typography.bodySmall,
-            color = NeonCyan.copy(alpha = 0.7f),
-            fontWeight = FontWeight.Medium
-        )
+    }
+}
+
+@Composable
+fun TimerPreviewRow(
+    durationSeconds: Int,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = NeonCyan.copy(alpha = 0.1f)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = RoundedCornerShape(4.dp),
+                color = NeonCyan.copy(alpha = 0.3f)
+            ) {
+                Text(
+                    text = "REST",
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = NeonCyan,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Icon(
+                imageVector = Icons.Default.Timer,
+                contentDescription = null,
+                tint = NeonCyan.copy(alpha = 0.8f),
+                modifier = Modifier.size(16.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Text(
+                text = formatTime(durationSeconds),
+                style = MaterialTheme.typography.bodyMedium,
+                color = NeonCyan.copy(alpha = 0.8f),
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

@@ -579,23 +579,7 @@ fun ExerciseCard(
                             isResting && !isTimerMinimized -> {
                             }
                             else -> {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Timer,
-                                        contentDescription = null,
-                                        tint = NeonCyan.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = formatTime(timerDuration),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = NeonCyan.copy(alpha = 0.7f)
-                                    )
-                                }
+                                TimerPreviewRow(durationSeconds = timerDuration)
                             }
                         }
                     }
