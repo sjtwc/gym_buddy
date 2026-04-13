@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.11.0] - 2026-04-13
+
+### Added
+- **Create Routine Redesign** - Completely redesigned routine creation screen based on workout overlay style
+  - Exercise cards with set rows, weight/reps inputs, set type badges
+  - Body focus selection per exercise
+  - Configure Timer per set type (Normal, Warmup, Work, Drop, Failure)
+  - Timer preview rows shown after each set
+- **Delete Routine** - Added delete option in routine card "..." menu with confirmation dialog
+- **Edit Routine** - Edit now loads existing routine data and updates (not creates new)
+- **Rest Timer Configuration** - Per-set-type rest timers stored per exercise
+
+### Fixed
+- **Routine Saving** - Fixed routine exercises not being saved to database properly
+- **Start Workout from Routine** - Now properly copies exercises from routine to workout session
+- **Routine List Display** - Shows estimated duration instead of "0 exercises"
+
+### Updated
+- `CreateRoutineScreen.kt` - Redesigned with compact header (name, type dropdown, duration), larger exercise section
+- `CreateRoutineViewModel.kt` - Added `loadRoutine()`, `resetState()`, `updateExerciseTimers()`, `toggleRoutineType()`
+- `WorkoutRepository.kt` - Added `startWorkoutFromRoutine()` to copy routine exercises to workout
+- `WorkoutViewModel.kt` - Updated `startWorkoutWithRoutine()` to load full routine and copy exercises
+- `Screen.kt` - Updated `CreateRoutine` route to accept `routineId` parameter
+- `GymBuddyNavigation.kt` - Updated CreateRoutine composable with routineId argument
+- Database schema bump to version 3
+
+---
+
 ## [1.10.0] - 2026-04-13
 
 ### Added

@@ -30,7 +30,6 @@ import com.example.gymbuddy.ui.screens.progress.ProgressScreen
 import com.example.gymbuddy.ui.screens.profile.ProfileScreen
 import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
 import com.example.gymbuddy.ui.screens.achievement.AchievementScreen
-import com.example.gymbuddy.ui.screens.routines.RoutineEditScreen
 import com.example.gymbuddy.ui.screens.routines.CreateRoutineScreen
 import com.example.gymbuddy.ui.screens.settings.SettingsScreen
 
@@ -41,9 +40,9 @@ fun GymBuddyNavigation(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    
+
     val isSessionActive by sessionManager.isActive.collectAsState()
-    
+
     Scaffold(
         bottomBar = {
             NavigationBar(
@@ -117,22 +116,21 @@ fun GymBuddyNavigation(
                 }
                 
                 composable(
-                    route = Screen.RoutineEdit.route,
-                    arguments = listOf(navArgument("routineId") { type = NavType.LongType })
+                    route = Screen.CreateRoutine.route,
+                    arguments = listOf(navArgument("routineId") {
+                        type = NavType.LongType
+                        defaultValue = 0L
+                    })
                 ) { backStackEntry ->
                     val routineId = backStackEntry.arguments?.getLong("routineId") ?: 0L
-                    RoutineEditScreen(routineId = routineId, navController = navController)
-                }
-                
-                composable(Screen.CreateRoutine.route) { 
-                    CreateRoutineScreen(navController = navController)
+                    CreateRoutineScreen(navController = navController, routineId = routineId)
                 }
                 
                 composable(Screen.Settings.route) {
                     SettingsScreen(navController = navController)
                 }
             }
-            
+
             if (isSessionActive) {
                 WorkoutOverlay(
                     sessionManager = sessionManager,

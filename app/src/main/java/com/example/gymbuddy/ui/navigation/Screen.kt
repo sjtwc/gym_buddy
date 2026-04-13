@@ -26,12 +26,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
         fun createRoute(routineId: Long) = "routine/$routineId"
     }
     
-    data object RoutineEdit : Screen("routine_edit/{routineId}", "Edit Routine") {
-        fun createRoute(routineId: Long = 0L) = "routine_edit/$routineId"
-    }
-    
     data object ActiveWorkout : Screen("active_workout", "Active Workout")
-    data object CreateRoutine : Screen("create_routine", "Create Routine")
+    data object CreateRoutine : Screen("create_routine?routineId={routineId}", "Create Routine") {
+        fun createRoute(routineId: Long? = null) = "create_routine?routineId=${routineId ?: 0}"
+    }
     data object Settings : Screen("settings", "Settings")
 }
 

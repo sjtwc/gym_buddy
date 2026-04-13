@@ -9,6 +9,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,7 +102,9 @@ fun WorkoutScreen(
                 items(uiState.routines) { routine ->
                     RoutineCard(
                         routine = routine,
-                        onStart = { viewModel.startWorkoutWithRoutine(routine, sessionManager) }
+                        onStart = { viewModel.startWorkoutWithRoutine(routine, sessionManager) },
+                        onEdit = { navController.navigate(Screen.CreateRoutine.createRoute(routine.id)) },
+                        onDelete = { viewModel.deleteRoutine(routine) }
                     )
                 }
             }
@@ -108,7 +113,38 @@ fun WorkoutScreen(
 }
 
 @Composable
-fun RoutineCard(routine: Routine, onStart: () -> Unit) {
+fun RoutineCard(
+    routine: Routine,
+    onStart: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Routine") },
+            text = { Text("Are you sure you want to delete \"${routine.name}\"? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    }
+                ) {
+                    Text("Delete", color = ErrorRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
@@ -129,8 +165,44 @@ fun RoutineCard(routine: Routine, onStart: () -> Unit) {
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
                 )
+
+                Box {
+                    IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More options",
+                            tint = TextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            onClick = {
+                                showMenu = false
+                                onEdit()
+                            },
+                            leadingIcon = { Icon(Icons.Default.Edit, null, tint = TextSecondary) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            onClick = {
+                                showMenu = false
+                                showDeleteDialog = true
+                            },
+                            leadingIcon = { Icon(Icons.Default.Delete, null, tint = ErrorRed) }
+                        )
+                    }
+                }
             }
             
             Spacer(modifier = Modifier.height(4.dp))
@@ -160,7 +232,7 @@ fun RoutineCard(routine: Routine, onStart: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "${routine.exercises.size} exercises • ${routine.estimatedMinutes} min",
+                text = "Est. ${routine.estimatedMinutes} min",
                 style = MaterialTheme.typography.labelSmall,
                 color = TextTertiary,
                 maxLines = 1

@@ -54,6 +54,7 @@ class WorkoutViewModel @Inject constructor(
     
     fun startWorkoutWithRoutine(routine: Routine, sessionManager: WorkoutSessionManager) {
         viewModelScope.launch {
+            val fullRoutine = routineRepository.getRoutineByIdWithExercises(routine.id)
             val workout = Workout(
                 name = routine.name,
                 date = System.currentTimeMillis(),
@@ -61,8 +62,18 @@ class WorkoutViewModel @Inject constructor(
                 routineId = routine.id,
                 isCompleted = false
             )
-            val workoutId = workoutRepository.startWorkout(workout)
+            val workoutId = if (fullRoutine != null && fullRoutine.exercises.isNotEmpty()) {
+                workoutRepository.startWorkoutFromRoutine(workout, fullRoutine.exercises)
+            } else {
+                workoutRepository.startWorkout(workout)
+            }
             sessionManager.startSession(workoutId, routine.name)
+        }
+    }
+
+    fun deleteRoutine(routine: Routine) {
+        viewModelScope.launch {
+            routineRepository.deleteRoutine(routine)
         }
     }
 }

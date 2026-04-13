@@ -91,7 +91,7 @@ fun RoutinesScreen(
                             routine = routine,
                             onClick = { },
                             onEdit = {
-                                navController.navigate(Screen.RoutineEdit.createRoute(routine.id))
+                                navController.navigate(Screen.CreateRoutine.route)
                             },
                             onDelete = {
                                 viewModel.deleteRoutine(routine)

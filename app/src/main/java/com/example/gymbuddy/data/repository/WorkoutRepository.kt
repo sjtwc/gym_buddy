@@ -7,6 +7,8 @@ import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
 import com.example.gymbuddy.data.local.entity.SetEntity
 import com.example.gymbuddy.data.local.entity.WorkoutEntity
 import com.example.gymbuddy.data.local.entity.WorkoutExerciseEntity
+import com.example.gymbuddy.domain.model.Routine
+import com.example.gymbuddy.domain.model.RoutineExercise
 import com.example.gymbuddy.domain.model.SetType
 import com.example.gymbuddy.domain.model.Workout
 import com.example.gymbuddy.domain.model.WorkoutExercise
@@ -84,6 +86,35 @@ class WorkoutRepository @Inject constructor(
     
     suspend fun startWorkout(workout: Workout): Long =
         workoutDao.insertWorkout(workout.toEntity())
+
+    suspend fun startWorkoutFromRoutine(workout: Workout, routineExercises: List<RoutineExercise>): Long {
+        val workoutId = workoutDao.insertWorkout(workout.toEntity())
+        routineExercises.forEachIndexed { index, routineExercise ->
+            val weEntity = WorkoutExerciseEntity(
+                workoutId = workoutId,
+                exerciseId = routineExercise.exercise.id,
+                orderIndex = index,
+                notes = routineExercise.notes,
+                restTimerSeconds = routineExercise.restSeconds
+            )
+            val weId = workoutExerciseDao.insertWorkoutExercise(weEntity)
+            val setEntities = routineExercise.sets.map { set ->
+                SetEntity(
+                    workoutExerciseId = weId,
+                    setNumber = set.setNumber,
+                    reps = set.reps.toIntOrNull() ?: 8,
+                    weight = set.weight?.toFloat() ?: 0f,
+                    completedAt = null,
+                    isWarmUp = set.setType == SetType.WARMUP,
+                    isDropSet = set.setType == SetType.DROP,
+                    isFailureSet = set.setType == SetType.FAILURE,
+                    isSuperset = false
+                )
+            }
+            setDao.insertSets(setEntities)
+        }
+        return workoutId
+    }
     
     suspend fun updateWorkout(workout: Workout) =
         workoutDao.updateWorkout(workout.toEntity())

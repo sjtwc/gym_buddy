@@ -1,19 +1,26 @@
 package com.example.gymbuddy.data.repository
 
+import com.example.gymbuddy.data.local.dao.ExerciseDao
 import com.example.gymbuddy.data.local.dao.RoutineDao
 import com.example.gymbuddy.data.local.dao.RoutineExerciseDao
 import com.example.gymbuddy.data.local.dao.UserProfileDao
+import com.example.gymbuddy.data.local.entity.ExerciseEntity
 import com.example.gymbuddy.data.local.entity.RoutineEntity
 import com.example.gymbuddy.data.local.entity.RoutineExerciseEntity
 import com.example.gymbuddy.data.local.entity.UserProfileEntity
 import com.example.gymbuddy.data.repository.AchievementRepository
 import com.example.gymbuddy.domain.model.AchievementType
+import com.example.gymbuddy.domain.model.Exercise
 import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.Routine
+import com.example.gymbuddy.domain.model.RoutineExercise
+import com.example.gymbuddy.domain.model.RoutineSetData
+import com.example.gymbuddy.domain.model.SetType
 import com.example.gymbuddy.domain.model.UserProfile
 import com.example.gymbuddy.domain.model.VirtualPet
 import com.example.gymbuddy.domain.model.XpConfig
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
 import kotlin.math.max
@@ -23,7 +30,8 @@ import javax.inject.Inject
 
 class RoutineRepository @Inject constructor(
     private val routineDao: RoutineDao,
-    private val routineExerciseDao: RoutineExerciseDao
+    private val routineExerciseDao: RoutineExerciseDao,
+    private val exerciseDao: ExerciseDao
 ) {
     fun getAllRoutines(): Flow<List<Routine>> =
         routineDao.getAllRoutines().map { entities ->
@@ -32,6 +40,16 @@ class RoutineRepository @Inject constructor(
     
     suspend fun getRoutineById(id: Long): Routine? =
         routineDao.getRoutineById(id)?.toDomain()
+    
+    suspend fun getRoutineByIdWithExercises(id: Long): Routine? {
+        val routineEntity = routineDao.getRoutineById(id) ?: return null
+        val exerciseEntities = routineExerciseDao.getExercisesForRoutine(id).first()
+        val exercises = exerciseEntities.mapNotNull { entity ->
+            val exerciseEntity = exerciseDao.getExerciseById(entity.exerciseId) ?: return@mapNotNull null
+            entity.toDomain(exerciseEntity.toDomain())
+        }
+        return routineEntity.toDomain(exercises)
+    }
     
     fun getRoutinesByType(type: String): Flow<List<Routine>> =
         routineDao.getRoutinesByType(type).map { entities ->
@@ -43,11 +61,24 @@ class RoutineRepository @Inject constructor(
             entities.map { it.toDomain() }
         }
     
-    suspend fun insertRoutine(routine: Routine): Long =
-        routineDao.insertRoutine(routine.toEntity())
+    suspend fun insertRoutine(routine: Routine): Long {
+        val routineId = routineDao.insertRoutine(routine.toEntity())
+        saveRoutineExercises(routineId, routine.exercises)
+        return routineId
+    }
     
-    suspend fun updateRoutine(routine: Routine) =
+    suspend fun updateRoutine(routine: Routine) {
         routineDao.updateRoutine(routine.toEntity())
+        routineExerciseDao.deleteAllForRoutine(routine.id)
+        saveRoutineExercises(routine.id, routine.exercises)
+    }
+    
+    private suspend fun saveRoutineExercises(routineId: Long, exercises: List<RoutineExercise>) {
+        val entities = exercises.mapIndexed { index, exercise ->
+            exercise.toEntity(routineId, index)
+        }
+        routineExerciseDao.insertRoutineExercises(entities)
+    }
     
     suspend fun deleteRoutine(routine: Routine) =
         routineDao.deleteRoutine(routine.toEntity())
@@ -58,7 +89,7 @@ class RoutineRepository @Inject constructor(
         }
     }
     
-    private fun RoutineEntity.toDomain() = Routine(
+    private fun RoutineEntity.toDomain(exercises: List<RoutineExercise> = emptyList()) = Routine(
         id = id,
         name = name,
         description = description,
@@ -67,7 +98,8 @@ class RoutineRepository @Inject constructor(
         estimatedMinutes = estimatedMinutes,
         isCustom = isCustom,
         isFavorite = isFavorite,
-        createdAt = createdAt
+        createdAt = createdAt,
+        exercises = exercises
     )
     
     private fun Routine.toEntity() = RoutineEntity(
@@ -79,6 +111,54 @@ class RoutineRepository @Inject constructor(
         estimatedMinutes = estimatedMinutes,
         isCustom = isCustom,
         isFavorite = isFavorite,
+        createdAt = createdAt
+    )
+    
+    private fun RoutineExerciseEntity.toDomain(exercise: Exercise): RoutineExercise {
+        val defaultSets = List(targetSets) { i ->
+            RoutineSetData(
+                setNumber = i + 1,
+                reps = targetReps,
+                weight = null,
+                setType = SetType.NORMAL
+            )
+        }
+        return RoutineExercise(
+            id = id,
+            routineId = routineId,
+            exercise = exercise,
+            orderIndex = orderIndex,
+            targetSets = targetSets,
+            targetReps = targetReps,
+            restSeconds = restSeconds,
+            notes = notes,
+            bodyFocus = bodyFocus,
+            sets = defaultSets
+        )
+    }
+    
+    private fun RoutineExercise.toEntity(routineId: Long, orderIndex: Int) = RoutineExerciseEntity(
+        id = id,
+        routineId = routineId,
+        exerciseId = exercise.id,
+        orderIndex = orderIndex,
+        targetSets = targetSets,
+        targetReps = targetReps,
+        restSeconds = restSeconds,
+        notes = notes,
+        bodyFocus = bodyFocus
+    )
+    
+    private fun ExerciseEntity.toDomain() = Exercise(
+        id = id,
+        name = name,
+        description = description,
+        targetMuscle = targetMuscle,
+        secondaryMuscles = secondaryMuscles.split(",").filter { it.isNotBlank() },
+        equipmentType = equipmentType,
+        videoUrl = videoUrl,
+        instructions = instructions.split("\n").filter { it.isNotBlank() },
+        isCustom = isCustom,
         createdAt = createdAt
     )
 }
