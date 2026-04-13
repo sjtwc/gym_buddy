@@ -604,14 +604,15 @@ fun SetHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Set", style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.weight(0.8f))
-        Text("Previous", style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.weight(1.2f))
-        Text("Weight", style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.weight(1f))
-        Text("Reps", style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.weight(0.8f))
-        Text("✓", style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.weight(0.5f))
+        Text("Set", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(48.dp))
+        Text("Prev", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(52.dp))
+        Spacer(modifier = Modifier.weight(1f))
+        Text("Reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(60.dp))
+        Spacer(modifier = Modifier.size(32.dp))
     }
 }
 
@@ -685,77 +686,83 @@ fun SetRow(
     var weightText by remember(set.weight) { mutableStateOf(set.weight?.toString() ?: "") }
     var repsText by remember(set.reps) { mutableStateOf(set.reps?.toString() ?: "") }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 0.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        SetTypeButton(
-            setType = set.setType,
-            setNumber = set.setNumber,
-            onToggle = onToggleSetType,
-            modifier = Modifier.weight(0.8f)
-        )
-
-        Text(
-            text = if (previousData != null) "${previousData.first}kg x ${previousData.second}" else "-",
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary,
+        Row(
             modifier = Modifier
-                .weight(1.2f)
-                .clickable(enabled = false) { }
-        )
-
-        OutlinedTextField(
-            value = weightText,
-            onValueChange = {
-                weightText = it
-                it.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
-            },
-            modifier = Modifier.weight(1f),
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = NeonTeal,
-                unfocusedBorderColor = TextTertiary
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SetTypeButton(
+                setType = set.setType,
+                setNumber = set.setNumber,
+                onToggle = onToggleSetType,
+                modifier = Modifier.width(48.dp)
             )
-        )
 
-        OutlinedTextField(
-            value = repsText,
-            onValueChange = {
-                repsText = it
-                it.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
-            },
-            modifier = Modifier.weight(0.8f),
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = NeonTeal,
-                unfocusedBorderColor = TextTertiary
+            Text(
+                text = if (previousData != null) "${previousData.first}×${previousData.second}" else "-",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary,
+                modifier = Modifier.width(52.dp)
             )
-        )
 
-        Checkbox(
-            checked = set.isCompleted,
-            onCheckedChange = { if (isEnabled) {
-                val updatedSet = set.copy(isCompleted = it)
-                onUpdateSet(updatedSet)
-                if (it) onCompleteSet(exerciseIndex, setIndex)
-            } },
-            enabled = isEnabled,
-            colors = CheckboxDefaults.colors(
-                checkedColor = NeonTeal,
-                uncheckedColor = TextTertiary,
-                disabledCheckedColor = TextTertiary.copy(alpha = 0.5f),
-                disabledUncheckedColor = TextTertiary.copy(alpha = 0.3f)
-            ),
-            modifier = Modifier.weight(0.5f)
-        )
+            OutlinedTextField(
+                value = weightText,
+                onValueChange = {
+                    weightText = it
+                    it.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
+                },
+                modifier = Modifier.weight(1f).height(40.dp),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                placeholder = { Text("kg", style = MaterialTheme.typography.bodySmall, color = TextTertiary) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = NeonTeal,
+                    unfocusedBorderColor = TextTertiary
+                )
+            )
+
+            OutlinedTextField(
+                value = repsText,
+                onValueChange = {
+                    repsText = it
+                    it.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
+                },
+                modifier = Modifier.width(60.dp).height(40.dp),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                placeholder = { Text("reps", style = MaterialTheme.typography.bodySmall, color = TextTertiary) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = NeonTeal,
+                    unfocusedBorderColor = TextTertiary
+                )
+            )
+
+            Checkbox(
+                checked = set.isCompleted,
+                onCheckedChange = { if (isEnabled) {
+                    val updatedSet = set.copy(isCompleted = it)
+                    onUpdateSet(updatedSet)
+                    if (it) onCompleteSet(exerciseIndex, setIndex)
+                } },
+                enabled = isEnabled,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = NeonTeal,
+                    uncheckedColor = TextTertiary,
+                    disabledCheckedColor = TextTertiary.copy(alpha = 0.5f),
+                    disabledUncheckedColor = TextTertiary.copy(alpha = 0.3f)
+                ),
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
 
