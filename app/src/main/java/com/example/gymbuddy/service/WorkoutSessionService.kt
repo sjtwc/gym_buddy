@@ -42,6 +42,12 @@ class WorkoutSessionService : Service() {
     private val _timerTotalTime = MutableStateFlow(0)
     val timerTotalTime: StateFlow<Int> = _timerTotalTime.asStateFlow()
     
+    private val _activeRestExerciseIndex = MutableStateFlow(-1)
+    val activeRestExerciseIndex: StateFlow<Int> = _activeRestExerciseIndex.asStateFlow()
+    
+    private val _activeRestSetIndex = MutableStateFlow(-1)
+    val activeRestSetIndex: StateFlow<Int> = _activeRestSetIndex.asStateFlow()
+    
     companion object {
         const val CHANNEL_ID = "workout_session_channel"
         const val NOTIFICATION_ID = 1002
@@ -248,7 +254,7 @@ class WorkoutSessionService : Service() {
                     
                     exerciseSession.restTimers.find { it.type == currentSet.setType }?.let { timer ->
                         if (timer.durationSeconds > 0) {
-                            startRestTimer(timer.durationSeconds)
+                            startRestTimer(timer.durationSeconds, currentSet.setType, exerciseIndex, setIndex)
                         }
                     }
                 }
@@ -339,13 +345,15 @@ class WorkoutSessionService : Service() {
     private var timerStartTime: Long = 0
     private var _timerTotalTimePrivate: Int = 0
     
-    private fun startRestTimer(seconds: Int, timerType: SetType = SetType.WORK) {
+    private fun startRestTimer(seconds: Int, timerType: SetType = SetType.WORK, exerciseIndex: Int = -1, setIndex: Int = -1) {
         restTimerJob?.cancel()
         _restTime.value = seconds
         timerStartTime = System.currentTimeMillis()
         _timerTotalTimePrivate = seconds
         _timerTotalTime.value = seconds
         _isTimerMinimized.value = false
+        _activeRestExerciseIndex.value = exerciseIndex
+        _activeRestSetIndex.value = setIndex
         _workoutSession.value = _workoutSession.value?.copy(
             isResting = true,
             restTimerType = timerType
@@ -359,6 +367,8 @@ class WorkoutSessionService : Service() {
             }
             _workoutSession.value = _workoutSession.value?.copy(isResting = false)
             _isTimerMinimized.value = false
+            _activeRestExerciseIndex.value = -1
+            _activeRestSetIndex.value = -1
             sendTimerEndNotification()
             playTimerSound()
             updateNotification()
@@ -372,7 +382,12 @@ class WorkoutSessionService : Service() {
     private fun resumeRestTimer() {
         val remainingTime = _restTime.value
         if (remainingTime > 0) {
-            startRestTimer(remainingTime, _workoutSession.value?.restTimerType ?: SetType.WORK)
+            startRestTimer(
+                remainingTime, 
+                _workoutSession.value?.restTimerType ?: SetType.WORK,
+                _activeRestExerciseIndex.value,
+                _activeRestSetIndex.value
+            )
         }
     }
     
@@ -388,6 +403,8 @@ class WorkoutSessionService : Service() {
         _workoutSession.value = _workoutSession.value?.copy(isResting = false)
         _restTime.value = 0
         _isTimerMinimized.value = false
+        _activeRestExerciseIndex.value = -1
+        _activeRestSetIndex.value = -1
     }
     
     fun minimizeTimer() {

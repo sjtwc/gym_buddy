@@ -53,6 +53,12 @@ class WorkoutSessionManager @Inject constructor(
     private val _timerTotalTime = MutableStateFlow(0)
     val timerTotalTime: StateFlow<Int> = _timerTotalTime.asStateFlow()
     
+    private val _activeRestExerciseIndex = MutableStateFlow(-1)
+    val activeRestExerciseIndex: StateFlow<Int> = _activeRestExerciseIndex.asStateFlow()
+    
+    private val _activeRestSetIndex = MutableStateFlow(-1)
+    val activeRestSetIndex: StateFlow<Int> = _activeRestSetIndex.asStateFlow()
+    
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val serviceBinder = binder as WorkoutSessionService.WorkoutSessionBinder
@@ -94,6 +100,16 @@ class WorkoutSessionManager @Inject constructor(
             scope.launch {
                 svc.timerTotalTime.collect { total ->
                     _timerTotalTime.value = total
+                }
+            }
+            scope.launch {
+                svc.activeRestExerciseIndex.collect { index ->
+                    _activeRestExerciseIndex.value = index
+                }
+            }
+            scope.launch {
+                svc.activeRestSetIndex.collect { index ->
+                    _activeRestSetIndex.value = index
                 }
             }
         }

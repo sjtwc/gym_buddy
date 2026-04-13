@@ -46,6 +46,8 @@ fun WorkoutOverlay(
     val restTime by sessionManager.restTimeRemaining.collectAsState()
     val isTimerMinimized by sessionManager.isTimerMinimized.collectAsState()
     val timerTotalTime by sessionManager.timerTotalTime.collectAsState()
+    val activeRestExerciseIndex by sessionManager.activeRestExerciseIndex.collectAsState()
+    val activeRestSetIndex by sessionManager.activeRestSetIndex.collectAsState()
 
     AnimatedVisibility(
         visible = isVisible,
@@ -85,6 +87,8 @@ fun WorkoutOverlay(
                         restTime = restTime,
                         isTimerMinimized = isTimerMinimized,
                         timerTotalTime = timerTotalTime,
+                        activeRestExerciseIndex = activeRestExerciseIndex,
+                        activeRestSetIndex = activeRestSetIndex,
                         onCollapse = onCollapse,
                         onAddExercise = { sessionManager.showExercisePicker() },
                         onRemoveExercise = { sessionManager.removeExercise(it) },
@@ -198,6 +202,8 @@ fun ExpandedOverlay(
     restTime: Int,
     isTimerMinimized: Boolean,
     timerTotalTime: Int,
+    activeRestExerciseIndex: Int,
+    activeRestSetIndex: Int,
     onCollapse: () -> Unit,
     onAddExercise: () -> Unit,
     onRemoveExercise: (Int) -> Unit,
@@ -288,6 +294,8 @@ fun ExpandedOverlay(
                         isTimerMinimized = isTimerMinimized,
                         restTime = restTime,
                         timerTotalTime = timerTotalTime,
+                        activeRestExerciseIndex = activeRestExerciseIndex,
+                        activeRestSetIndex = activeRestSetIndex,
                         onEnableRestTimer = onEnableRestTimer,
                         onRestoreTimer = onRestoreTimer
                     )
@@ -477,6 +485,8 @@ fun ExerciseCard(
     isTimerMinimized: Boolean = false,
     restTime: Int = 0,
     timerTotalTime: Int = 0,
+    activeRestExerciseIndex: Int = -1,
+    activeRestSetIndex: Int = -1,
     onEnableRestTimer: (Int) -> Unit = {},
     onRestoreTimer: () -> Unit = {}
 ) {
@@ -567,9 +577,13 @@ fun ExerciseCard(
                         (it.type == currentSet.setType || it.type.abbreviation == currentSet.setType.abbreviation) 
                     }?.durationSeconds ?: 0
                     
+                    val isThisSetActive = isResting && 
+                        setIndex == activeRestSetIndex && 
+                        exerciseIndex == activeRestExerciseIndex
+                    
                     if (timerDuration > 0) {
                         when {
-                            isResting && isTimerMinimized -> {
+                            isThisSetActive && isTimerMinimized -> {
                                 TimerRow(
                                     remainingSeconds = restTime,
                                     totalSeconds = timerTotalTime,
