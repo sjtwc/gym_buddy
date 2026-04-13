@@ -77,6 +77,7 @@ data class WorkoutExerciseSession(
         const val DEFAULT_FAILURE_TIMER = 120   // 2:00
         
         fun getDefaultTimers(): List<RestTimer> = listOf(
+            RestTimer(SetType.NORMAL, DEFAULT_WORK_TIMER, false),
             RestTimer(SetType.WARMUP, DEFAULT_WARMUP_TIMER, false),
             RestTimer(SetType.WORK, DEFAULT_WORK_TIMER, false),
             RestTimer(SetType.DROP, DEFAULT_DROP_TIMER, false),
