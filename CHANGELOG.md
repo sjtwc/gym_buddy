@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.0] - 2026-04-13
+
+### Added
+- **Workout Overlay Default Expanded** - Workout overlay now starts in expanded mode when starting a quick workout
+- **Notification Tap Expands Overlay** - Tapping the workout notification returns to expanded overlay mode
+- **Expand/Collapse Methods** - Added `expand()` and `collapse()` methods to `WorkoutSessionManager`
+
+### Updated
+- `WorkoutSessionService.kt` - Added `EXTRA_EXPAND_OVERLAY` constant and notification intent with expand flag
+- `WorkoutSessionManager.kt` - Added `expand()` method, `startSession()` now sets expanded to true by default
+- `MainActivity.kt` - Handles `expand_overlay` intent extra on first launch
+
+---
+
 ## [1.8.0] - 2026-04-13
 
 ### Added
@@ -241,6 +255,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.9.0]: https://github.com/example/gymbuddy/compare/v1.8.0...v1.9.0
+[1.8.0]: https://github.com/example/gymbuddy/compare/v1.6.0...v1.8.0
 [1.5.0]: https://github.com/example/gymbuddy/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/example/gymbuddy/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/example/gymbuddy/compare/v1.2.0...v1.3.0
