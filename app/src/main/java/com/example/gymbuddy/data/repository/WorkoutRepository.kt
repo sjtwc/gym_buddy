@@ -78,7 +78,7 @@ class WorkoutRepository @Inject constructor(
                     setNumber = set.setNumber,
                     reps = set.reps ?: 8,
                     weight = set.weight?.toFloat() ?: 0f,
-                    isCompleted = set.isCompleted,
+                    completedAt = if (set.isCompleted) System.currentTimeMillis() else null,
                     isWarmUp = set.setType == SetType.WARMUP,
                     isDropSet = set.setType == SetType.DROP,
                     isFailureSet = set.setType == SetType.FAILURE,

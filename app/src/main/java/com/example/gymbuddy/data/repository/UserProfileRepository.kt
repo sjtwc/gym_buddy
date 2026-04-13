@@ -2,10 +2,17 @@ package com.example.gymbuddy.data.repository
 
 import com.example.gymbuddy.data.local.dao.RoutineDao
 import com.example.gymbuddy.data.local.dao.RoutineExerciseDao
+import com.example.gymbuddy.data.local.dao.UserProfileDao
 import com.example.gymbuddy.data.local.entity.RoutineEntity
 import com.example.gymbuddy.data.local.entity.RoutineExerciseEntity
+import com.example.gymbuddy.data.local.entity.UserProfileEntity
 import com.example.gymbuddy.data.repository.AchievementRepository
+import com.example.gymbuddy.domain.model.AchievementType
+import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.Routine
+import com.example.gymbuddy.domain.model.UserProfile
+import com.example.gymbuddy.domain.model.VirtualPet
+import com.example.gymbuddy.domain.model.XpConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
