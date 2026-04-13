@@ -541,13 +541,8 @@ fun NearestGymMap(
     userLat: Double?,
     userLng: Double?
 ) {
-    val mapUrl = remember(gymLocation, userLat, userLng) {
-        buildString {
-            append("https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15")
-            if (userLat != null && userLng != null) {
-                append("&mlat=${userLat}&mlon=${userLng}")
-            }
-        }
+    val mapUrl = remember(gymLocation) {
+        "https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15"
     }
 
     Column {
