@@ -3,6 +3,7 @@ package com.example.gymbuddy.ui.screens.progress
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymbuddy.data.local.MuscleGoalPreferences
+import com.example.gymbuddy.data.local.dao.PersonalRecordDao
 import com.example.gymbuddy.data.repository.DailyVolume
 import com.example.gymbuddy.data.repository.ExerciseRepository
 import com.example.gymbuddy.data.repository.WorkoutRepository
@@ -44,11 +45,14 @@ data class ProgressUiState(
 class ProgressViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
-    private val muscleGoalPreferences: MuscleGoalPreferences
+    private val muscleGoalPreferences: MuscleGoalPreferences,
+    private val personalRecordDao: PersonalRecordDao
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ProgressUiState())
     val uiState: StateFlow<ProgressUiState> = _uiState.asStateFlow()
+    
+    private val exerciseCache = mutableMapOf<Long, String>()
     
     init {
         loadAllData()
@@ -92,20 +96,30 @@ class ProgressViewModel @Inject constructor(
         _uiState.update { it.copy(dailyVolumes = dailyVolumes) }
     }
     
-    private suspend fun loadPersonalRecords() {
-        exerciseRepository.getAllExercises().first().let { exercises ->
-            val prList = mutableListOf<PersonalRecordItem>()
-            exercises.forEach { exercise ->
-                if (exercise.name.contains("Bench Press", ignoreCase = true)) {
-                    prList.add(PersonalRecordItem(exercise.id, exercise.name, 100f, 5, System.currentTimeMillis(), "1RM"))
-                } else if (exercise.name.contains("Squat", ignoreCase = true)) {
-                    prList.add(PersonalRecordItem(exercise.id, exercise.name, 140f, 3, System.currentTimeMillis(), "1RM"))
-                } else if (exercise.name.contains("Deadlift", ignoreCase = true)) {
-                    prList.add(PersonalRecordItem(exercise.id, exercise.name, 160f, 2, System.currentTimeMillis(), "1RM"))
+    private fun loadPersonalRecords() {
+        personalRecordDao.getAllRecords(20)
+            .onEach { records ->
+                val exerciseIds = records.map { it.exerciseId }.distinct()
+                exerciseCache.clear()
+                exerciseIds.forEach { id ->
+                    exerciseRepository.getExerciseById(id)?.let { exercise ->
+                        exerciseCache[id] = exercise.name
+                    }
                 }
+                
+                val prList = records.map { record ->
+                    PersonalRecordItem(
+                        exerciseId = record.exerciseId,
+                        exerciseName = exerciseCache[record.exerciseId] ?: "Unknown",
+                        weight = record.weight,
+                        reps = record.reps,
+                        date = record.date,
+                        type = if (record.type == "REP_MAX") "${record.reps}RM" else record.type
+                    )
+                }
+                _uiState.update { it.copy(personalRecords = prList) }
             }
-            _uiState.update { it.copy(personalRecords = prList) }
-        }
+            .launchIn(viewModelScope)
     }
     
     fun selectWorkout(workoutId: Long) {
