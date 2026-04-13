@@ -744,15 +744,15 @@ fun SetRow(
 
             OutlinedTextField(
                 value = weightText,
-                onValueChange = {
-                    weightText = it
-                    it.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
+                onValueChange = { newValue ->
+                    weightText = newValue
+                    newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
                 },
-                modifier = Modifier.weight(1f).height(40.dp),
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp),
+                modifier = Modifier.weight(1f).height(36.dp),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 12.sp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                placeholder = { Text("kg", style = MaterialTheme.typography.bodySmall, color = TextTertiary) },
+                placeholder = { Text("kg", style = MaterialTheme.typography.labelSmall, color = TextTertiary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary
@@ -761,15 +761,15 @@ fun SetRow(
 
             OutlinedTextField(
                 value = repsText,
-                onValueChange = {
-                    repsText = it
-                    it.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
+                onValueChange = { newValue ->
+                    repsText = newValue
+                    newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
                 },
-                modifier = Modifier.width(60.dp).height(40.dp),
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp),
+                modifier = Modifier.width(56.dp).height(36.dp),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 12.sp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                placeholder = { Text("reps", style = MaterialTheme.typography.bodySmall, color = TextTertiary) },
+                placeholder = { Text("reps", style = MaterialTheme.typography.labelSmall, color = TextTertiary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary
