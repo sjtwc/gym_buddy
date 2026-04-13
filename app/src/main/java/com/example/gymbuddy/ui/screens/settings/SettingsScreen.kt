@@ -1,5 +1,6 @@
 package com.example.gymbuddy.ui.screens.settings
 
+import android.content.Intent
 import android.database.Cursor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -374,6 +375,40 @@ fun UserStatsCard() {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Your Stats",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                IconButton(
+                    onClick = {
+                        val statsText = buildShareText(totalWorkouts, totalVolume, personalRecordsCount, topExercises)
+                        val shareIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, statsText)
+                            type = "text/plain"
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Stats"))
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share Stats",
+                        tint = NeonTeal,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 StatItem(
@@ -431,6 +466,36 @@ fun UserStatsCard() {
             }
         }
     }
+}
+
+private fun buildShareText(
+    totalWorkouts: Int,
+    totalVolume: Float,
+    personalRecordsCount: Int,
+    topExercises: List<Pair<String, Float>>
+): String {
+    val volumeText = if (totalVolume > 1000) {
+        String.format("%.1fk kg", totalVolume / 1000)
+    } else {
+        "${totalVolume.toInt()} kg"
+    }
+
+    val topWeightsText = if (topExercises.isNotEmpty()) {
+        "\n🏆 Top Weights:\n" + topExercises.joinToString("\n") { (name, weight) ->
+            "• $name: ${weight.toInt()} kg"
+        }
+    } else ""
+
+    return """
+        💪 My GymBuddy Stats
+        
+        📊 Total Workouts: $totalWorkouts
+        ⚖️ Total Volume: $volumeText  
+        🏅 Personal Records: $personalRecordsCount
+        $topWeightsText
+        
+        Shared via GymBuddy
+    """.trimIndent()
 }
 
 @Composable
