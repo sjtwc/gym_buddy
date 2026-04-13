@@ -10,6 +10,7 @@ import com.example.gymbuddy.data.repository.WorkoutRepository
 import com.example.gymbuddy.data.repository.WorkoutWithDetails
 import com.example.gymbuddy.domain.model.Workout
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -72,11 +73,12 @@ class ProgressViewModel @Inject constructor(
         workoutRepository.getRecentCompletedWorkouts(14)
             .onEach { workouts ->
                 _uiState.update { it.copy(workouts = workouts) }
+                refreshVolumes()
             }
             .launchIn(viewModelScope)
     }
     
-    private suspend fun loadMuscleFocus() {
+    private suspend fun refreshVolumes() {
         val currentVolume = workoutRepository.getWeeklyVolumePerMuscle()
         val goals = muscleGoalPreferences.getAllGoals()
         
@@ -88,7 +90,12 @@ class ProgressViewModel @Inject constructor(
             )
         }
         
-        _uiState.update { it.copy(muscleFocusList = muscleFocusList) }
+        val dailyVolumes = workoutRepository.getDailyVolumesForLast10Days()
+        _uiState.update { it.copy(muscleFocusList = muscleFocusList, dailyVolumes = dailyVolumes) }
+    }
+    
+    private suspend fun loadMuscleFocus() {
+        refreshVolumes()
     }
     
     private suspend fun loadDailyVolumes() {
