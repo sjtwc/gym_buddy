@@ -433,6 +433,20 @@ class WorkoutSessionService : Service() {
         }
     }
     
+    fun saveRestTimers(exerciseIndex: Int, timers: List<RestTimer>) {
+        _workoutSession.value?.let { session ->
+            val updatedExercises = session.exercises.toMutableList()
+            if (exerciseIndex < updatedExercises.size) {
+                val exerciseSession = updatedExercises[exerciseIndex]
+                updatedExercises[exerciseIndex] = exerciseSession.copy(
+                    isRestTimerEnabled = true,
+                    restTimers = timers
+                )
+                _workoutSession.value = session.copy(exercises = updatedExercises)
+            }
+        }
+    }
+    
     fun disableRestTimer(exerciseIndex: Int) {
         _workoutSession.value?.let { session ->
             val updatedExercises = session.exercises.toMutableList()

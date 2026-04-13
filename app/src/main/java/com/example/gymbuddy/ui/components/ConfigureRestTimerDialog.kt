@@ -18,48 +18,66 @@ fun ConfigureRestTimerDialog(
     onDismiss: () -> Unit,
     onSave: (List<RestTimer>) -> Unit
 ) {
+    var normalTime by remember { mutableStateOf("02:00") }
     var warmupTime by remember { mutableStateOf("01:00") }
-    var workTime by remember { mutableStateOf("01:30") }
-    var dropTime by remember { mutableStateOf("01:00") }
+    var workTime by remember { mutableStateOf("02:00") }
+    var dropTime by remember { mutableStateOf("01:30") }
+    var failureTime by remember { mutableStateOf("02:00") }
     
     LaunchedEffect(restTimers) {
+        normalTime = restTimers.find { it.type == SetType.NORMAL }?.let { 
+            if (it.durationSeconds > 0) formatTimeToInput(it.durationSeconds) else "02:00"
+        } ?: "02:00"
         warmupTime = restTimers.find { it.type == SetType.WARMUP }?.let { 
             if (it.durationSeconds > 0) formatTimeToInput(it.durationSeconds) else "01:00"
         } ?: "01:00"
         workTime = restTimers.find { it.type == SetType.WORK }?.let { 
+            if (it.durationSeconds > 0) formatTimeToInput(it.durationSeconds) else "02:00"
+        } ?: "02:00"
+        dropTime = restTimers.find { it.type == SetType.DROP }?.let { 
             if (it.durationSeconds > 0) formatTimeToInput(it.durationSeconds) else "01:30"
         } ?: "01:30"
-        dropTime = restTimers.find { it.type == SetType.DROP }?.let { 
-            if (it.durationSeconds > 0) formatTimeToInput(it.durationSeconds) else "01:00"
-        } ?: "01:00"
+        failureTime = restTimers.find { it.type == SetType.FAILURE }?.let { 
+            if (it.durationSeconds > 0) formatTimeToInput(it.durationSeconds) else "02:00"
+        } ?: "02:00"
     }
     
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { 
             Text(
-                text = "Configure Rest Timer",
+                text = "Configure Rest Timers",
                 fontWeight = FontWeight.Bold
             ) 
         },
         text = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                TimerInputField(
-                    label = "Warmup Set Timer",
+                TimerInputRow(
+                    label = "Normal",
+                    value = normalTime,
+                    onValueChange = { normalTime = it }
+                )
+                TimerInputRow(
+                    label = "Warmup",
                     value = warmupTime,
                     onValueChange = { warmupTime = it }
                 )
-                TimerInputField(
-                    label = "Work Set Timer",
+                TimerInputRow(
+                    label = "Work",
                     value = workTime,
                     onValueChange = { workTime = it }
                 )
-                TimerInputField(
-                    label = "Drop Set Timer",
+                TimerInputRow(
+                    label = "Drop",
                     value = dropTime,
                     onValueChange = { dropTime = it }
+                )
+                TimerInputRow(
+                    label = "Failure",
+                    value = failureTime,
+                    onValueChange = { failureTime = it }
                 )
             }
         },
@@ -67,16 +85,18 @@ fun ConfigureRestTimerDialog(
             Button(
                 onClick = {
                     val timers = listOf(
+                        RestTimer(SetType.NORMAL, parseTimeInput(normalTime), false),
                         RestTimer(SetType.WARMUP, parseTimeInput(warmupTime), false),
                         RestTimer(SetType.WORK, parseTimeInput(workTime), false),
-                        RestTimer(SetType.DROP, parseTimeInput(dropTime), false)
+                        RestTimer(SetType.DROP, parseTimeInput(dropTime), false),
+                        RestTimer(SetType.FAILURE, parseTimeInput(failureTime), false)
                     )
                     onSave(timers)
                     onDismiss()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = NeonTeal)
             ) {
-                Text("Save Configure", fontWeight = FontWeight.Bold)
+                Text("Save", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -88,16 +108,21 @@ fun ConfigureRestTimerDialog(
 }
 
 @Composable
-fun TimerInputField(
+private fun TimerInputRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    Column {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = TextSecondary,
+            modifier = Modifier.weight(1f)
         )
         OutlinedTextField(
             value = value,
@@ -111,7 +136,8 @@ fun TimerInputField(
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.width(100.dp),
+            textStyle = LocalTextStyle.current.copy(textAlign = androidx.compose.ui.text.style.TextAlign.End),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             placeholder = { Text("mm:ss", color = TextTertiary) },

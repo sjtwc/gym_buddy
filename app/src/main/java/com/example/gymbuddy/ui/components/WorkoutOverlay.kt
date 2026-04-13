@@ -106,6 +106,7 @@ fun WorkoutOverlay(
                         onUpdateWorkoutName = { sessionManager.updateWorkoutName(it) },
                         onEditStartTime = { sessionManager.updateStartTime(it) },
                         onEnableRestTimer = { sessionManager.enableRestTimer(it) },
+                        onSaveRestTimers = { idx, timers -> sessionManager.saveRestTimers(idx, timers) },
                         onMinimizeTimer = { sessionManager.minimizeTimer() },
                         onRestoreTimer = { sessionManager.restoreTimer() },
                         onAdjustTimerTime = { sessionManager.adjustTimerTime(it) }
@@ -221,6 +222,7 @@ fun ExpandedOverlay(
     onUpdateWorkoutName: (String) -> Unit,
     onEditStartTime: (Long) -> Unit,
     onEnableRestTimer: (Int) -> Unit,
+    onSaveRestTimers: (Int, List<RestTimer>) -> Unit,
     onMinimizeTimer: () -> Unit,
     onRestoreTimer: () -> Unit,
     onAdjustTimerTime: (Int) -> Unit
@@ -297,6 +299,7 @@ fun ExpandedOverlay(
                         activeRestExerciseIndex = activeRestExerciseIndex,
                         activeRestSetIndex = activeRestSetIndex,
                         onEnableRestTimer = onEnableRestTimer,
+                        onSaveRestTimers = onSaveRestTimers,
                         onRestoreTimer = onRestoreTimer
                     )
                 }
@@ -488,9 +491,22 @@ fun ExerciseCard(
     activeRestExerciseIndex: Int = -1,
     activeRestSetIndex: Int = -1,
     onEnableRestTimer: (Int) -> Unit = {},
+    onSaveRestTimers: (Int, List<RestTimer>) -> Unit = { _, _ -> },
     onRestoreTimer: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showConfigureTimerDialog by remember { mutableStateOf(false) }
+
+    if (showConfigureTimerDialog) {
+        ConfigureRestTimerDialog(
+            restTimers = exerciseSession.restTimers,
+            onDismiss = { showConfigureTimerDialog = false },
+            onSave = { timers ->
+                onSaveRestTimers(exerciseIndex, timers)
+                showConfigureTimerDialog = false
+            }
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -537,11 +553,11 @@ fun ExerciseCard(
                             )
                             DropdownMenuItem(
                                 text = { 
-                                    Text(if (exerciseSession.isRestTimerEnabled) "Timer Enabled" else "Add Rest Timer")
+                                    Text("Configure Rest Timer")
                                 },
                                 onClick = {
                                     showMenu = false
-                                    onEnableRestTimer(exerciseIndex)
+                                    showConfigureTimerDialog = true
                                 }
                             )
                         }

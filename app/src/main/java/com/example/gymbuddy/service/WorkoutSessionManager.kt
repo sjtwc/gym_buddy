@@ -228,6 +228,10 @@ class WorkoutSessionManager @Inject constructor(
         service?.enableRestTimer(exerciseIndex)
     }
     
+    fun saveRestTimers(exerciseIndex: Int, timers: List<com.example.gymbuddy.domain.model.RestTimer>) {
+        service?.saveRestTimers(exerciseIndex, timers)
+    }
+    
     fun disableRestTimer(exerciseIndex: Int) {
         service?.disableRestTimer(exerciseIndex)
     }
