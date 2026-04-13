@@ -746,7 +746,7 @@ fun SetHeader() {
     ) {
         Text("Set", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(48.dp))
         Text("Prev", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(52.dp))
-        Spacer(modifier = Modifier.weight(1f))
+        Text("Weight", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.weight(1f))
         Text("Reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(60.dp))
         Spacer(modifier = Modifier.size(32.dp))
     }
@@ -910,10 +910,10 @@ fun SetRow(
                     newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
                 },
                 modifier = Modifier.weight(1f).height(36.dp),
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 12.sp),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp, color = TextPrimary),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                placeholder = { Text("kg", style = MaterialTheme.typography.labelSmall, color = TextTertiary) },
+                placeholder = { Text("kg", style = MaterialTheme.typography.labelSmall, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary
@@ -927,10 +927,10 @@ fun SetRow(
                     newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
                 },
                 modifier = Modifier.width(56.dp).height(36.dp),
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 12.sp),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 14.sp, color = TextPrimary),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                placeholder = { Text("reps", style = MaterialTheme.typography.labelSmall, color = TextTertiary) },
+                placeholder = { Text("reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary
