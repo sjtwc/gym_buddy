@@ -237,7 +237,7 @@ fun ExpandedOverlay(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (session?.exercises?.isEmpty() != false) {
-            EmptyExerciseState(onAddExercise = onAddExercise)
+            EmptyExerciseState()
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f),
@@ -412,7 +412,7 @@ fun EditNameDialog(
 }
 
 @Composable
-fun EmptyExerciseState(onAddExercise: () -> Unit) {
+fun EmptyExerciseState() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -427,14 +427,11 @@ fun EmptyExerciseState(onAddExercise: () -> Unit) {
             color = TextSecondary
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = onAddExercise,
-            colors = ButtonDefaults.buttonColors(containerColor = NeonTeal)
-        ) {
-            Icon(Icons.Default.Add, null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Add Exercise")
-        }
+        Text(
+            text = "Use the Add Exercise button below",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextTertiary
+        )
     }
 }
 

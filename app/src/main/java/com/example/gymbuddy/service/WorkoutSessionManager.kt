@@ -66,7 +66,7 @@ class WorkoutSessionManager @Inject constructor(
             scope.launch {
                 svc.workoutSession.collect { session ->
                     _currentSession.value = session
-                    _isActive.value = session != null
+                    _isActive.value = session != null && session?.isCompleted != true
                 }
             }
             scope.launch {
@@ -176,26 +176,23 @@ class WorkoutSessionManager @Inject constructor(
     }
     
     fun finishWorkout() {
-        val workoutId = _currentSession.value?.workoutId
+        val session = _currentSession.value ?: return
         val duration = (_elapsedTime.value / 60).toInt()
         service?.finishWorkout()
         
         scope.launch {
-            workoutId?.let { id ->
-                val volume = workoutRepository.completeWorkout(id, duration)
-                val earnedAchievements = userProfileRepository.recordWorkout(totalVolume = volume)
-                
-                if (earnedAchievements.isNotEmpty()) {
-                    if (earnedAchievements.size == 1) {
-                        notificationService.showAchievementNotification(earnedAchievements.first())
-                    } else {
-                        notificationService.showMultipleAchievementsNotification(earnedAchievements)
-                    }
+            val volume = workoutRepository.saveCompletedWorkout(session, duration)
+            val earnedAchievements = userProfileRepository.recordWorkout(totalVolume = volume)
+            
+            if (earnedAchievements.isNotEmpty()) {
+                if (earnedAchievements.size == 1) {
+                    notificationService.showAchievementNotification(earnedAchievements.first())
+                } else {
+                    notificationService.showMultipleAchievementsNotification(earnedAchievements)
                 }
-                
-                // Update widget
-                com.example.gymbuddy.widget.WidgetPreferences.updateFromDatabase(context)
             }
+            
+            com.example.gymbuddy.widget.WidgetPreferences.updateFromDatabase(context)
         }
         
         resetState()

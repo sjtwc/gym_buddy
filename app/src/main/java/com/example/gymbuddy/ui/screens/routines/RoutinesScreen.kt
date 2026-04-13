@@ -80,28 +80,13 @@ fun RoutinesScreen(
                 }
             } else {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(uiState.routines) { routine ->
-                        RoutineCard(
-                            routine = routine,
-                            onClick = { }
-                        )
-                    }
-                }
-            }
-        }
-    }
-                }
-            } else {
-                LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.weight(1f)
                 ) {
                     items(uiState.routines) { routine ->
                         RoutineCard(
                             routine = routine,
-                            onClick = { /* Could start workout */ },
+                            onClick = { },
                             onEdit = {
                                 navController.navigate(Screen.RoutineEdit.createRoute(routine.id))
                             },

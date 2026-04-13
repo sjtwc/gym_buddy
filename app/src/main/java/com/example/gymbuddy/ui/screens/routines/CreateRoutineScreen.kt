@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.domain.model.RoutineExercise
 import com.example.gymbuddy.ui.screens.exercise.ExercisePickerPage
 import com.example.gymbuddy.ui.theme.*
 
@@ -30,7 +28,7 @@ fun CreateRoutineScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showExercisePicker by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf(RoutineType.CUSTOM.displayName) }
+    var selectedType by remember { mutableStateOf("Custom") }
     var selectedDifficulty by remember { mutableStateOf("Intermediate") }
     val selectedExercises = uiState.selectedExercises
 
@@ -152,10 +150,18 @@ fun CreateRoutineScreen(
                                 Icon(Icons.Default.Close, contentDescription = "Remove", tint = TextTertiary)
                             }
                         }
-        }
-    }
-}
-
+                    }
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No exercises added yet",
+                    color = TextSecondary
+                )
             }
         }
 
@@ -196,7 +202,3 @@ fun CreateRoutineScreen(
         )
     }
 }
-
-data class CreateRoutineUiState(
-    val selectedExercises: List<Exercise> = emptyList()
-)

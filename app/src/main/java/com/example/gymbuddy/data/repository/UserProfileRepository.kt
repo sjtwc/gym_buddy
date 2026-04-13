@@ -2,19 +2,16 @@ package com.example.gymbuddy.data.repository
 
 import com.example.gymbuddy.data.local.dao.RoutineDao
 import com.example.gymbuddy.data.local.dao.RoutineExerciseDao
-import com.example.gymbuddy.data.local.dao.UserProfileDao
 import com.example.gymbuddy.data.local.entity.RoutineEntity
 import com.example.gymbuddy.data.local.entity.RoutineExerciseEntity
-import com.example.gymbuddy.data.local.entity.UserProfileEntity
+import com.example.gymbuddy.data.repository.AchievementRepository
 import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.domain.model.UserProfile
-import com.example.gymbuddy.domain.model.VirtualPet
-import com.example.gymbuddy.domain.model.PetMood
-import com.example.gymbuddy.domain.model.XpConfig
-import com.example.gymbuddy.domain.model.AchievementType
 import kotlinx.coroutines.flow.Flow
-import kotlin.math.pow
 import kotlinx.coroutines.flow.map
+import java.util.Calendar
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 import javax.inject.Inject
 
 class RoutineRepository @Inject constructor(
@@ -151,8 +148,24 @@ class UserProfileRepository @Inject constructor(
     
     private fun calculateStreak(lastWorkoutDate: Long?, currentStreak: Int): Int {
         if (lastWorkoutDate == null) return 1
-        val daysSinceLastWorkout = (System.currentTimeMillis() - lastWorkoutDate) / (1000 * 60 * 60 * 24)
-        return if (daysSinceLastWorkout <= 1) {
+        val calToday = Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis()
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val calLast = Calendar.getInstance().apply {
+            timeInMillis = lastWorkoutDate
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val daysSince = (calToday.timeInMillis - calLast.timeInMillis) / (1000L * 60 * 60 * 24)
+        return if (daysSince == 0L) {
+            currentStreak
+        } else if (daysSince == 1L) {
             currentStreak + 1
         } else {
             1
