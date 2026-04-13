@@ -917,7 +917,7 @@ fun SetRow(
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                suffix = { Text("kg", fontSize = 10.sp, color = TextSecondary) },
+                suffix = { Text("kg", fontSize = 8.sp, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary,
@@ -933,7 +933,7 @@ fun SetRow(
                     repsText = newValue
                     newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
                 },
-                modifier = Modifier.width(60.dp).height(44.dp),
+                modifier = Modifier.width(64.dp).height(44.dp),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
@@ -941,7 +941,7 @@ fun SetRow(
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                suffix = { Text("reps", fontSize = 10.sp, color = TextSecondary) },
+                suffix = { Text("reps", fontSize = 8.sp, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary,
