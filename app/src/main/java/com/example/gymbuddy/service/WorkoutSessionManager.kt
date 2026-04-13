@@ -192,6 +192,7 @@ class WorkoutSessionManager @Inject constructor(
             val profile = userProfileRepository.getUserProfileSync()
             profile?.let {
                 StreakAlarmReceiver.updateStreak(context, it.currentStreak)
+                StreakAlarmReceiver.scheduleAlarm(context, StreakAlarmReceiver.INTERVAL_MINUTES)
             }
             
             if (earnedAchievements.isNotEmpty()) {

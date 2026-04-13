@@ -15,8 +15,16 @@ class StreakAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         createNotificationChannel(context, notificationManager)
+
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val notificationCount = prefs.getInt(KEY_NOTIFICATION_COUNT, 0)
+        val realStreak = prefs.getInt(KEY_STREAK, 0)
+        val newNotificationCount = notificationCount + 1
+
+        prefs.edit().putInt(KEY_NOTIFICATION_COUNT, newNotificationCount).apply()
+
+        val (title, message) = getEscalatingContent(newNotificationCount, realStreak)
 
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -26,8 +34,6 @@ class StreakAlarmReceiver : BroadcastReceiver() {
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        val (title, message, streak) = getMotivationalContent(context)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_agenda)
@@ -41,6 +47,8 @@ class StreakAlarmReceiver : BroadcastReceiver() {
             .build()
 
         notificationManager.notify(NOTIFICATION_ID, notification)
+
+        scheduleAlarm(context, INTERVAL_MINUTES)
     }
 
     private fun createNotificationChannel(context: Context, notificationManager: NotificationManager) {
@@ -57,46 +65,65 @@ class StreakAlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun getMotivationalContent(context: Context): MotivationalContent {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val streak = prefs.getInt(KEY_STREAK, 0)
+    private fun getEscalatingContent(notificationCount: Int, realStreak: Int): Pair<String, String> {
+        val fakeStreak = notificationCount
+        val realStreakDisplay = if (realStreak > 0) " ($realStreak day real streak)" else ""
 
         return when {
-            streak >= 30 -> MotivationalContent(
-                "🔥 $streak DAY STREAK! Don't let it die!",
-                "You've built an incredible habit! One workout today keeps the beast alive!",
-                streak
+            fakeStreak >= 60 -> Pair(
+                "💀💀💀 $fakeStreak DAYS OF SILENCE 💀💀💀",
+                "Your streak has been dead for an HOUR. We gave up counting. Just... go workout. Please."
             )
-            streak >= 14 -> MotivationalContent(
-                "💪 $streak days - You're on fire!",
-                "Two weeks strong! Your future self is begging you to keep going!",
-                streak
+            fakeStreak >= 45 -> Pair(
+                "🚨🔥 THE STREAK IS CRYING 🔥🚨",
+                "Your streak went from '🔥 45 day beast 🔥' to this. It's embarrassed. Fix it."
             )
-            streak >= 7 -> MotivationalContent(
-                "🎯 $streak day streak - Almost a week!",
-                "Don't quit now! You're so close to a full week. Just one workout!",
-                streak
+            fakeStreak >= 30 -> Pair(
+                "🔥🔥🔥 DAY $fakeStreak - THIS IS PATHETIC 🔥🔥🔥",
+                "A whole month of reminders and you're STILL reading this instead of working out?!"
             )
-            streak >= 3 -> MotivationalContent(
-                "⚡ $streak day streak building!",
-                "Momentum is building! Keep the chain alive!",
-                streak
+            fakeStreak >= 20 -> Pair(
+                "💀 DAY $fakeStreak - YOUR POTENTIAL DIED",
+                "Your muscles have forgotten you exist. Reconnect. GO GYM NOW."
             )
-            else -> MotivationalContent(
-                "🏃 Start your streak today!",
-                "Your first workout starts the journey!",
-                0
+            fakeStreak >= 14 -> Pair(
+                "😭 TWO WEEKS OF REGRETS 😭",
+                "You've seen 200+ of these notifications. Your body is judging you. Time to prove it wrong!"
+            )
+            fakeStreak >= 10 -> Pair(
+                "🚨 DAY $fakeStreak - DON'T BE A COWARD 🚨",
+                "Double digits! But for what? To quit? NO. Keep going. ONE. MORE. DAY."
+            )
+            fakeStreak >= 7 -> Pair(
+                "😤 ONE WEEK... ALMOST... DON'T QUIT NOW 😤",
+                "Day $fakeStreak fake streak$realStreakDisplay but hey, at least you're consistent at reading these!"
+            )
+            fakeStreak >= 5 -> Pair(
+                "😰 Day $fakeStreak - Your streak is embarrassed 😰",
+                "It doesn't want to show its face. Give it something to be proud of!"
+            )
+            fakeStreak >= 3 -> Pair(
+                "⚡ Day $fakeStreak - Momentum is BUILDING ⚡",
+                "Almost a week! Can you feel the gains? They're waiting. Don't stop now!"
+            )
+            fakeStreak >= 2 -> Pair(
+                "🏃 Day $fakeStreak - Your streak is WAITING 🏃",
+                "Just 2 more days and it's officially a streak. Is that so hard?!"
+            )
+            else -> Pair(
+                "🏃 Start your streak today! 🏃",
+                "Day 1$realStreakDisplay - Every legend started somewhere. That somewhere is the gym. GO!"
             )
         }
     }
-
-    data class MotivationalContent(val title: String, val message: String, val streak: Int)
 
     companion object {
         const val CHANNEL_ID = "streak_reminder_channel"
         const val NOTIFICATION_ID = 1001
         const val PREFS_NAME = "streak_prefs"
         const val KEY_STREAK = "current_streak"
+        const val KEY_NOTIFICATION_COUNT = "notification_count"
+        const val INTERVAL_MINUTES = 2L
 
         fun scheduleAlarm(context: Context, intervalMinutes: Long) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -142,6 +169,14 @@ class StreakAlarmReceiver : BroadcastReceiver() {
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putInt(KEY_STREAK, streak)
+                .putInt(KEY_NOTIFICATION_COUNT, 0)
+                .apply()
+        }
+
+        fun resetNotificationCount(context: Context) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putInt(KEY_NOTIFICATION_COUNT, 0)
                 .apply()
         }
     }
