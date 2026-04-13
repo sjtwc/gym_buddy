@@ -914,7 +914,7 @@ fun SetRow(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
                     color = TextPrimary,
-                    lineHeight = 20.sp
+                    lineHeight = 28.sp
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
@@ -939,7 +939,7 @@ fun SetRow(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
                     color = TextPrimary,
-                    lineHeight = 20.sp
+                    lineHeight = 28.sp
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
