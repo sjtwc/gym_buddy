@@ -189,6 +189,11 @@ class WorkoutSessionManager @Inject constructor(
             val volume = workoutRepository.saveCompletedWorkout(session, duration)
             val earnedAchievements = userProfileRepository.recordWorkout(totalVolume = volume)
             
+            val profile = userProfileRepository.getUserProfileSync()
+            profile?.let {
+                StreakAlarmReceiver.updateStreak(context, it.currentStreak)
+            }
+            
             if (earnedAchievements.isNotEmpty()) {
                 if (earnedAchievements.size == 1) {
                     notificationService.showAchievementNotification(earnedAchievements.first())
