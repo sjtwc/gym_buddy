@@ -909,7 +909,7 @@ fun SetRow(
                     weightText = newValue
                     newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
                 },
-                modifier = Modifier.weight(1f).height(36.dp),
+                modifier = Modifier.weight(1f).height(44.dp),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
@@ -917,12 +917,13 @@ fun SetRow(
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                placeholder = { Text("kg", style = MaterialTheme.typography.labelSmall, color = TextSecondary) },
+                suffix = { Text("kg", fontSize = 10.sp, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary,
                     focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
+                    unfocusedTextColor = TextPrimary,
+                    cursorColor = NeonTeal
                 )
             )
 
@@ -932,7 +933,7 @@ fun SetRow(
                     repsText = newValue
                     newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
                 },
-                modifier = Modifier.width(56.dp).height(36.dp),
+                modifier = Modifier.width(60.dp).height(44.dp),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = 14.sp,
@@ -940,12 +941,13 @@ fun SetRow(
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                placeholder = { Text("reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary) },
+                suffix = { Text("reps", fontSize = 10.sp, color = TextSecondary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = NeonTeal,
                     unfocusedBorderColor = TextTertiary,
                     focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary
+                    unfocusedTextColor = TextPrimary,
+                    cursorColor = NeonTeal
                 )
             )
 
