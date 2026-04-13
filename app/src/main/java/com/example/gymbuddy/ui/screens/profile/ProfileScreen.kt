@@ -48,7 +48,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
             title = uiState.userProfile?.title ?: "Novice",
-            petMood = uiState.userProfile?.pet?.mood ?: PetMood.NEUTRAL
+            petMood = uiState.effectivePetMood
         )
         
         Spacer(modifier = Modifier.height(24.dp))

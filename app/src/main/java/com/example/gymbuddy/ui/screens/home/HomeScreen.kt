@@ -83,8 +83,8 @@ fun HomeScreen(
         
         PetSection(
             petName = uiState.userProfile?.pet?.name ?: "GymBot",
-            happiness = uiState.userProfile?.pet?.happiness ?: 50,
-            mood = uiState.userProfile?.pet?.mood ?: PetMood.NEUTRAL
+            happiness = uiState.effectivePetHappiness,
+            mood = uiState.effectivePetMood
         )
         
         Spacer(modifier = Modifier.height(24.dp))

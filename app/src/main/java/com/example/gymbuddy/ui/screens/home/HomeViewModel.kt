@@ -8,8 +8,10 @@ import com.example.gymbuddy.data.repository.UserProfileRepository
 import com.example.gymbuddy.data.repository.WorkoutRepository
 import com.example.gymbuddy.domain.model.GymChain
 import com.example.gymbuddy.domain.model.GymLocation
+import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.Routine
 import com.example.gymbuddy.domain.model.UserProfile
+import com.example.gymbuddy.domain.model.VirtualPet
 import com.example.gymbuddy.domain.model.Workout
 import com.example.gymbuddy.service.LocationService
 import com.example.gymbuddy.util.GymLocationHelper
@@ -27,7 +29,9 @@ data class HomeUiState(
     val userLocation: Location? = null,
     val nearestGym: GymLocation? = null,
     val isLoadingLocation: Boolean = false,
-    val locationError: String? = null
+    val locationError: String? = null,
+    val effectivePetMood: PetMood = PetMood.NEUTRAL,
+    val effectivePetHappiness: Int = 50
 )
 
 @HiltViewModel
@@ -50,7 +54,19 @@ class HomeViewModel @Inject constructor(
     private fun loadData() {
         userProfileRepository.getUserProfile()
             .onEach { profile ->
-                _uiState.update { it.copy(userProfile = profile, isLoading = false) }
+                val lastWorkoutDate = profile?.lastWorkoutDate
+                val baseHappiness = profile?.pet?.happiness ?: 50
+                val effectiveMood = VirtualPet.calculateMood(lastWorkoutDate)
+                val effectiveHappiness = VirtualPet.calculateHappiness(lastWorkoutDate, baseHappiness)
+                
+                _uiState.update { 
+                    it.copy(
+                        userProfile = profile, 
+                        isLoading = false,
+                        effectivePetMood = effectiveMood,
+                        effectivePetHappiness = effectiveHappiness
+                    ) 
+                }
             }
             .launchIn(viewModelScope)
         

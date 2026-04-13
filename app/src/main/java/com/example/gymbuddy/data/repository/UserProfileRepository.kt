@@ -189,6 +189,7 @@ class UserProfileRepository @Inject constructor(
         longestStreak = longestStreak,
         totalWorkouts = totalWorkouts,
         totalVolume = totalVolume,
+        lastWorkoutDate = lastWorkoutDate,
         pet = VirtualPet(
             name = petName,
             happiness = petHappiness,

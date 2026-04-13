@@ -10,6 +10,7 @@ data class UserProfile(
     val longestStreak: Int = 0,
     val totalWorkouts: Int = 0,
     val totalVolume: Float = 0f,
+    val lastWorkoutDate: Long? = null,
     val pet: VirtualPet = VirtualPet()
 )
 
@@ -19,7 +20,40 @@ data class VirtualPet(
     val mood: PetMood = PetMood.NEUTRAL,
     val level: Int = 1,
     val xp: Int = 0
-)
+) {
+    companion object {
+        fun calculateMood(lastWorkoutDate: Long?): PetMood {
+            val daysSince = calculateDaysSince(lastWorkoutDate)
+            return when (daysSince) {
+                0 -> PetMood.EXCITED
+                1 -> PetMood.HAPPY
+                in 2..3 -> PetMood.NEUTRAL
+                in 4..6 -> PetMood.SAD
+                in 7..13 -> PetMood.DISAPPOINTED
+                else -> PetMood.WAITING
+            }
+        }
+
+        fun calculateHappiness(lastWorkoutDate: Long?, baseHappiness: Int): Int {
+            val daysSince = calculateDaysSince(lastWorkoutDate)
+            return when (daysSince) {
+                0 -> minOf(100, baseHappiness + 20)
+                1 -> (baseHappiness * 0.95).toInt().coerceIn(10, 100)
+                2 -> (baseHappiness * 0.85).toInt().coerceIn(10, 100)
+                3 -> (baseHappiness * 0.70).toInt().coerceIn(10, 100)
+                in 4..6 -> (baseHappiness * 0.50).toInt().coerceIn(10, 100)
+                in 7..13 -> (baseHappiness * 0.30).toInt().coerceIn(10, 100)
+                else -> (baseHappiness * 0.10).toInt().coerceIn(10, 100)
+            }
+        }
+
+        private fun calculateDaysSince(lastWorkoutDate: Long?): Int {
+            if (lastWorkoutDate == null) return Int.MAX_VALUE
+            val diff = System.currentTimeMillis() - lastWorkoutDate
+            return (diff / (24 * 60 * 60 * 1000)).toInt()
+        }
+    }
+}
 
 enum class PetMood(val displayName: String, val emoji: String, val message: String) {
     HAPPY("Happy", "😊", "Great workout! Let's keep the momentum going!"),
