@@ -139,6 +139,10 @@ class WorkoutSessionManager @Inject constructor(
         }
         context.startForegroundService(intent)
         bindService()
+        scope.launch {
+            delay(100)
+            loadExercisesFromWorkout(workoutId)
+        }
     }
 
     fun loadExercisesFromWorkout(workoutId: Long) {
@@ -170,6 +174,16 @@ class WorkoutSessionManager @Inject constructor(
                 } else {
                     pendingExercisesToLoad = exerciseSessions
                 }
+            }
+        }
+    }
+
+    private fun ensureExercisesLoaded() {
+        val workoutId = pendingWorkoutId ?: return
+        val exercises = pendingExercisesToLoad
+        if (service != null) {
+            scope.launch {
+                loadExercisesInternal(workoutId, exercises)
             }
         }
     }
