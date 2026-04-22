@@ -87,6 +87,8 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.hilt:hilt-work:1.1.0")
     ksp("androidx.hilt:hilt-compiler:1.1.0")

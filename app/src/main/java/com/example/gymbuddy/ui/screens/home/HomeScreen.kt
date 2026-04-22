@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -101,6 +103,7 @@ fun HomeScreen(
             gymChains = viewModel.gymChains,
             selectedChain = uiState.selectedGymChain,
             nearestGym = uiState.nearestGym,
+            chainGymLocations = uiState.chainGymLocations,
             userLocation = uiState.userLocation,
             isLoading = uiState.isLoadingLocation,
             error = uiState.locationError,
@@ -454,6 +457,7 @@ fun GymFinderSection(
     gymChains: List<GymChain>,
     selectedChain: GymChain?,
     nearestGym: GymLocation?,
+    chainGymLocations: List<GymLocation>,
     userLocation: android.location.Location?,
     isLoading: Boolean,
     error: String?,
@@ -567,7 +571,8 @@ fun GymFinderSection(
             if (nearestGym != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 NearestGymMap(
-                    gymLocation = nearestGym,
+                    nearestGym = nearestGym,
+                    allGymLocations = chainGymLocations,
                     userLat = userLocation?.latitude,
                     userLng = userLocation?.longitude
                 )
@@ -590,17 +595,13 @@ private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Do
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun NearestGymMap(
-    gymLocation: GymLocation,
+    nearestGym: GymLocation,
+    allGymLocations: List<GymLocation>,
     userLat: Double?,
     userLng: Double?
 ) {
-    val mapUrl = remember(gymLocation) {
-        if (gymLocation.latitude != null && gymLocation.longitude != null) {
-            "https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15"
-        } else {
-            "https://www.openstreetmap.org/?search=${gymLocation.address}&zoom=15"
-        }
-    }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var selectedGym by remember { mutableStateOf<GymLocation?>(null) }
 
     Column {
         Card(
@@ -628,13 +629,13 @@ fun NearestGymMap(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = gymLocation.name,
+                            text = nearestGym.name,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = gymLocation.address,
+                            text = nearestGym.address,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -645,7 +646,7 @@ fun NearestGymMap(
                             color = NeonTeal.copy(alpha = 0.2f)
                         ) {
                             Text(
-                                text = "Your Location",
+                                text = "Nearest",
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = NeonTeal
@@ -653,15 +654,11 @@ fun NearestGymMap(
                         }
                     }
                 }
-                
-                if (userLat != null && userLng != null) {
+
+                if (userLat != null && userLng != null && nearestGym.latitude != null && nearestGym.longitude != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (gymLocation.latitude != null && gymLocation.longitude != null) {
-                            "Distance: ${calculateDistance(userLat, userLng, gymLocation.latitude, gymLocation.longitude)} away"
-                        } else {
-                            "Coordinates unavailable"
-                        },
+                        text = "Distance: ${calculateDistance(userLat, userLng, nearestGym.latitude, nearestGym.longitude)} away",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextSecondary
                     )
@@ -674,79 +671,128 @@ fun NearestGymMap(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .height(350.dp)
                 .clip(RoundedCornerShape(12.dp))
         ) {
             AndroidView(
-                factory = { context ->
-                    WebView(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        webViewClient = WebViewClient()
-                        settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
-                        settings.allowFileAccess = true
-                        settings.allowContentAccess = true
-                        settings.setGeolocationEnabled(true)
-                        loadUrl(mapUrl)
+                factory = { ctx ->
+                    org.osmdroid.views.MapView(ctx).apply {
+                        setMultiTouchControls(true)
+                        controller.setZoom(15.0)
+                        if (userLat != null && userLng != null) {
+                            controller.setCenter(org.osmdroid.util.GeoPoint(userLat, userLng))
+                        } else if (nearestGym.latitude != null && nearestGym.longitude != null) {
+                            controller.setCenter(org.osmdroid.util.GeoPoint(nearestGym.latitude, nearestGym.longitude))
+                        }
                     }
                 },
-                update = { webView ->
-                    webView.loadUrl(mapUrl)
+                update = { mapView ->
+                    mapView.overlays.clear()
+
+                    if (userLat != null && userLng != null) {
+                        val userMarker = org.osmdroid.views.overlay.Marker(mapView).apply {
+                            position = org.osmdroid.util.GeoPoint(userLat, userLng)
+                            setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_CENTER)
+                            title = "Your Location"
+                            icon = context.getDrawable(android.R.drawable.ic_menu_mylocation)
+                        }
+                        mapView.overlays.add(userMarker)
+                    }
+
+                    allGymLocations.forEach { gym ->
+                        if (gym.latitude != null && gym.longitude != null) {
+                            val isNearest = gym == nearestGym
+                            val marker = org.osmdroid.views.overlay.Marker(mapView).apply {
+                                position = org.osmdroid.util.GeoPoint(gym.latitude, gym.longitude)
+                                setAnchor(org.osmdroid.views.overlay.Marker.ANCHOR_CENTER, org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM)
+                                title = gym.name
+                                snippet = gym.address
+                                icon = if (isNearest) {
+                                    context.getDrawable(context.resources.getIdentifier("ic_nearest_gym", "drawable", context.packageName))
+                                } else {
+                                    context.getDrawable(context.resources.getIdentifier("ic_gym_marker", "drawable", context.packageName))
+                                }
+                                setOnMarkerClickListener { _, _ ->
+                                    selectedGym = gym
+                                    true
+                                }
+                            }
+                            mapView.overlays.add(marker)
+                        }
+                    }
+
+                    mapView.invalidate()
                 },
                 modifier = Modifier.fillMaxSize()
             )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "Google Maps",
-            style = MaterialTheme.typography.labelMedium,
-            color = TextSecondary
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        val googleMapsUrl = remember(gymLocation) {
-            if (gymLocation.latitude != null && gymLocation.longitude != null) {
-                "https://www.google.com/maps?q=${gymLocation.latitude},${gymLocation.longitude}&output=embed"
-            } else {
-                "https://www.google.com/maps/search/${gymLocation.address}&output=embed"
+            if (selectedGym != null) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = selectedGym!!.name,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = selectedGym!!.address,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                if (userLat != null && userLng != null && selectedGym!!.latitude != null && selectedGym!!.longitude != null) {
+                                    Text(
+                                        text = calculateDistance(userLat, userLng, selectedGym!!.latitude!!, selectedGym!!.longitude!!) + " away",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+                            IconButton(onClick = { selectedGym = null }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Close")
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = {
+                                selectedGym?.latitude?.let { lat ->
+                                    selectedGym?.longitude?.let { lng ->
+                                        val navUrl = "https://www.openstreetmap.org/directions?from=$userLat,$userLng&to=$lat,$lng&route_type=foot"
+                                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(navUrl))
+                                        context.startActivity(intent)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
+                            enabled = userLat != null && userLng != null && selectedGym?.latitude != null
+                        ) {
+                            Icon(Icons.Default.DirectionsWalk, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Navigate")
+                        }
+                    }
+                }
             }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
-                .clip(RoundedCornerShape(12.dp))
-        ) {
-            AndroidView(
-                factory = { context ->
-                    WebView(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        webViewClient = WebViewClient()
-                        settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
-                        settings.setGeolocationEnabled(true)
-                        loadUrl(googleMapsUrl)
-                    }
-                },
-                update = { webView ->
-                    webView.loadUrl(googleMapsUrl)
-                },
-                modifier = Modifier.fillMaxSize()
-            )
         }
     }
 }

@@ -29,6 +29,7 @@ data class HomeUiState(
     val selectedGymChain: GymChain? = null,
     val userLocation: Location? = null,
     val nearestGym: GymLocation? = null,
+    val chainGymLocations: List<GymLocation> = emptyList(),
     val isLoadingLocation: Boolean = false,
     val locationError: String? = null,
     val effectivePetMood: PetMood = PetMood.NEUTRAL,
@@ -107,20 +108,24 @@ class HomeViewModel @Inject constructor(
     private fun findNearestGym(chain: GymChain) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingLocation = true, locationError = null) }
-            
+
             try {
                 val lastLocation = locationService.getLastKnownLocation()
                 if (lastLocation != null) {
                     _uiState.update { it.copy(userLocation = lastLocation) }
-                    
-                    val nearest = GymLocationHelper.findNearestGym(
+
+                    val chainLocations = GymLocationHelper.getLocationsByChain(chain)
+                    val sortedGyms = GymLocationHelper.sortGymsByDistance(
                         lastLocation.latitude,
                         lastLocation.longitude,
-                        chain
-                    )
-                    _uiState.update { 
+                        chainLocations
+                    ).take(15)
+
+                    val nearest = sortedGyms.firstOrNull()
+                    _uiState.update {
                         it.copy(
-                            nearestGym = nearest, 
+                            nearestGym = nearest,
+                            chainGymLocations = sortedGyms,
                             isLoadingLocation = false
                         )
                     }
@@ -129,22 +134,26 @@ class HomeViewModel @Inject constructor(
                         .first()
                         .let { location ->
                             _uiState.update { it.copy(userLocation = location) }
-                            
-                            val nearest = GymLocationHelper.findNearestGym(
+
+                            val chainLocations = GymLocationHelper.getLocationsByChain(chain)
+                            val sortedGyms = GymLocationHelper.sortGymsByDistance(
                                 location.latitude,
                                 location.longitude,
-                                chain
-                            )
-                            _uiState.update { 
+                                chainLocations
+                            ).take(15)
+
+                            val nearest = sortedGyms.firstOrNull()
+                            _uiState.update {
                                 it.copy(
-                                    nearestGym = nearest, 
+                                    nearestGym = nearest,
+                                    chainGymLocations = sortedGyms,
                                     isLoadingLocation = false
                                 )
                             }
                         }
                 }
             } catch (e: Exception) {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         locationError = "Could not get location: ${e.message}",
                         isLoadingLocation = false

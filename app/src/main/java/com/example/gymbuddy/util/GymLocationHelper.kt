@@ -76,7 +76,15 @@ object GymLocationHelper {
 
     suspend fun findNearestGym(userLat: Double, userLng: Double, chain: GymChain): GymLocation? {
         val chainLocations = getLocationsByChain(chain)
-        if (chainLocations.isEmpty()) return null
+        return sortGymsByDistance(userLat, userLng, chainLocations).firstOrNull()
+    }
+
+    suspend fun sortGymsByDistance(
+        userLat: Double,
+        userLng: Double,
+        locations: List<GymLocation>
+    ): List<GymLocation> {
+        if (locations.isEmpty()) return emptyList()
 
         val userLocation = Location("user").apply {
             latitude = userLat
@@ -84,38 +92,26 @@ object GymLocationHelper {
         }
 
         val geocodingService = this.geocodingService
-        if (geocodingService != null) {
-            val locationsWithCoords = chainLocations.map { location ->
-                var latLng: LatLng? = null
-                if (location.latitude != null && location.longitude != null) {
-                    latLng = LatLng(location.latitude, location.longitude)
-                } else {
-                    val geocodeResult = geocodingService.geocodeAddress(location.address).first()
-                    geocodeResult.getOrNull()?.let { latLng = it }
-                }
-                location to latLng
-            }.filter { it.second != null }
-
-            if (locationsWithCoords.isNotEmpty()) {
-                return locationsWithCoords.minByOrNull { (location, latLng) ->
-                    val gymLocation = Location("gym").apply {
-                        latitude = latLng!!.latitude
-                        longitude = latLng!!.longitude
-                    }
-                    userLocation.distanceTo(gymLocation)
-                }?.first
+        val locationsWithCoords = locations.map { location ->
+            var latLng: LatLng? = null
+            if (location.latitude != null && location.longitude != null) {
+                latLng = LatLng(location.latitude, location.longitude)
+            } else if (geocodingService != null) {
+                val geocodeResult = geocodingService.geocodeAddress(location.address).first()
+                geocodeResult.getOrNull()?.let { latLng = it }
             }
-        }
+            location to latLng
+        }.filter { it.second != null }
 
-        return chainLocations
-            .filter { it.latitude != null && it.longitude != null }
-            .minByOrNull { gym ->
+        return locationsWithCoords
+            .sortedBy { (_, latLng) ->
                 val gymLocation = Location("gym").apply {
-                    latitude = gym.latitude!!
-                    longitude = gym.longitude!!
+                    latitude = latLng!!.latitude
+                    longitude = latLng!!.longitude
                 }
                 userLocation.distanceTo(gymLocation)
             }
+            .map { it.first }
     }
 
     fun getAllChains(): List<GymChain> = GymChain.entries
