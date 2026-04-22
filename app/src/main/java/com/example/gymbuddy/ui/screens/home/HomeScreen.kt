@@ -595,7 +595,11 @@ fun NearestGymMap(
     userLng: Double?
 ) {
     val mapUrl = remember(gymLocation) {
-        "https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15"
+        if (gymLocation.latitude != null && gymLocation.longitude != null) {
+            "https://www.openstreetmap.org/?mlat=${gymLocation.latitude}&mlon=${gymLocation.longitude}&zoom=15"
+        } else {
+            "https://www.openstreetmap.org/?search=${gymLocation.address}&zoom=15"
+        }
     }
 
     Column {
@@ -653,7 +657,11 @@ fun NearestGymMap(
                 if (userLat != null && userLng != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Distance: ${calculateDistance(userLat, userLng, gymLocation.latitude, gymLocation.longitude)} away",
+                        text = if (gymLocation.latitude != null && gymLocation.longitude != null) {
+                            "Distance: ${calculateDistance(userLat, userLng, gymLocation.latitude, gymLocation.longitude)} away"
+                        } else {
+                            "Coordinates unavailable"
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = TextSecondary
                     )
@@ -689,6 +697,53 @@ fun NearestGymMap(
                 },
                 update = { webView ->
                     webView.loadUrl(mapUrl)
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Google Maps",
+            style = MaterialTheme.typography.labelMedium,
+            color = TextSecondary
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        val googleMapsUrl = remember(gymLocation) {
+            if (gymLocation.latitude != null && gymLocation.longitude != null) {
+                "https://www.google.com/maps?q=${gymLocation.latitude},${gymLocation.longitude}&output=embed"
+            } else {
+                "https://www.google.com/maps/search/${gymLocation.address}&output=embed"
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .clip(RoundedCornerShape(12.dp))
+        ) {
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        webViewClient = WebViewClient()
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.loadWithOverviewMode = true
+                        settings.useWideViewPort = true
+                        settings.setGeolocationEnabled(true)
+                        loadUrl(googleMapsUrl)
+                    }
+                },
+                update = { webView ->
+                    webView.loadUrl(googleMapsUrl)
                 },
                 modifier = Modifier.fillMaxSize()
             )

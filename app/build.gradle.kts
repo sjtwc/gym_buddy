@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 kotlin {
@@ -80,6 +81,11 @@ dependencies {
 
     implementation("androidx.webkit:webkit:1.10.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    implementation("io.ktor:ktor-client-android:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.hilt:hilt-work:1.1.0")

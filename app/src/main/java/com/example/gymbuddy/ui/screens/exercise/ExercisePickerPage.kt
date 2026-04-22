@@ -108,9 +108,14 @@ fun ExercisePickerPage(
                         )
                     }
                 } else {
+                    val groupedExercises = viewModel.getGroupedExercises()
+                        .mapValues { (_, exercises) -> 
+                            exercises.filter { it.id !in alreadyAddedExerciseIds }
+                        }
+                        .filterValues { it.isNotEmpty() }
                     ExerciseGroupedList(
-                        groupedExercises = viewModel.getGroupedExercises(),
-                        selectedExercises = uiState.selectedExercises,
+                        groupedExercises = groupedExercises,
+                        selectedExercises = uiState.selectedExercises.filter { it.id !in alreadyAddedExerciseIds }.toSet(),
                         onToggle = { viewModel.toggleExerciseSelection(it) }
                     )
                 }

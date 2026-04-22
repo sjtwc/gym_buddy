@@ -4,8 +4,8 @@ data class GymLocation(
     val name: String,
     val chain: GymChain,
     val address: String,
-    val latitude: Double,
-    val longitude: Double
+    val latitude: Double?,
+    val longitude: Double?
 )
 
 enum class GymChain(val displayName: String) {

@@ -13,6 +13,7 @@ import com.example.gymbuddy.domain.model.Routine
 import com.example.gymbuddy.domain.model.UserProfile
 import com.example.gymbuddy.domain.model.VirtualPet
 import com.example.gymbuddy.domain.model.Workout
+import com.example.gymbuddy.service.GeocodingService
 import com.example.gymbuddy.service.LocationService
 import com.example.gymbuddy.util.GymLocationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,15 +40,17 @@ class HomeViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
     private val routineRepository: RoutineRepository,
     private val workoutRepository: WorkoutRepository,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    private val geocodingService: GeocodingService
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     val gymChains: List<GymChain> = GymLocationHelper.getAllChains()
-    
+
     init {
+        GymLocationHelper.inject(geocodingService)
         loadData()
     }
     
