@@ -48,6 +48,7 @@ class ScheduledWorkoutRepository @Inject constructor(
     suspend fun saveScheduledWorkout(dayOfWeek: Int, routineId: Long?, isRestDay: Boolean) {
         val weekStart = getWeekStartDate()
         val entity = ScheduledWorkoutEntity(
+            scheduleKey = ScheduledWorkoutEntity.createKey(weekStart, dayOfWeek),
             weekStartDate = weekStart,
             dayOfWeek = dayOfWeek,
             routineId = routineId,

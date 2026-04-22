@@ -26,4 +26,7 @@ interface ScheduledWorkoutDao {
 
     @Query("DELETE FROM scheduled_workouts WHERE weekStartDate = :weekStartDate AND dayOfWeek = :dayOfWeek")
     suspend fun clearDaySchedule(weekStartDate: Long, dayOfWeek: Int)
+
+    @Query("DELETE FROM scheduled_workouts WHERE scheduleKey = :scheduleKey")
+    suspend fun deleteByKey(scheduleKey: String)
 }

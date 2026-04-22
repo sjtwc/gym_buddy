@@ -77,22 +77,17 @@ fun WorkoutScreen(
         // Weekly Schedule Section
         WeeklyScheduleSection(
             scheduledWorkouts = uiState.scheduledWorkouts,
-            suggestedSchedule = uiState.suggestedSchedule,
             routines = uiState.routines,
             isExpanded = "weeklySchedule" in uiState.expandedSections,
             dayNames = dayNames,
             onToggleExpand = { viewModel.toggleSection("weeklySchedule") },
-            onGenerateSuggested = { viewModel.generateSuggestedSchedule() },
-            onApplySuggested = { viewModel.applySuggestedSchedule() },
             onClearSchedule = { viewModel.clearWeekSchedule() },
             onSaveDay = { dayOfWeek, routineId, isRestDay ->
                 viewModel.saveScheduledWorkout(dayOfWeek, routineId, isRestDay)
             },
             onStartWorkout = { routine ->
                 viewModel.startWorkoutWithRoutine(routine, sessionManager)
-            },
-            getRoutineById = { id -> viewModel.getRoutineById(id) },
-            viewModel = viewModel
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -146,21 +141,16 @@ fun WorkoutScreen(
 @Composable
 fun WeeklyScheduleSection(
     scheduledWorkouts: List<ScheduledWorkout>,
-    suggestedSchedule: List<ScheduledWorkout>,
     routines: List<Routine>,
     isExpanded: Boolean,
     dayNames: List<String>,
     onToggleExpand: () -> Unit,
-    onGenerateSuggested: () -> Unit,
-    onApplySuggested: () -> Unit,
     onClearSchedule: () -> Unit,
     onSaveDay: (Int, Long?, Boolean) -> Unit,
-    onStartWorkout: (Routine) -> Unit,
-    getRoutineById: suspend (Long) -> Routine?,
-    viewModel: WorkoutViewModel
+    onStartWorkout: (Routine) -> Unit
 ) {
-    var showDayPicker by remember { mutableStateOf<Int?>(null) }
-    var selectedRoutine by remember { mutableStateOf<Routine?>(null) }
+    val currentDayOfWeek = getCurrentDayOfWeek()
+    val expandedDay = remember { mutableStateOf<Int?>(null) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -189,149 +179,172 @@ fun WeeklyScheduleSection(
                 )
             }
 
+            if (!isExpanded) {
+                MiniWeekView(
+                    scheduledWorkouts = scheduledWorkouts,
+                    dayNames = dayNames,
+                    onDayClick = { onToggleExpand() }
+                )
+            }
+
             AnimatedVisibility(visible = isExpanded) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Row(
+                    Button(
+                        onClick = onClearSchedule,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = TextTertiary),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
-                        Button(
-                            onClick = onGenerateSuggested,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(vertical = 8.dp)
-                        ) {
-                            Text("Auto-Suggest", style = MaterialTheme.typography.labelMedium)
-                        }
-                        Button(
-                            onClick = onClearSchedule,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = TextTertiary),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(vertical = 8.dp)
-                        ) {
-                            Text("Clear", style = MaterialTheme.typography.labelMedium)
-                        }
+                        Text("Clear All", style = MaterialTheme.typography.labelMedium)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    if (suggestedSchedule.isNotEmpty()) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = NeonTeal.copy(alpha = 0.1f)),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = "Suggested Schedule",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = NeonTeal
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                suggestedSchedule.forEach { scheduled ->
-                                    val dayName = dayNames.getOrNull(scheduled.dayOfWeek - 1) ?: ""
-                                    val routineName = routines.find { it.id == scheduled.routineId }?.name
-                                    Text(
-                                        text = "$dayName: ${if (scheduled.isRestDay) "Rest" else routineName ?: "-"}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(
-                                    onClick = onApplySuggested,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text("Apply Schedule", style = MaterialTheme.typography.labelMedium)
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
+                    dayNames.forEachIndexed { index, dayName ->
+                        val dayOfWeek = index + 1
+                        val scheduled = scheduledWorkouts.find { it.dayOfWeek == dayOfWeek }
+                        val routineName = routines.find { it.id == scheduled?.routineId }?.name
+                        val isToday = dayOfWeek == currentDayOfWeek
 
-                    val currentDayOfWeek = getCurrentDayOfWeek()
-                    val closestThreeDays = (0..2).map { offset ->
-                        ((currentDayOfWeek - 1 + offset) % 7) + 1
-                    }
-                    val filteredWorkouts = scheduledWorkouts.filter { it.dayOfWeek in closestThreeDays }
-
-                    filteredWorkouts.forEach { scheduled ->
-                        val dayName = dayNames.getOrNull(scheduled.dayOfWeek - 1) ?: "Day ${scheduled.dayOfWeek}"
-                        val routineName = routines.find { it.id == scheduled.routineId }?.name
-                        val isToday = scheduled.dayOfWeek == currentDayOfWeek
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showDayPicker = scheduled.dayOfWeek }
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = dayName,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    if (isToday) {
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = NeonTeal.copy(alpha = 0.2f)
-                                        ) {
-                                            Text(
-                                                text = "Today",
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = NeonTeal
-                                            )
-                                        }
-                                    }
-                                }
-                                Text(
-                                    text = if (scheduled.isRestDay) "Rest Day" else routineName ?: "Not scheduled",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (scheduled.isRestDay) TextTertiary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                        DayScheduleRow(
+                            dayName = dayName,
+                            routineName = if (scheduled?.isRestDay == true) null else routineName,
+                            isToday = isToday,
+                            isExpanded = expandedDay.value == dayOfWeek,
+                            onSelectDay = {
+                                expandedDay.value = dayOfWeek
                             }
-                            if (!scheduled.isRestDay && scheduled.routineId != null) {
-                                val routine = routines.find { it.id == scheduled.routineId }
-                                if (routine != null) {
-                                    TextButton(
-                                        onClick = { onStartWorkout(routine) },
-                                        contentPadding = PaddingValues(horizontal = 8.dp)
-                                    ) {
-                                        Text("Start", color = NeonTeal)
-                                    }
-                                }
-                            }
-                        }
+                        )
                     }
                 }
             }
         }
     }
 
-    if (showDayPicker != null) {
+    LaunchedEffect(expandedDay.value) {
+        // Dialog state is managed by expandedDay.value
+    }
+
+    if (expandedDay.value != null) {
+        val dayOfWeek = expandedDay.value!!
+        val dayName = dayNames.getOrNull(dayOfWeek - 1) ?: "Day $dayOfWeek"
+        val scheduled = scheduledWorkouts.find { it.dayOfWeek == dayOfWeek }
         DayPickerDialog(
-            dayOfWeek = showDayPicker!!,
-            dayName = dayNames.getOrNull(showDayPicker!! - 1) ?: "Day ${showDayPicker}",
+            dayName = dayName,
             routines = routines,
-            currentRoutineId = scheduledWorkouts.find { it.dayOfWeek == showDayPicker }?.routineId,
-            isRestDay = scheduledWorkouts.find { it.dayOfWeek == showDayPicker }?.isRestDay ?: false,
-            onDismiss = { showDayPicker = null },
+            currentRoutineId = scheduled?.routineId,
+            isRestDay = scheduled?.isRestDay ?: true,
+            onDismiss = { expandedDay.value = null },
             onSelect = { routineId, isRestDay ->
-                onSaveDay(showDayPicker!!, routineId, isRestDay)
-                showDayPicker = null
+                onSaveDay(dayOfWeek, routineId, isRestDay)
+            },
+            onConfirm = {
+                expandedDay.value = null
             }
         )
+    }
+}
+
+@Composable
+private fun MiniWeekView(
+    scheduledWorkouts: List<ScheduledWorkout>,
+    dayNames: List<String>,
+    onDayClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onDayClick() }
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            dayNames.forEachIndexed { index, dayName ->
+                val dayOfWeek = index + 1
+                val scheduled = scheduledWorkouts.find { it.dayOfWeek == dayOfWeek }
+                val isWorkout = scheduled?.isRestDay == false && scheduled?.routineId != null
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = dayName.take(1),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextTertiary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(
+                                color = if (isWorkout) NeonTeal else TextTertiary.copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(6.dp)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DayScheduleRow(
+    dayName: String,
+    routineName: String?,
+    isToday: Boolean,
+    isExpanded: Boolean,
+    onSelectDay: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onSelectDay() }
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = dayName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (isToday) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = NeonTeal.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = "Today",
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = NeonTeal
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = "Select",
+                    tint = TextTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = routineName ?: "Rest Day",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (routineName != null) MaterialTheme.colorScheme.onSurfaceVariant else TextTertiary
+            )
+        }
     }
 }
 
@@ -351,13 +364,13 @@ private fun getCurrentDayOfWeek(): Int {
 
 @Composable
 fun DayPickerDialog(
-    dayOfWeek: Int,
     dayName: String,
     routines: List<Routine>,
     currentRoutineId: Long?,
     isRestDay: Boolean,
     onDismiss: () -> Unit,
-    onSelect: (Long?, Boolean) -> Unit
+    onSelect: (Long?, Boolean) -> Unit,
+    onConfirm: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -405,6 +418,14 @@ fun DayPickerDialog(
             }
         },
         confirmButton = {
+            TextButton(onClick = {
+                onConfirm()
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }

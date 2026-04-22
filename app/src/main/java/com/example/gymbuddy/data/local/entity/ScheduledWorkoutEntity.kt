@@ -5,10 +5,14 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "scheduled_workouts")
 data class ScheduledWorkoutEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey
+    val scheduleKey: String,
     val weekStartDate: Long,
     val dayOfWeek: Int,
     val routineId: Long?,
     val isRestDay: Boolean
-)
+) {
+    companion object {
+        fun createKey(weekStartDate: Long, dayOfWeek: Int) = "${weekStartDate}_$dayOfWeek"
+    }
+}
