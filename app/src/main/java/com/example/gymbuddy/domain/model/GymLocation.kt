@@ -9,7 +9,6 @@ data class GymLocation(
 )
 
 enum class GymChain(val displayName: String) {
-    HK("HK"),
     GYM247("247"),
     ANYTIME("Anytime"),
     SNAP_FITNESS("Snap Fitness"),
