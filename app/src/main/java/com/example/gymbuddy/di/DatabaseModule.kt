@@ -64,4 +64,9 @@ object DatabaseModule {
     fun provideAchievementDao(database: GymBuddyDatabase): AchievementDao {
         return database.achievementDao()
     }
+
+    @Provides
+    fun provideScheduledWorkoutDao(database: GymBuddyDatabase): ScheduledWorkoutDao {
+        return database.scheduledWorkoutDao()
+    }
 }

@@ -22,9 +22,10 @@ import kotlinx.coroutines.launch
         UserProfileEntity::class,
         PersonalRecordEntity::class,
         BodyMeasurementEntity::class,
-        AchievementEntity::class
+        AchievementEntity::class,
+        ScheduledWorkoutEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class GymBuddyDatabase : RoomDatabase() {
@@ -37,6 +38,7 @@ abstract class GymBuddyDatabase : RoomDatabase() {
     abstract fun userProfileDao(): UserProfileDao
     abstract fun personalRecordDao(): PersonalRecordDao
     abstract fun achievementDao(): AchievementDao
+    abstract fun scheduledWorkoutDao(): ScheduledWorkoutDao
     
     companion object {
         @Volatile
