@@ -3,10 +3,14 @@ package com.example.gymbuddy.data.repository
 import com.example.gymbuddy.data.local.dao.ExerciseDao
 import com.example.gymbuddy.data.local.dao.RoutineDao
 import com.example.gymbuddy.data.local.dao.RoutineExerciseDao
+import com.example.gymbuddy.data.local.dao.RoutineSetDao
+import com.example.gymbuddy.data.local.dao.RoutineTimerDao
 import com.example.gymbuddy.data.local.dao.UserProfileDao
 import com.example.gymbuddy.data.local.entity.ExerciseEntity
 import com.example.gymbuddy.data.local.entity.RoutineEntity
 import com.example.gymbuddy.data.local.entity.RoutineExerciseEntity
+import com.example.gymbuddy.data.local.entity.RoutineSetEntity
+import com.example.gymbuddy.data.local.entity.RoutineTimerEntity
 import com.example.gymbuddy.data.local.entity.UserProfileEntity
 import com.example.gymbuddy.data.repository.AchievementRepository
 import com.example.gymbuddy.domain.model.AchievementType
@@ -14,6 +18,7 @@ import com.example.gymbuddy.domain.model.Exercise
 import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.Routine
 import com.example.gymbuddy.domain.model.RoutineExercise
+import com.example.gymbuddy.domain.model.RoutineExerciseTimer
 import com.example.gymbuddy.domain.model.RoutineSetData
 import com.example.gymbuddy.domain.model.SetType
 import com.example.gymbuddy.domain.model.UserProfile
@@ -31,6 +36,8 @@ import javax.inject.Inject
 class RoutineRepository @Inject constructor(
     private val routineDao: RoutineDao,
     private val routineExerciseDao: RoutineExerciseDao,
+    private val routineSetDao: RoutineSetDao,
+    private val routineTimerDao: RoutineTimerDao,
     private val exerciseDao: ExerciseDao
 ) {
     fun getAllRoutines(): Flow<List<Routine>> =
@@ -46,7 +53,9 @@ class RoutineRepository @Inject constructor(
         val exerciseEntities = routineExerciseDao.getExercisesForRoutine(id).first()
         val exercises = exerciseEntities.mapNotNull { entity ->
             val exerciseEntity = exerciseDao.getExerciseById(entity.exerciseId) ?: return@mapNotNull null
-            entity.toDomain(exerciseEntity.toDomain())
+            val sets = routineSetDao.getSetsForRoutineExerciseSync(entity.id)
+            val timers = routineTimerDao.getTimersForRoutineExerciseSync(entity.id)
+            entity.toDomain(exerciseEntity.toDomain(), sets, timers)
         }
         return routineEntity.toDomain(exercises)
     }
@@ -69,15 +78,22 @@ class RoutineRepository @Inject constructor(
     
     suspend fun updateRoutine(routine: Routine) {
         routineDao.updateRoutine(routine.toEntity())
+        routineSetDao.deleteSetsForRoutine(routine.id)
+        routineTimerDao.deleteTimersForRoutine(routine.id)
         routineExerciseDao.deleteAllForRoutine(routine.id)
         saveRoutineExercises(routine.id, routine.exercises)
     }
     
     private suspend fun saveRoutineExercises(routineId: Long, exercises: List<RoutineExercise>) {
-        val entities = exercises.mapIndexed { index, exercise ->
-            exercise.toEntity(routineId, index)
+        for ((index, exercise) in exercises.withIndex()) {
+            val routineExerciseId = routineExerciseDao.insertRoutineExercise(
+                exercise.toEntity(routineId, index)
+            )
+            val setEntities = exercise.sets.map { it.toEntity(routineExerciseId) }
+            routineSetDao.insertRoutineSets(setEntities)
+            val timerEntities = exercise.timers.map { it.toEntity(routineExerciseId) }
+            routineTimerDao.insertRoutineTimers(timerEntities)
         }
-        routineExerciseDao.insertRoutineExercises(entities)
     }
     
     suspend fun deleteRoutine(routine: Routine) =
@@ -114,13 +130,32 @@ class RoutineRepository @Inject constructor(
         createdAt = createdAt
     )
     
-    private fun RoutineExerciseEntity.toDomain(exercise: Exercise): RoutineExercise {
-        val defaultSets = List(targetSets) { i ->
-            RoutineSetData(
-                setNumber = i + 1,
-                reps = targetReps,
-                weight = null,
-                setType = SetType.NORMAL
+    private fun RoutineExerciseEntity.toDomain(
+        exercise: Exercise,
+        sets: List<RoutineSetEntity>,
+        timers: List<RoutineTimerEntity>
+    ): RoutineExercise {
+        val setsData = if (sets.isNotEmpty()) {
+            sets.map { it.toDomain() }
+        } else {
+            List(targetSets) { i ->
+                RoutineSetData(
+                    setNumber = i + 1,
+                    reps = targetReps,
+                    weight = null,
+                    setType = SetType.NORMAL
+                )
+            }
+        }
+        val timersData = if (timers.isNotEmpty()) {
+            timers.map { it.toDomain() }
+        } else {
+            listOf(
+                RoutineExerciseTimer(SetType.NORMAL, 90),
+                RoutineExerciseTimer(SetType.WARMUP, 60),
+                RoutineExerciseTimer(SetType.WORK, 90),
+                RoutineExerciseTimer(SetType.DROP, 60),
+                RoutineExerciseTimer(SetType.FAILURE, 90)
             )
         }
         return RoutineExercise(
@@ -133,9 +168,36 @@ class RoutineRepository @Inject constructor(
             restSeconds = restSeconds,
             notes = notes,
             bodyFocus = bodyFocus,
-            sets = defaultSets
+            sets = setsData,
+            timers = timersData
         )
     }
+
+    private fun RoutineSetEntity.toDomain() = RoutineSetData(
+        setNumber = setNumber,
+        reps = reps,
+        weight = weight,
+        setType = SetType.entries.find { it.name.equals(setType, true) } ?: SetType.NORMAL
+    )
+
+    private fun RoutineSetData.toEntity(routineExerciseId: Long) = RoutineSetEntity(
+        routineExerciseId = routineExerciseId,
+        setNumber = setNumber,
+        reps = reps,
+        weight = weight,
+        setType = setType.name
+    )
+
+    private fun RoutineTimerEntity.toDomain() = RoutineExerciseTimer(
+        type = SetType.entries.find { it.name.equals(setType, true) } ?: SetType.NORMAL,
+        durationSeconds = durationSeconds
+    )
+
+    private fun RoutineExerciseTimer.toEntity(routineExerciseId: Long) = RoutineTimerEntity(
+        routineExerciseId = routineExerciseId,
+        setType = type.name,
+        durationSeconds = durationSeconds
+    )
     
     private fun RoutineExercise.toEntity(routineId: Long, orderIndex: Int) = RoutineExerciseEntity(
         id = id,

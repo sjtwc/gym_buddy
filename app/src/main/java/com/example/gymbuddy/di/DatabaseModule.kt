@@ -49,7 +49,17 @@ object DatabaseModule {
     fun provideRoutineExerciseDao(database: GymBuddyDatabase): RoutineExerciseDao {
         return database.routineExerciseDao()
     }
-    
+
+    @Provides
+    fun provideRoutineSetDao(database: GymBuddyDatabase): RoutineSetDao {
+        return database.routineSetDao()
+    }
+
+    @Provides
+    fun provideRoutineTimerDao(database: GymBuddyDatabase): RoutineTimerDao {
+        return database.routineTimerDao()
+    }
+
     @Provides
     fun provideUserProfileDao(database: GymBuddyDatabase): UserProfileDao {
         return database.userProfileDao()

@@ -19,13 +19,15 @@ import kotlinx.coroutines.launch
         SetEntity::class,
         RoutineEntity::class,
         RoutineExerciseEntity::class,
+        RoutineSetEntity::class,
+        RoutineTimerEntity::class,
         UserProfileEntity::class,
         PersonalRecordEntity::class,
         BodyMeasurementEntity::class,
         AchievementEntity::class,
         ScheduledWorkoutEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class GymBuddyDatabase : RoomDatabase() {
@@ -35,6 +37,8 @@ abstract class GymBuddyDatabase : RoomDatabase() {
     abstract fun setDao(): SetDao
     abstract fun routineDao(): RoutineDao
     abstract fun routineExerciseDao(): RoutineExerciseDao
+    abstract fun routineSetDao(): RoutineSetDao
+    abstract fun routineTimerDao(): RoutineTimerDao
     abstract fun userProfileDao(): UserProfileDao
     abstract fun personalRecordDao(): PersonalRecordDao
     abstract fun achievementDao(): AchievementDao
