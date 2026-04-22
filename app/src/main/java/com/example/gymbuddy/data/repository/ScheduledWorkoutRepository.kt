@@ -21,13 +21,27 @@ class ScheduledWorkoutRepository @Inject constructor(
     fun getWeeklySchedule(): Flow<List<ScheduledWorkout>> {
         val weekStart = getWeekStartDate()
         return scheduledWorkoutDao.getScheduledWorkoutsForWeek(weekStart).map { entities ->
-            entities.map { entity ->
-                ScheduledWorkout(
-                    dayOfWeek = entity.dayOfWeek,
-                    routineId = entity.routineId,
-                    isRestDay = entity.isRestDay
-                )
+            if (entities.isEmpty()) {
+                getDefaultAllRestSchedule()
+            } else {
+                entities.map { entity ->
+                    ScheduledWorkout(
+                        dayOfWeek = entity.dayOfWeek,
+                        routineId = entity.routineId,
+                        isRestDay = entity.isRestDay
+                    )
+                }
             }
+        }
+    }
+
+    private fun getDefaultAllRestSchedule(): List<ScheduledWorkout> {
+        return (1..7).map { day ->
+            ScheduledWorkout(
+                dayOfWeek = day,
+                routineId = null,
+                isRestDay = true
+            )
         }
     }
 

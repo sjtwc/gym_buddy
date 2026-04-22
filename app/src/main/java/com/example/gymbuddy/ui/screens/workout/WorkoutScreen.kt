@@ -30,8 +30,7 @@ import com.example.gymbuddy.domain.model.ScheduledWorkout
 import com.example.gymbuddy.service.WorkoutSessionManager
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
 
 @Composable
 fun WorkoutScreen(
@@ -254,9 +253,16 @@ fun WeeklyScheduleSection(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    scheduledWorkouts.forEach { scheduled ->
+                    val currentDayOfWeek = getCurrentDayOfWeek()
+                    val closestThreeDays = (0..2).map { offset ->
+                        ((currentDayOfWeek - 1 + offset) % 7) + 1
+                    }
+                    val filteredWorkouts = scheduledWorkouts.filter { it.dayOfWeek in closestThreeDays }
+
+                    filteredWorkouts.forEach { scheduled ->
                         val dayName = dayNames.getOrNull(scheduled.dayOfWeek - 1) ?: "Day ${scheduled.dayOfWeek}"
                         val routineName = routines.find { it.id == scheduled.routineId }?.name
+                        val isToday = scheduled.dayOfWeek == currentDayOfWeek
 
                         Row(
                             modifier = Modifier
@@ -267,12 +273,28 @@ fun WeeklyScheduleSection(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = dayName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = dayName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    if (isToday) {
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = NeonTeal.copy(alpha = 0.2f)
+                                        ) {
+                                            Text(
+                                                text = "Today",
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = NeonTeal
+                                            )
+                                        }
+                                    }
+                                }
                                 Text(
                                     text = if (scheduled.isRestDay) "Rest Day" else routineName ?: "Not scheduled",
                                     style = MaterialTheme.typography.bodySmall,
@@ -310,6 +332,20 @@ fun WeeklyScheduleSection(
                 showDayPicker = null
             }
         )
+    }
+}
+
+private fun getCurrentDayOfWeek(): Int {
+    val calendar = Calendar.getInstance()
+    return when (calendar.get(Calendar.DAY_OF_WEEK)) {
+        Calendar.MONDAY -> 1
+        Calendar.TUESDAY -> 2
+        Calendar.WEDNESDAY -> 3
+        Calendar.THURSDAY -> 4
+        Calendar.FRIDAY -> 5
+        Calendar.SATURDAY -> 6
+        Calendar.SUNDAY -> 7
+        else -> 1
     }
 }
 
