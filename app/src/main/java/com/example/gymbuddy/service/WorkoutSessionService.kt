@@ -100,6 +100,13 @@ class WorkoutSessionService : Service() {
         startForeground(NOTIFICATION_ID, createNotification())
         startElapsedTimer()
     }
+
+    fun loadExercisesForWorkout(exercises: List<WorkoutExerciseSession>) {
+        _workoutSession.value?.let { session ->
+            _workoutSession.value = session.copy(exercises = exercises)
+            updateNotification()
+        }
+    }
     
     private fun startElapsedTimer() {
         timerJob?.cancel()

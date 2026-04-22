@@ -63,6 +63,7 @@ class WorkoutRepository @Inject constructor(
                     orderIndex = we.orderIndex,
                     notes = we.notes,
                     restTimerSeconds = we.restTimerSeconds,
+                    targetReps = we.targetReps,
                     sets = sets.map { s -> s.toDomainSet() }
                 )
             }
@@ -95,7 +96,8 @@ class WorkoutRepository @Inject constructor(
                 exerciseId = routineExercise.exercise.id,
                 orderIndex = index,
                 notes = routineExercise.notes,
-                restTimerSeconds = routineExercise.restSeconds
+                restTimerSeconds = routineExercise.restSeconds,
+                targetReps = routineExercise.targetReps
             )
             val weId = workoutExerciseDao.insertWorkoutExercise(weEntity)
             val setEntities = routineExercise.sets.map { set ->

@@ -685,7 +685,8 @@ fun ExerciseCard(
                         onCompleteSet = onCompleteSet,
                         setIndex = setIndex,
                         exerciseIndex = exerciseIndex,
-                        isEnabled = previousSetCompleted
+                        isEnabled = previousSetCompleted,
+                        targetReps = exerciseSession.targetReps
                     )
                 }
                 
@@ -876,7 +877,8 @@ fun SetRow(
     onCompleteSet: (Int, Int) -> Unit,
     setIndex: Int = 0,
     exerciseIndex: Int = 0,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    targetReps: String? = null
 ) {
     var weightText by remember(set.weight) { mutableStateOf(set.weight?.toString() ?: "") }
     var repsText by remember(set.reps) { mutableStateOf(set.reps?.toString() ?: "") }
@@ -961,7 +963,12 @@ fun SetRow(
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (repsText.isEmpty()) {
-                    Text("reps", fontSize = 14.sp, color = TextSecondary, textAlign = TextAlign.Center)
+                    Text(
+                        text = targetReps?.let { "$it reps" } ?: "reps",
+                        fontSize = 14.sp,
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 

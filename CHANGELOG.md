@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.11.1] - 2026-04-22
+
+### Fixed
+- **Weekly Schedule Updates** - Fixed schedule day selection not being saved correctly
+  - Changed ScheduledWorkoutEntity primary key from auto-generated ID to composite `scheduleKey` (weekStartDate_dayOfWeek)
+  - Added `onConfirm` callback to `DayPickerDialog` for proper dialog dismissal
+- **Exercises Not Loading in Workout** - Fixed race condition where exercises weren't loaded when starting workout from routine
+  - `WorkoutSessionManager` now queues exercise loading and executes after service binding completes
+  - Added `loadExercisesInternal()` method and pending state tracking
+  - `onServiceConnected` callback now loads pending exercises after service is bound
+
+### Added
+- **Routine Sets and Timers Persistence** - Properly persist set data (reps, weight, setType) and timer configurations to database
+  - Added `RoutineSetEntity` and `RoutineTimerEntity` tables
+  - Added `RoutineSetDao` and `RoutineTimerDao` with CRUD operations
+  - Updated `RoutineRepository` to save/load sets and timers to separate tables
+- **Target Reps Display** - Show target rep range as placeholder in workout logging input
+  - Added `targetReps` field to `WorkoutExerciseEntity`, `WorkoutExercise`, `WorkoutExerciseSession`
+  - `startWorkoutFromRoutine()` now maps targetReps from routine to workout
+  - `SetRow` displays targetReps placeholder (e.g., "8-12 reps") when input is empty
+- **Database Migrations** - Added proper Room migrations for schema updates
+  - Migration 4→5: Creates routine_sets and routine_timers tables with indices
+  - Migration 5→6: Adds targetReps column to workout_exercises table
+  - Database version bumped to 6
+
+### Updated
+- `ScheduledWorkoutEntity.kt` - Changed primary key to composite scheduleKey
+- `DayPickerDialog` - Added onConfirm callback parameter
+- `WorkoutSessionService.kt` - Added `loadExercisesForWorkout()` method
+- `WorkoutSessionManager.kt` - Added pending state variables, `loadExercisesFromWorkout()`, `loadExercisesInternal()`
+- `WorkoutExerciseEntity.kt` - Added targetReps field
+- `WorkoutOverlay.kt` - Updated SetRow to accept and display targetReps placeholder
+
+---
+
 ## [1.11.0] - 2026-04-13
 
 ### Added
@@ -313,6 +348,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.11.1]: https://github.com/example/gymbuddy/compare/v1.11.0...v1.11.1
+[1.11.0]: https://github.com/example/gymbuddy/compare/v1.10.0...v1.11.0
+[1.10.0]: https://github.com/example/gymbuddy/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/example/gymbuddy/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/example/gymbuddy/compare/v1.6.0...v1.8.0
 [1.5.0]: https://github.com/example/gymbuddy/compare/v1.4.0...v1.5.0

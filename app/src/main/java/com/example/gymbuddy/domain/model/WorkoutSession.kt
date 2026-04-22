@@ -65,7 +65,8 @@ data class WorkoutExerciseSession(
         RestTimer(SetType.DROP, 0, false),
         RestTimer(SetType.FAILURE, 0, false)
     ),
-    val isRestTimerEnabled: Boolean = false
+    val isRestTimerEnabled: Boolean = false,
+    val targetReps: String? = null
 ) {
     val previousData: Pair<Double, Int>?
         get() = null

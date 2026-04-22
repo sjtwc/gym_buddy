@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.gymbuddy.data.local.dao.*
 import com.example.gymbuddy.data.local.entity.*
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
         AchievementEntity::class,
         ScheduledWorkoutEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class GymBuddyDatabase : RoomDatabase() {
@@ -43,11 +44,26 @@ abstract class GymBuddyDatabase : RoomDatabase() {
     abstract fun personalRecordDao(): PersonalRecordDao
     abstract fun achievementDao(): AchievementDao
     abstract fun scheduledWorkoutDao(): ScheduledWorkoutDao
-    
+
     companion object {
         @Volatile
         private var INSTANCE: GymBuddyDatabase? = null
-        
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS routine_sets (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `routineExerciseId` INTEGER NOT NULL, `setNumber` INTEGER NOT NULL, `reps` TEXT NOT NULL, `weight` REAL, `setType` TEXT NOT NULL, FOREIGN KEY(`routineExerciseId`) REFERENCES `routine_exercises`(`id`) ON DELETE CASCADE)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS routine_timers (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `routineExerciseId` INTEGER NOT NULL, `setType` TEXT NOT NULL, `durationSeconds` INTEGER NOT NULL, FOREIGN KEY(`routineExerciseId`) REFERENCES `routine_exercises`(`id`) ON DELETE CASCADE)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_routine_sets_routineExerciseId ON routine_sets(`routineExerciseId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_routine_timers_routineExerciseId ON routine_timers(`routineExerciseId`)")
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE workout_exercises ADD COLUMN targetReps TEXT")
+            }
+        }
+
         fun getDatabase(context: Context): GymBuddyDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -56,6 +72,7 @@ abstract class GymBuddyDatabase : RoomDatabase() {
                     "gym_buddy_database"
                 )
                 .addCallback(DatabaseCallback())
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

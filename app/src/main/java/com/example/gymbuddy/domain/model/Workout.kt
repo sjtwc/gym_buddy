@@ -21,6 +21,7 @@ data class WorkoutExercise(
     val orderIndex: Int,
     val notes: String? = null,
     val restTimerSeconds: Int = 90,
+    val targetReps: String? = null,
     val startedAt: Long? = null,
     val completedAt: Long? = null,
     val sets: List<WorkoutSet> = emptyList()

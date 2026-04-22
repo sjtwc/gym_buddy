@@ -33,5 +33,6 @@ data class WorkoutExerciseEntity(
     val exerciseId: Long,
     val orderIndex: Int,
     val notes: String? = null,
-    val restTimerSeconds: Int = 90
+    val restTimerSeconds: Int = 90,
+    val targetReps: String? = null
 )

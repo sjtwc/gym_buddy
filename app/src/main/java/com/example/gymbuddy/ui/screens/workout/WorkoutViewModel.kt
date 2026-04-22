@@ -131,6 +131,7 @@ class WorkoutViewModel @Inject constructor(
                 workoutRepository.startWorkout(workout)
             }
             sessionManager.startSession(workoutId, routine.name)
+            sessionManager.loadExercisesFromWorkout(workoutId)
         }
     }
 

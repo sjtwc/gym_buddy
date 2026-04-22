@@ -58,13 +58,25 @@ class WorkoutSessionManager @Inject constructor(
     
     private val _activeRestSetIndex = MutableStateFlow(-1)
     val activeRestSetIndex: StateFlow<Int> = _activeRestSetIndex.asStateFlow()
-    
+
+    private var pendingWorkoutId: Long? = null
+    private var pendingExercisesToLoad: List<WorkoutExerciseSession>? = null
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val serviceBinder = binder as WorkoutSessionService.WorkoutSessionBinder
             service = serviceBinder.getService()
             bound = true
             observeServiceState()
+
+            pendingWorkoutId?.let { workoutId ->
+                val pendingExercises = pendingExercisesToLoad
+                pendingWorkoutId = null
+                pendingExercisesToLoad = null
+                scope.launch {
+                    loadExercisesInternal(workoutId, pendingExercises)
+                }
+            }
         }
         
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -117,6 +129,8 @@ class WorkoutSessionManager @Inject constructor(
     
     fun startSession(workoutId: Long, workoutName: String) {
         _isExpanded.value = true
+        pendingWorkoutId = workoutId
+        pendingExercisesToLoad = null
         val defaultName = workoutName.ifEmpty { WorkoutSession.generateDefaultName() }
         val intent = Intent(context, WorkoutSessionService::class.java).apply {
             action = WorkoutSessionService.ACTION_START
@@ -125,6 +139,70 @@ class WorkoutSessionManager @Inject constructor(
         }
         context.startForegroundService(intent)
         bindService()
+    }
+
+    fun loadExercisesFromWorkout(workoutId: Long) {
+        scope.launch {
+            val workoutDetails = workoutRepository.getWorkoutWithDetails(workoutId)
+            workoutDetails?.let { details ->
+                val exerciseSessions = details.exercises.map { we ->
+                    WorkoutExerciseSession(
+                        exercise = we.exercise,
+                        sets = we.sets.map { s ->
+                            WorkoutSetData(
+                                setNumber = s.setNumber,
+                                setType = when {
+                                    s.isWarmUp -> SetType.WARMUP
+                                    s.isDropSet -> SetType.DROP
+                                    s.isFailureSet -> SetType.FAILURE
+                                    else -> SetType.NORMAL
+                                },
+                                weight = s.weight?.toDouble(),
+                                reps = s.reps,
+                                isCompleted = s.completedAt != null
+                            )
+                        },
+                        targetReps = we.targetReps
+                    )
+                }
+                if (service != null) {
+                    service?.loadExercisesForWorkout(exerciseSessions)
+                } else {
+                    pendingExercisesToLoad = exerciseSessions
+                }
+            }
+        }
+    }
+
+    private suspend fun loadExercisesInternal(workoutId: Long, exercises: List<WorkoutExerciseSession>?) {
+        if (exercises != null && exercises.isNotEmpty()) {
+            service?.loadExercisesForWorkout(exercises)
+        } else {
+            val workoutDetails = workoutRepository.getWorkoutWithDetails(workoutId)
+            workoutDetails?.let { details ->
+                val exerciseSessions = details.exercises.map { we ->
+                    WorkoutExerciseSession(
+                        exercise = we.exercise,
+                        sets = we.sets.map { s ->
+                            WorkoutSetData(
+                                setNumber = s.setNumber,
+                                setType = when {
+                                    s.isWarmUp -> SetType.WARMUP
+                                    s.isDropSet -> SetType.DROP
+                                    s.isFailureSet -> SetType.FAILURE
+                                    else -> SetType.NORMAL
+                                },
+                                weight = s.weight?.toDouble(),
+                                reps = s.reps,
+                                isCompleted = s.completedAt != null
+                            )
+                        },
+                        targetReps = we.targetReps
+                    )
+                }
+                service?.loadExercisesForWorkout(exerciseSessions)
+            }
+        }
     }
     
     private fun bindService() {
