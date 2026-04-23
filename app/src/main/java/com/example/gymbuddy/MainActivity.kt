@@ -26,6 +26,7 @@ import com.example.gymbuddy.ui.navigation.GymBuddyNavigation
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.DarkBackground
 import com.example.gymbuddy.ui.theme.GymBuddyTheme
+import androidx.compose.runtime.LaunchedEffect
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
     lateinit var workoutRepository: WorkoutRepository
 
     private var navController: NavHostController? = null
+    private var pendingWidgetIntent: Intent? = null
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -75,7 +77,7 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
 
         if (savedInstanceState == null) {
-            handleWidgetAction(intent)
+            pendingWidgetIntent = intent
             intent?.getBooleanExtra("expand_overlay", false)?.let { shouldExpand ->
                 if (shouldExpand) {
                     sessionManager.expand()
@@ -93,6 +95,13 @@ class MainActivity : ComponentActivity() {
                         sessionManager = sessionManager,
                         onNavControllerReady = { nc -> navController = nc }
                     )
+
+                    LaunchedEffect(Unit) {
+                        pendingWidgetIntent?.let { intent ->
+                            handleWidgetAction(intent)
+                            pendingWidgetIntent = null
+                        }
+                    }
                 }
             }
         }
