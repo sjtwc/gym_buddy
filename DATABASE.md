@@ -7,7 +7,7 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 ### Database Specifications
 
 - **Database Name**: `gym_buddy_database`
-- **Version**: 1
+- **Version**: 6
 - **Export Schema**: Disabled (for development)
 
 ---
@@ -43,8 +43,8 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 │ target_muscle       │    │ order_index                │    │ order_index     │
 │ secondary_muscles   │    │ notes                      │    │ target_sets     │
 │ equipment_type      │    │ rest_timer_seconds         │    │ target_reps     │
-│ video_url           │    └───────────┬─────────────────┘    │ rest_seconds    │
-│ instructions        │                │                     │ notes           │
+│ video_url           │    │ target_reps                │    │ rest_seconds    │
+│ instructions        │    └───────────┬─────────────────┘    │ notes           │
 │ is_custom           │                │                     └──────────────────┘
 │ created_at          │                ▼
 └──────────────────┘    ┌─────────────────────┐
@@ -66,23 +66,27 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
                         │ previous_set_id     │
                         └─────────────────────┘
 
-┌──────────────────────┐    ┌──────────────────────┐
-│ PersonalRecord      │    │ BodyMeasurement     │
-│                     │    │                     │
-├─────────────────────┤    ├─────────────────────┤
-│ id (PK)             │    │ id (PK)             │
-│ exercise_id (FK) ──►│    │ date                │
-│ type                │    │ weight              │
-│ value               │    │ body_fat            │
-│ reps                │    │ chest               │
-│ weight              │    │ waist               │
-│ date                │    │ hips                │
+┌──────────────────────┐    ┌──────────────────────┐    ┌──────────────────────┐
+│ PersonalRecord      │    │ BodyMeasurement     │    │   RoutineSet        │
+│                     │    │                     │    │                      │
+├─────────────────────┤    ├─────────────────────┤    ├──────────────────────┤
+│ id (PK)             │    │ id (PK)             │    │ id (PK)              │
+│ exercise_id (FK) ──►│    │ date                │    │ routine_exercise_id  │
+│ type                │    │ weight              │    │ set_type             │
+│ value               │    │ body_fat            │    │ target_reps          │
+│ reps                │    │ chest               │    │ target_weight        │
+│ weight              │    │ waist               │    │ rest_seconds         │
+│ date                │    │ hips                │    └──────────────────────┘
 │ workout_id (FK)     │    │ biceps              │
-└─────────────────────┘    │ thighs              │
-                           │ calves              │
-                           │ shoulders           │
-                           │ notes               │
-                           └─────────────────────┘
+└─────────────────────┘    │ thighs              │    ┌──────────────────────┐
+                            │ calves              │    │  RoutineTimer        │
+                            │ shoulders           │    │                      │
+                            │ notes               │    ├──────────────────────┤
+                            └─────────────────────┘    │ id (PK)               │
+                                                      │ routine_exercise_id   │
+                                                      │ set_type              │
+                                                      │ timer_seconds         │
+                                                      └──────────────────────┘
 ```
 
 ---
@@ -146,6 +150,7 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 | `order_index` | `Int` | NOT NULL | Order in workout |
 | `notes` | `String` | NULLABLE | Exercise-specific notes |
 | `rest_timer_seconds` | `Int` | NOT NULL, DEFAULT 90 | Default rest time |
+| `target_reps` | `String` | NULLABLE | Target rep range from routine |
 
 **Foreign Keys**:
 - `workout_id` → `workouts.id` (ON DELETE CASCADE)
@@ -232,7 +237,47 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 
 ---
 
-### 7. UserProfile Entity
+### 7. RoutineSet Entity
+
+**Table Name**: `routine_sets`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `Long` | PRIMARY KEY, AUTOINCREMENT | Unique identifier |
+| `routine_exercise_id` | `Long` | NOT NULL, FK → `routine_exercises.id` | Parent routine exercise |
+| `set_type` | `String` | NOT NULL, DEFAULT "normal" | Set type (normal, warmup, work, drop, failure) |
+| `target_reps` | `String` | NOT NULL, DEFAULT "8-12" | Target rep range |
+| `target_weight` | `Float` | NOT NULL, DEFAULT 0 | Target weight (kg) |
+| `rest_seconds` | `Int` | NOT NULL, DEFAULT 90 | Rest between sets |
+
+**Foreign Keys**:
+- `routine_exercise_id` → `routine_exercises.id` (ON DELETE CASCADE)
+
+**Indexes**:
+- `idx_routine_sets_routine_exercise_id` ON `routine_exercise_id`
+
+---
+
+### 8. RoutineTimer Entity
+
+**Table Name**: `routine_timers`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `Long` | PRIMARY KEY, AUTOINCREMENT | Unique identifier |
+| `routine_exercise_id` | `Long` | NOT NULL, FK → `routine_exercises.id` | Parent routine exercise |
+| `set_type` | `String` | NOT NULL | Set type (normal, warmup, work, drop, failure) |
+| `timer_seconds` | `Int` | NOT NULL, DEFAULT 90 | Rest timer duration |
+
+**Foreign Keys**:
+- `routine_exercise_id` → `routine_exercises.id` (ON DELETE CASCADE)
+
+**Indexes**:
+- `idx_routine_timers_routine_exercise_id` ON `routine_exercise_id`
+
+---
+
+### 10. UserProfile Entity
 
 **Table Name**: `user_profile`
 
@@ -256,7 +301,7 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 
 ---
 
-### 8. PersonalRecord Entity
+### 11. PersonalRecord Entity
 
 **Table Name**: `personal_records`
 
@@ -281,7 +326,7 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 
 ---
 
-### 9. BodyMeasurement Entity
+### 12. BodyMeasurement Entity
 
 **Table Name**: `body_measurements`
 
@@ -524,3 +569,4 @@ suspend fun deleteRecord(record: PersonalRecordEntity)
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | Initial | 9 tables, DAOs, repositories |
+| 6 | 2026-04-22 | Added routine_sets and routine_timers tables with indices; Added target_reps column to workout_exercises |
