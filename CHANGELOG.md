@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.13.0] - 2026-04-23
 
+### Fixed
+- **Actual Records Only in Exercise Record Tab** - Best Record column now shows only actual workout records
+  - "Best 1RM" summary only shows if user performed an actual 1-rep set
+  - Best Record column only shows weight for exact rep count (e.g., 2RM shows "-" if never performed)
+  - Removed Epley calculation from Best Record column display
+  - Prediction column remains unchanged
+
 ### Added
 - **Profile Edit Screen** - Full screen edit mode for user profile
   - Edit name, pet name, gender, age, height, and weight
