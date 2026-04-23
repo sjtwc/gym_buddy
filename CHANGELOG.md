@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.12.0] - 2026-04-23
+
+### Fixed
+- **Predicted 1RM Calculation** - Fixed bug where larger rep counts showed larger predicted results instead of smaller
+  - Now uses inverse Epley formula: `weight = baseRM / (1 + reps/30f)`
+  - 1.5 month (6 weeks) time window for base record selection
+  - Finds best actual record within window (prioritizes lower rep counts: 1RM > 2RM > 3RM...)
+  - Only updates prediction if new calculated value is higher than current
+
+### Added
+- **Reset Records Button** - New button in Settings → "Your Stats" section
+  - Clears all personal records (1RM-12RM) and predicted records
+  - Confirmation dialog before reset with warning text
+
+### Updated
+- `ExerciseInsightViewModel.kt` - Rewrote `calculatePredictedRecords()` with correct logic
+- `ExerciseInsightViewModel.kt` - Added `resetPredictedRecords()` method
+- `SettingsViewModel.kt` - Added `resetAllRecords()` with PersonalRecordDao
+- `SettingsScreen.kt` - Added reset button UI with confirmation dialog
+
+---
+
 ## [1.11.1] - 2026-04-22
 
 ### Fixed
@@ -348,6 +370,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.12.0]: https://github.com/example/gymbuddy/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/example/gymbuddy/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/example/gymbuddy/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/example/gymbuddy/compare/v1.9.0...v1.10.0
