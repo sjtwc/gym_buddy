@@ -15,12 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Best Record column only shows weight for exact rep count (e.g., 2RM shows "-" if never performed)
   - Removed Epley calculation from Best Record column display
   - Prediction column remains unchanged
+- **Prevent Duplicate Workout Sessions** - Tapping "Start Quick Workout" or routine "Start" while a session is active now expands the overlay instead of creating a new session
+  - Applied to: Start Quick Workout button, Routine Start buttons, and startWorkoutWithRoutine()
 
 ### Added
 - **Profile Edit Screen** - Full screen edit mode for user profile
   - Edit name, pet name, gender, age, height, and weight
   - Gender dropdown selection (Male, Female, Other, Prefer not to say)
   - Edit button on Profile screen header
+- **Widget Navigation** - Each widget now navigates to its relevant screen
+  - QuickStart widget: Starts workout (or expands if session active)
+  - Streak widget: Opens Profile screen
+  - Today widget: Opens Home screen
+  - Weekly widget: Opens Progress screen
 
 ### Updated
 - `UserProfileEntity.kt` - Added gender, age, height, weight fields
@@ -28,7 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `UserProfileRepository.kt` - Updated toEntity/toDomain mappings
 - `ProfileScreen.kt` - Added edit button next to settings
 - `Screen.kt` - Added ProfileEdit route
-- `GymBuddyNavigation.kt` - Added ProfileEditScreen composable
+- `GymBuddyNavigation.kt` - Added ProfileEditScreen composable, onNavControllerReady callback
+- `MainActivity.kt` - Added handleWidgetAction(), WorkoutRepository injection
+- `WorkoutScreen.kt` - Session check before starting workout
+- `WorkoutViewModel.kt` - Session check in startWorkoutWithRoutine()
 - Database schema version bumped to 7
 
 ### New Files
