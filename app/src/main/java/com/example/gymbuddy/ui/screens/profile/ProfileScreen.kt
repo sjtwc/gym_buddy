@@ -45,12 +45,21 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = TextSecondary
-                )
+            Row {
+                IconButton(onClick = { navController.navigate(Screen.ProfileEdit.route) }) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Profile",
+                        tint = TextSecondary
+                    )
+                }
+                IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = TextSecondary
+                    )
+                }
             }
         }
         

@@ -31,6 +31,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
         fun createRoute(routineId: Long? = null) = "create_routine?routineId=${routineId ?: 0}"
     }
     data object Settings : Screen("settings", "Settings")
+    data object ProfileEdit : Screen("profile_edit", "Edit Profile")
 }
 
 val bottomNavItems = listOf(

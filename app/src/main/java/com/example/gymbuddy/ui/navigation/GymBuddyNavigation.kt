@@ -28,6 +28,7 @@ import com.example.gymbuddy.ui.screens.workout.WorkoutScreen
 import com.example.gymbuddy.ui.screens.exercise.ExerciseScreen
 import com.example.gymbuddy.ui.screens.progress.ProgressScreen
 import com.example.gymbuddy.ui.screens.profile.ProfileScreen
+import com.example.gymbuddy.ui.screens.profile.ProfileEditScreen
 import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
 import com.example.gymbuddy.ui.screens.achievement.AchievementScreen
 import com.example.gymbuddy.ui.screens.routines.CreateRoutineScreen
@@ -128,6 +129,10 @@ fun GymBuddyNavigation(
                 
                 composable(Screen.Settings.route) {
                     SettingsScreen(navController = navController)
+                }
+
+                composable(Screen.ProfileEdit.route) {
+                    ProfileEditScreen(navController = navController)
                 }
             }
 

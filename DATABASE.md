@@ -7,7 +7,7 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 ### Database Specifications
 
 - **Database Name**: `gym_buddy_database`
-- **Version**: 6
+- **Version**: 7
 - **Export Schema**: Disabled (for development)
 
 ---
@@ -295,6 +295,10 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 | `pet_happiness` | `Int` | NOT NULL, DEFAULT 50 | Pet happiness (0-100) |
 | `pet_mood` | `String` | NOT NULL, DEFAULT "neutral" | Pet mood |
 | `last_workout_date` | `Long` | NULLABLE | Last workout timestamp |
+| `gender` | `String` | NULLABLE | User gender |
+| `age` | `Int` | NULLABLE | User age |
+| `height` | `Float` | NULLABLE | User height (cm) |
+| `weight` | `Float` | NULLABLE | User weight (kg) |
 | `created_at` | `Long` | NOT NULL | Unix timestamp |
 
 **Indexes**: None (singleton table)
@@ -570,3 +574,4 @@ suspend fun deleteRecord(record: PersonalRecordEntity)
 |---------|------|---------|
 | 1.0.0 | Initial | 9 tables, DAOs, repositories |
 | 6 | 2026-04-22 | Added routine_sets and routine_timers tables with indices; Added target_reps column to workout_exercises |
+| 7 | 2026-04-23 | Added gender, age, height, weight columns to user_profile table for personal information |

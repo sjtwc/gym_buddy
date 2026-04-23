@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.13.0] - 2026-04-23
+
+### Added
+- **Profile Edit Screen** - Full screen edit mode for user profile
+  - Edit name, pet name, gender, age, height, and weight
+  - Gender dropdown selection (Male, Female, Other, Prefer not to say)
+  - Edit button on Profile screen header
+
+### Updated
+- `UserProfileEntity.kt` - Added gender, age, height, weight fields
+- `UserProfile.kt` (domain) - Added same fields
+- `UserProfileRepository.kt` - Updated toEntity/toDomain mappings
+- `ProfileScreen.kt` - Added edit button next to settings
+- `Screen.kt` - Added ProfileEdit route
+- `GymBuddyNavigation.kt` - Added ProfileEditScreen composable
+- Database schema version bumped to 7
+
+### New Files
+- `ProfileEditScreen.kt` - Full screen edit form with Material3 inputs
+- `ProfileEditViewModel.kt` - ViewModel for profile editing
+
+---
+
 ## [1.12.0] - 2026-04-23
 
 ### Fixed
@@ -370,6 +393,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.13.0]: https://github.com/example/gymbuddy/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/example/gymbuddy/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/example/gymbuddy/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/example/gymbuddy/compare/v1.10.0...v1.11.0

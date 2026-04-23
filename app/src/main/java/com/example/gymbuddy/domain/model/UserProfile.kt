@@ -11,7 +11,11 @@ data class UserProfile(
     val totalWorkouts: Int = 0,
     val totalVolume: Float = 0f,
     val lastWorkoutDate: Long? = null,
-    val pet: VirtualPet = VirtualPet()
+    val pet: VirtualPet = VirtualPet(),
+    val gender: String? = null,
+    val age: Int? = null,
+    val height: Float? = null,
+    val weight: Float? = null
 )
 
 data class VirtualPet(

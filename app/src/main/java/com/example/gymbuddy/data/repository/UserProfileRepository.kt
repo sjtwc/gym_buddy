@@ -336,7 +336,11 @@ class UserProfileRepository @Inject constructor(
             name = petName,
             happiness = petHappiness,
             mood = PetMood.entries.find { it.name.equals(petMood, true) } ?: PetMood.NEUTRAL
-        )
+        ),
+        gender = gender,
+        age = age,
+        height = height,
+        weight = weight
     )
     
     private fun UserProfile.toEntity() = UserProfileEntity(
@@ -351,6 +355,10 @@ class UserProfileRepository @Inject constructor(
         totalVolume = totalVolume,
         petName = pet.name,
         petHappiness = pet.happiness,
-        petMood = pet.mood.name.lowercase()
+        petMood = pet.mood.name.lowercase(),
+        gender = gender,
+        age = age,
+        height = height,
+        weight = weight
     )
 }
