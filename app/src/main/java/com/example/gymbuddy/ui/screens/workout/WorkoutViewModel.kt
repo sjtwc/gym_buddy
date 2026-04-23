@@ -19,7 +19,7 @@ data class WorkoutUiState(
     val isLoading: Boolean = true,
     val scheduledWorkouts: List<ScheduledWorkout> = emptyList(),
     val suggestedSchedule: List<ScheduledWorkout> = emptyList(),
-    val expandedSections: Set<String> = setOf("weeklySchedule")
+    val expandedSections: Set<String> = emptySet()
 )
 
 @HiltViewModel
