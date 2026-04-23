@@ -18,16 +18,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.gymbuddy.data.local.NotificationPreferences
 import com.example.gymbuddy.provider.UserStatsContract
 import com.example.gymbuddy.ui.theme.*
 
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(
+    navController: NavController,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
     var showUnitsDialog by remember { mutableStateOf(false) }
     var showRestTimerDialog by remember { mutableStateOf(false) }
-    var showNotificationsDialog by remember { mutableStateOf(false) }
-    
+    var showStreakReminderDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,14 +72,14 @@ fun SettingsScreen(navController: NavController) {
             SettingsItem(
                 icon = Icons.Default.FitnessCenter,
                 title = "Default Rest Timer",
-                subtitle = "90 seconds",
+                subtitle = "${uiState.defaultRestTimerSeconds} seconds",
                 onClick = { showRestTimerDialog = true }
             )
             
             SettingsItem(
                 icon = Icons.Default.Speed,
                 title = "Weight Unit",
-                subtitle = "Kilograms (kg)",
+                subtitle = if (uiState.weightUnit == "kg") "Kilograms (kg)" else "Pounds (lb)",
                 onClick = { showUnitsDialog = true }
             )
             
@@ -84,16 +90,63 @@ fun SettingsScreen(navController: NavController) {
             SettingsItem(
                 icon = Icons.Default.Notifications,
                 title = "Streak Reminders",
-                subtitle = "Daily at 8:00 PM",
-                onClick = { showNotificationsDialog = true }
+                subtitle = if (uiState.streakReminderEnabled) {
+                    "Daily at ${uiState.streakReminderTime}"
+                } else {
+                    "Off"
+                },
+                onClick = { showStreakReminderDialog = true }
             )
             
-            SettingsItem(
+            SettingsItemWithSwitch(
                 icon = Icons.Default.Timer,
                 title = "Rest Timer Notifications",
-                subtitle = "On",
-                onClick = { }
+                subtitle = if (uiState.restTimerNotificationsEnabled) "On" else "Off",
+                checked = uiState.restTimerNotificationsEnabled,
+                onCheckedChange = { viewModel.setRestTimerNotificationsEnabled(it) }
             )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            SettingsSection(title = "Calendar")
+            
+            if (uiState.isCalendarConnected) {
+                SettingsItem(
+                    icon = Icons.Default.CalendarMonth,
+                    title = "Google Account",
+                    subtitle = uiState.googleAccountEmail ?: "",
+                    onClick = { viewModel.signOutFromCalendar() }
+                )
+                
+                SettingsItemWithSwitch(
+                    icon = Icons.Default.Sync,
+                    title = "Auto-sync",
+                    subtitle = if (uiState.autoSyncEnabled) "On" else "Off",
+                    checked = uiState.autoSyncEnabled,
+                    onCheckedChange = { viewModel.setAutoSyncEnabled(it) }
+                )
+                
+                SettingsItem(
+                    icon = Icons.Default.Search,
+                    title = "Find Free Time",
+                    subtitle = "Find available gym slots",
+                    onClick = { viewModel.showFreeTimeDialog() }
+                )
+                
+                SettingsItem(
+                    icon = Icons.Default.CloudSync,
+                    title = "Sync Now",
+                    subtitle = "Export schedule to calendar",
+                    onClick = { viewModel.syncToCalendar() }
+                )
+            } else {
+                SettingsItem(
+                    icon = Icons.Default.Login,
+                    title = "Connect Google Calendar",
+                    subtitle = "Sign in to sync workouts",
+                    onClick = { viewModel.signInToCalendar() }
+                )
+            }
             
             Spacer(modifier = Modifier.height(24.dp))
             
@@ -108,7 +161,7 @@ fun SettingsScreen(navController: NavController) {
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "App Version",
-                subtitle = "1.10.0",
+                subtitle = "1.11.1",
                 onClick = { }
             )
             
@@ -125,9 +178,10 @@ fun SettingsScreen(navController: NavController) {
     
     if (showUnitsDialog) {
         UnitsSelectionDialog(
-            currentUnit = "Kilograms (kg)",
+            currentUnit = if (uiState.weightUnit == "kg") "Kilograms (kg)" else "Pounds (lb)",
             onDismiss = { showUnitsDialog = false },
             onSelect = { unit ->
+                viewModel.setWeightUnit(if (unit.contains("kg")) "kg" else "lb")
                 showUnitsDialog = false
             }
         )
@@ -135,10 +189,24 @@ fun SettingsScreen(navController: NavController) {
     
     if (showRestTimerDialog) {
         RestTimerSelectionDialog(
-            currentSeconds = 90,
+            currentSeconds = uiState.defaultRestTimerSeconds,
             onDismiss = { showRestTimerDialog = false },
             onSelect = { seconds ->
+                viewModel.setDefaultRestTimer(seconds)
                 showRestTimerDialog = false
+            }
+        )
+    }
+    
+    if (showStreakReminderDialog) {
+        StreakReminderTimeDialog(
+            currentHour = uiState.streakReminderHour,
+            currentMinute = uiState.streakReminderMinute,
+            isEnabled = uiState.streakReminderEnabled,
+            onDismiss = { showStreakReminderDialog = false },
+            onSave = { hour, minute, enabled ->
+                viewModel.setStreakReminderTime(hour, minute, enabled)
+                showStreakReminderDialog = false
             }
         )
     }
@@ -200,6 +268,59 @@ private fun SettingsItem(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = TextTertiary
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsItemWithSwitch(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = NeonTeal,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = NeonTeal,
+                    checkedTrackColor = NeonTeal.copy(alpha = 0.5f)
+                )
             )
         }
     }
@@ -311,6 +432,116 @@ private fun RestTimerSelectionDialog(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StreakReminderTimeDialog(
+    currentHour: Int,
+    currentMinute: Int,
+    isEnabled: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (Int, Int, Boolean) -> Unit
+) {
+    var selectedHour by remember { mutableIntStateOf(currentHour) }
+    var selectedMinute by remember { mutableIntStateOf(currentMinute) }
+    var enabled by remember { mutableStateOf(isEnabled) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = DarkSurfaceElevated,
+        title = {
+            Text("Streak Reminders", color = TextPrimary)
+        },
+        text = {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Enable Reminders",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = enabled,
+                        onCheckedChange = { enabled = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = NeonTeal,
+                            checkedTrackColor = NeonTeal.copy(alpha = 0.5f)
+                        )
+                    )
+                }
+                
+                if (enabled) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text(
+                        text = "Reminder Time (24-hour)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TimePicker(
+                            initialHour = selectedHour,
+                            initialMinute = selectedMinute,
+                            onTimeSelected = { hour, minute ->
+                                selectedHour = hour
+                                selectedMinute = minute
+                            }
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(selectedHour, selectedMinute, enabled) }) {
+                Text("Save", color = NeonTeal)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePicker(
+    initialHour: Int,
+    initialMinute: Int,
+    onTimeSelected: (Int, Int) -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute
+    )
+    
+    TimePicker(
+        state = timePickerState,
+        colors = TimePickerDefaults.colors(
+            clockDialColor = DarkSurfaceElevated,
+            selectorColor = NeonTeal,
+            containerColor = DarkSurfaceElevated
+        )
+    )
+    
+    LaunchedEffect(timePickerState) {
+        onTimeSelected(timePickerState.hour, timePickerState.minute)
+    }
 }
 
 @Composable
