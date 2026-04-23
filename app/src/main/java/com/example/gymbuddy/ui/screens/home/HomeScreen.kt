@@ -37,6 +37,7 @@ import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.UserTitle
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
+import java.util.Calendar
 
 @Composable
 fun HomeScreen(
@@ -75,6 +76,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         GreetingSection(
+            greeting = getTimeBasedGreeting(),
             userName = uiState.userProfile?.name ?: "Trainer",
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
@@ -134,10 +136,21 @@ fun HomeScreen(
 }
 
 @Composable
-fun GreetingSection(userName: String, level: Int, xp: Int, title: String) {
+private fun getTimeBasedGreeting(): String {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when (hour) {
+        in 5..11 -> "Good morning"
+        in 12..16 -> "Good afternoon"
+        in 17..20 -> "Good evening"
+        else -> "Good night"
+    }
+}
+
+@Composable
+fun GreetingSection(greeting: String, userName: String, level: Int, xp: Int, title: String) {
     Column {
         Text(
-            text = "Welcome back,",
+            text = greeting,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
