@@ -272,7 +272,10 @@ class ExerciseInsightViewModel @Inject constructor(
 
         val allSets = sets.flatMap { it.sets }.filter { !it.isWarmUp }
         
-        val bestEst1RM = allSets.maxOfOrNull { calculateEstimated1RM(it.weight, it.reps) } ?: 0f
+        val actual1RMSets = allSets.filter { it.reps == 1 }
+        val bestEst1RM = if (actual1RMSets.isNotEmpty()) {
+            actual1RMSets.maxOf { it.weight }
+        } else 0f
         val bestMaxWeight = allSets.maxOfOrNull { it.weight } ?: 0f
         val totalVolume = allSets.sumOf { (it.weight * it.reps).toDouble() }.toFloat()
         val maxReps = allSets.maxOfOrNull { it.reps } ?: 0

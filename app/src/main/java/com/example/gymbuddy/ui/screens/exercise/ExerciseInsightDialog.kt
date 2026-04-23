@@ -512,7 +512,7 @@ private fun RecordTab(
             ) {
                 StatCard(
                     title = "Best 1RM",
-                    value = "${summary.bestEstimated1RM.toInt()} kg",
+                    value = if (summary.bestEstimated1RM > 0) "${summary.bestEstimated1RM.toInt()} kg" else "-",
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
@@ -677,12 +677,12 @@ private fun RecordTable(
 private fun calculateBestForReps(sessions: List<HistoricalSetWithDate>, targetReps: Int): String {
     val allSets = sessions.flatMap { it.sets }.filter { !it.isWarmUp }
     if (allSets.isEmpty()) return "-"
-    
-    val bestSet = allSets.maxByOrNull { calculateEstimated1RM(it.weight, it.reps) } ?: return "-"
-    val bestEstimated1RM = calculateEstimated1RM(bestSet.weight, bestSet.reps)
-    val targetWeight = bestEstimated1RM * (30f / (30f + targetReps))
-    
-    return "${targetWeight.toInt()} kg"
+
+    val matchingSets = allSets.filter { it.reps == targetReps }
+    if (matchingSets.isEmpty()) return "-"
+
+    val bestSet = matchingSets.maxByOrNull { it.weight } ?: return "-"
+    return "${bestSet.weight.toInt()} kg"
 }
 
 private fun calculateEstimated1RM(weight: Float, reps: Int): Float {
