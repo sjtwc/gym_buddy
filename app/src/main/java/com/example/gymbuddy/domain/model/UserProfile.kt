@@ -60,13 +60,42 @@ data class VirtualPet(
     }
 }
 
-enum class PetMood(val displayName: String, val emoji: String, val message: String) {
-    HAPPY("Happy", "😊", "Great workout! Let's keep the momentum going!"),
-    EXCITED("Excited", "🎉", "Amazing! New personal record! I'm so proud!"),
-    NEUTRAL("Neutral", "😐", "Ready for another workout? Let's go!"),
-    SAD("Sad", "😢", "I've been waiting for you... Don't let me down!"),
-    DISAPPOINTED("Disappointed", "😔", "It's been a while... I miss our workouts!"),
-    WAITING("Waiting", "⏳", "Take your time... but not too long!")
+enum class PetMood(
+    val displayName: String,
+    val emoji: String,
+    val message: String,
+    val extraMessages: List<String> = emptyList()
+) {
+    HAPPY("Happy", "😊", "Great workout! Let's keep the momentum going!", listOf(
+        "You're doing amazing! 💪",
+        "Keep up the great work! 🎯",
+        "Your dedication inspires me! ⭐"
+    )),
+    EXCITED("Excited", "🎉", "Amazing! New personal record! I'm so proud!", listOf(
+        "Let's crush today's workout! 🔥",
+        "Time to level up! 📈",
+        "You're unstoppable! 🚀"
+    )),
+    NEUTRAL("Neutral", "😐", "Ready for another workout? Let's go!", listOf(
+        "Every rep counts! 💯",
+        "Let's get moving! 🏃",
+        "Challenge yourself today! 🎖️"
+    )),
+    SAD("Sad", "😢", "I've been waiting for you... Don't let me down!", listOf(
+        "I believe in you! 💝",
+        "A workout will cheer us up! 🌟",
+        "You got this! 💪"
+    )),
+    DISAPPOINTED("Disappointed", "😔", "It's been a while... I miss our workouts!", listOf(
+        "I miss you... please come back! 🙏",
+        "Even a short workout helps! ⏱️",
+        "I'll be happy to see you! 🥺"
+    )),
+    WAITING("Waiting", "⏳", "Take your time... but not too long!", listOf(
+        "Rest up, but don't forget me! 😢",
+        "Recovery is important! 🧘",
+        "I'll be here when you're ready! 🏋️"
+    ))
 }
 
 data class PersonalRecord(

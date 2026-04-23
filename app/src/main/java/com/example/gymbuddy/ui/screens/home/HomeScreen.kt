@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,7 +70,21 @@ fun HomeScreen(
             )
         }
     }
-    
+
+    var petInteractionIndex by remember { mutableIntStateOf(0) }
+    var lastPetInteractionTime by remember { mutableLongStateOf(0L) }
+
+    val handlePetInteraction: () -> Unit = {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastPetInteractionTime > 1000) {
+            val mood = uiState.effectivePetMood
+            if (mood.extraMessages.isNotEmpty()) {
+                petInteractionIndex = (petInteractionIndex + 1) % (mood.extraMessages.size + 1)
+            }
+            lastPetInteractionTime = currentTime
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,7 +108,9 @@ fun HomeScreen(
         PetSection(
             petName = uiState.userProfile?.pet?.name ?: "GymBot",
             happiness = uiState.effectivePetHappiness,
-            mood = uiState.effectivePetMood
+            mood = uiState.effectivePetMood,
+            interactionIndex = petInteractionIndex,
+            onInteraction = handlePetInteraction
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -254,9 +271,25 @@ fun XpProgressBar(level: Int, xp: Int) {
 }
 
 @Composable
-fun PetSection(petName: String, happiness: Int, mood: PetMood) {
+fun PetSection(
+    petName: String,
+    happiness: Int,
+    mood: PetMood,
+    interactionIndex: Int = 0,
+    onInteraction: () -> Unit = {}
+) {
+    val animatedScale = remember { androidx.compose.runtime.mutableFloatStateOf(1f) }
+
+    val displayedMessage = if (interactionIndex > 0 && mood.extraMessages.isNotEmpty()) {
+        mood.extraMessages.getOrNull((interactionIndex - 1) % mood.extraMessages.size) ?: mood.message
+    } else {
+        mood.message
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onInteraction() },
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -286,12 +319,16 @@ fun PetSection(petName: String, happiness: Int, mood: PetMood) {
             ) {
                 Text(
                     text = mood.emoji,
-                    fontSize = 32.sp
+                    fontSize = 32.sp,
+                    modifier = Modifier.graphicsLayer {
+                        scaleX = animatedScale.value
+                        scaleY = animatedScale.value
+                    }
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = petName,
@@ -305,12 +342,12 @@ fun PetSection(petName: String, happiness: Int, mood: PetMood) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "\"${mood.message}\"",
+                    text = "\"$displayedMessage\"",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (interactionIndex > 0) NeonTeal else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             CircularProgressIndicator(
                 progress = { happiness / 100f },
                 modifier = Modifier.size(48.dp),
