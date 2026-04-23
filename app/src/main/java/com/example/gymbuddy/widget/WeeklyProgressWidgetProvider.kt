@@ -34,6 +34,7 @@ class WeeklyProgressWidgetProvider : AppWidgetProvider() {
         
         private fun createOpenAppIntent(context: Context): PendingIntent {
             val intent = Intent(context, MainActivity::class.java).apply {
+                putExtra("action", "navigate_progress")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             return PendingIntent.getActivity(
@@ -42,7 +43,7 @@ class WeeklyProgressWidgetProvider : AppWidgetProvider() {
             )
         }
     }
-    
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (appWidgetId in appWidgetIds) {
             updateWidget(context, appWidgetManager, appWidgetId)

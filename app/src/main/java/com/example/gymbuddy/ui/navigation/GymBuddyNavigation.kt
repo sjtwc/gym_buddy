@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
@@ -36,9 +37,15 @@ import com.example.gymbuddy.ui.screens.settings.SettingsScreen
 
 @Composable
 fun GymBuddyNavigation(
-    navController: NavHostController = rememberNavController(),
-    sessionManager: WorkoutSessionManager
+    sessionManager: WorkoutSessionManager,
+    onNavControllerReady: (NavHostController) -> Unit = {}
 ) {
+    val navController = rememberNavController()
+
+    LaunchedEffect(navController) {
+        onNavControllerReady(navController)
+    }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
