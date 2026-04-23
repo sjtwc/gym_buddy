@@ -23,5 +23,6 @@ data class UserProfileEntity(
     val age: Int? = null,
     val height: Float? = null,
     val weight: Float? = null,
+    val avatarUri: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )

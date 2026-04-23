@@ -16,6 +16,7 @@ data class ProfileEditUiState(
     val age: String? = null,
     val height: String? = null,
     val weight: String? = null,
+    val avatarUri: String? = null,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
@@ -50,6 +51,7 @@ class ProfileEditViewModel @Inject constructor(
                             age = p.age?.toString(),
                             height = p.height?.toString(),
                             weight = p.weight?.toString(),
+                            avatarUri = p.avatarUri,
                             isLoading = false
                         )
                     }
@@ -86,6 +88,10 @@ class ProfileEditViewModel @Inject constructor(
         _uiState.update { it.copy(weight = weight) }
     }
 
+    fun updateAvatarUri(uri: String?) {
+        _uiState.update { it.copy(avatarUri = uri) }
+    }
+
     fun saveProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, error = null) }
@@ -100,7 +106,8 @@ class ProfileEditViewModel @Inject constructor(
                     gender = currentState.gender,
                     age = currentState.age?.toIntOrNull(),
                     height = currentState.height?.toFloatOrNull(),
-                    weight = currentState.weight?.toFloatOrNull()
+                    weight = currentState.weight?.toFloatOrNull(),
+                    avatarUri = currentState.avatarUri
                 )
 
                 userProfileRepository.updateUserProfile(updatedProfile)

@@ -15,7 +15,8 @@ data class UserProfile(
     val gender: String? = null,
     val age: Int? = null,
     val height: Float? = null,
-    val weight: Float? = null
+    val weight: Float? = null,
+    val avatarUri: String? = null
 )
 
 data class VirtualPet(

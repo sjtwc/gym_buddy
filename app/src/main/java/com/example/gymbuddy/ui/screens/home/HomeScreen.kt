@@ -24,6 +24,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,6 +39,8 @@ import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.UserTitle
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import java.util.Calendar
 
 @Composable
@@ -78,6 +82,7 @@ fun HomeScreen(
         GreetingSection(
             greeting = getTimeBasedGreeting(),
             userName = uiState.userProfile?.name ?: "Trainer",
+            avatarUri = uiState.userProfile?.avatarUri,
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
             title = uiState.userProfile?.title ?: "Novice"
@@ -147,19 +152,37 @@ private fun getTimeBasedGreeting(): String {
 }
 
 @Composable
-fun GreetingSection(greeting: String, userName: String, level: Int, xp: Int, title: String) {
+fun GreetingSection(greeting: String, userName: String, avatarUri: String?, level: Int, xp: Int, title: String) {
     Column {
         Text(
             text = greeting,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Text(
-            text = userName,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (avatarUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(avatarUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+            Text(
+                text = userName,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
         
         if (title.isNotEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))

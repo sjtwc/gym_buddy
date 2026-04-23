@@ -13,6 +13,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,6 +24,8 @@ import androidx.navigation.NavController
 import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel()) {
@@ -67,10 +71,12 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
         
         ProfileHeader(
             name = uiState.userProfile?.name ?: "Trainer",
+            avatarUri = uiState.userProfile?.avatarUri,
             level = uiState.userProfile?.level ?: 1,
             xp = uiState.userProfile?.xp ?: 0,
             title = uiState.userProfile?.title ?: "Novice",
-            petMood = uiState.effectivePetMood
+            petMood = uiState.effectivePetMood,
+            onAvatarClick = { navController.navigate(Screen.ProfileEdit.route) }
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -89,7 +95,15 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
 }
 
 @Composable
-fun ProfileHeader(name: String, level: Int, xp: Int, title: String, petMood: PetMood) {
+fun ProfileHeader(
+    name: String,
+    avatarUri: String?,
+    level: Int,
+    xp: Int,
+    title: String,
+    petMood: PetMood,
+    onAvatarClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
@@ -105,10 +119,23 @@ fun ProfileHeader(name: String, level: Int, xp: Int, title: String, petMood: Pet
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
-                    .background(NeonTeal.copy(alpha = 0.2f)),
+                    .background(NeonTeal.copy(alpha = 0.2f))
+                    .clickable { onAvatarClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = petMood.emoji, fontSize = 40.sp)
+                if (avatarUri != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(avatarUri)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Avatar",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(text = petMood.emoji, fontSize = 40.sp)
+                }
             }
             
             Spacer(modifier = Modifier.height(16.dp))

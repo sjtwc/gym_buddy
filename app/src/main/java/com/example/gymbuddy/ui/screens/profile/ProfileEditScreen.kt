@@ -1,8 +1,15 @@
 package com.example.gymbuddy.ui.screens.profile
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -13,12 +20,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.gymbuddy.ui.theme.*
+import java.io.File
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +42,16 @@ fun ProfileEditScreen(
     viewModel: ProfileEditViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val savedPath = saveImageToInternalStorage(context, it)
+            viewModel.updateAvatarUri(savedPath)
+        }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -81,6 +106,55 @@ fun ProfileEditScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
+            SectionHeader(title = "Avatar")
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(NeonTeal.copy(alpha = 0.2f))
+                        .border(2.dp, NeonTeal, CircleShape)
+                        .clickable { imagePickerLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (uiState.avatarUri != null) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(uiState.avatarUri)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Avatar",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AddAPhoto,
+                            contentDescription = "Add Photo",
+                            modifier = Modifier.size(40.dp),
+                            tint = NeonTeal
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = "Tap to change avatar",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextTertiary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            )
+
             SectionHeader(title = "Personal Information")
 
             OutlinedTextField(
@@ -212,6 +286,19 @@ fun ProfileEditScreen(
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
+}
+
+private fun saveImageToInternalStorage(context: Context, uri: Uri): String {
+    val fileName = "avatar_${UUID.randomUUID()}.jpg"
+    val file = File(context.filesDir, fileName)
+
+    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        file.outputStream().use { outputStream ->
+            inputStream.copyTo(outputStream)
+        }
+    }
+
+    return file.absolutePath
 }
 
 @Composable

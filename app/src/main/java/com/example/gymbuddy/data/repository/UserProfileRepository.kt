@@ -340,9 +340,10 @@ class UserProfileRepository @Inject constructor(
         gender = gender,
         age = age,
         height = height,
-        weight = weight
+        weight = weight,
+        avatarUri = avatarUri
     )
-    
+
     private fun UserProfile.toEntity() = UserProfileEntity(
         id = id,
         name = name,
@@ -359,6 +360,7 @@ class UserProfileRepository @Inject constructor(
         gender = gender,
         age = age,
         height = height,
-        weight = weight
+        weight = weight,
+        avatarUri = avatarUri
     )
 }
