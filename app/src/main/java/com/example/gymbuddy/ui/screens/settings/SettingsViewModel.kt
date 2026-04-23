@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymbuddy.auth.AuthManager
 import com.example.gymbuddy.data.local.NotificationPreferences
+import com.example.gymbuddy.data.local.dao.PersonalRecordDao
+import com.example.gymbuddy.data.local.entity.PersonalRecordEntity
 import com.example.gymbuddy.domain.model.FreeTimeSlot
 import com.example.gymbuddy.service.CalendarService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,7 +31,9 @@ data class SettingsUiState(
     val googleAccountEmail: String? = null,
     val autoSyncEnabled: Boolean = false,
     val showFreeTimeDialog: Boolean = false,
-    val freeTimeSlots: List<FreeTimeSlot> = emptyList()
+    val freeTimeSlots: List<FreeTimeSlot> = emptyList(),
+    val showResetDialog: Boolean = false,
+    val isResetting: Boolean = false
 )
 
 @HiltViewModel
@@ -36,7 +41,8 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val notificationPreferences: NotificationPreferences,
     private val authManager: AuthManager,
-    private val calendarService: CalendarService
+    private val calendarService: CalendarService,
+    private val personalRecordDao: PersonalRecordDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -130,6 +136,29 @@ class SettingsViewModel @Inject constructor(
     fun syncToCalendar() {
         viewModelScope.launch {
             // TODO: Trigger calendar sync
+        }
+    }
+
+    fun showResetConfirmation() {
+        _uiState.update { it.copy(showResetDialog = true) }
+    }
+
+    fun hideResetConfirmation() {
+        _uiState.update { it.copy(showResetDialog = false) }
+    }
+
+    fun resetAllRecords() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isResetting = true) }
+            try {
+                val allRecords = personalRecordDao.getAllRecords(Int.MAX_VALUE).first()
+                allRecords.forEach { record ->
+                    personalRecordDao.deleteRecord(record)
+                }
+            } catch (e: Exception) {
+                // Handle error silently
+            }
+            _uiState.update { it.copy(isResetting = false, showResetDialog = false) }
         }
     }
 }

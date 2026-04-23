@@ -170,25 +170,64 @@ class ExerciseInsightViewModel @Inject constructor(
 
     private fun calculatePredictedRecords() {
         val sets = _uiState.value.historicalSets
-        
+
         if (sets.isEmpty()) {
             _uiState.update { it.copy(predictedRecords = null) }
             return
         }
 
-        val recentSessions = sets.take(5)
-        
-        val best1RM = recentSessions.flatMap { it.sets }
-            .filter { !it.isWarmUp }
-            .maxOfOrNull { calculateEstimated1RM(it.weight, it.reps) } ?: 0f
+        // Time window: 1.5 months (6 weeks)
+        val timeWindowMs = 6L * 7 * 24 * 60 * 60 * 1000
+        val cutoffTime = System.currentTimeMillis() - timeWindowMs
 
-        val daysSinceLast = if (sets.isNotEmpty()) {
-            ((System.currentTimeMillis() - sets.first().date) / (1000 * 60 * 60 * 24)).toInt()
-        } else 0
+        // Get records within time window
+        val recentRecords = sets.filter { it.date >= cutoffTime }
+
+        if (recentRecords.isEmpty()) {
+            return
+        }
+
+        val allSets = recentRecords.flatMap { it.sets }.filter { !it.isWarmUp }
+
+        // Find best actual record within window
+        // Priority: 1RM > 2RM > 3RM > ... > 12RM
+        val baseRecord: Pair<Int, Float>? = (1..12).firstNotNullOf { reps ->
+            allSets.filter { it.reps == reps }.maxOfOrNull { it.weight }?.let { weight ->
+                reps to weight
+            }
+        }
+
+        if (baseRecord == null) {
+            return
+        }
+
+        val (baseReps, baseWeight) = baseRecord
+        val effective1RM = calculateEstimated1RM(baseWeight, baseReps)
+
+        if (effective1RM <= 0) {
+            return
+        }
+
+        val currentPredictions = _uiState.value.predictedRecords
 
         val predictedRecords = (1..12).map { reps ->
-            val estimatedRM = epleyFormula(best1RM, reps)
-            predictRecordEpley(estimatedRM, daysSinceLast)
+            val calculated = inverseEpleyFormula(effective1RM, reps)
+            val current = when (reps) {
+                1 -> currentPredictions?.oneRM
+                2 -> currentPredictions?.twoRM
+                3 -> currentPredictions?.threeRM
+                4 -> currentPredictions?.fourRM
+                5 -> currentPredictions?.fiveRM
+                6 -> currentPredictions?.sixRM
+                7 -> currentPredictions?.sevenRM
+                8 -> currentPredictions?.eightRM
+                9 -> currentPredictions?.nineRM
+                10 -> currentPredictions?.tenRM
+                11 -> currentPredictions?.elevenRM
+                12 -> currentPredictions?.twelveRM
+                else -> null
+            }
+            if (current != null && calculated <= current) current else calculated
         }
 
         _uiState.update {
@@ -209,25 +248,14 @@ class ExerciseInsightViewModel @Inject constructor(
         }
     }
 
-    private fun epleyFormula(oneRM: Float, reps: Int): Float {
+    private fun inverseEpleyFormula(oneRM: Float, reps: Int): Float {
         if (reps <= 0 || oneRM <= 0) return 0f
         if (reps == 1) return oneRM
-        return oneRM * (1 + reps / 30f)
+        return oneRM / (1 + reps / 30f)
     }
 
-    private fun calculateEstimated1RM(weight: Float, reps: Int): Float {
-        if (reps <= 0 || weight <= 0) return 0f
-        if (reps == 1) return weight
-        return weight * (1 + reps / 30f)
-    }
-
-    private fun predictRecordEpley(historicalBest: Float, daysSinceLast: Int): Float {
-        if (historicalBest <= 0) return 0f
-        
-        val progressionRate = 0.005f
-        val weeks = daysSinceLast / 7f
-        
-        return historicalBest * (1 + (progressionRate * weeks))
+    fun resetPredictedRecords() {
+        _uiState.update { it.copy(predictedRecords = null) }
     }
 
     fun getSummaryStats(): InsightSummary {
@@ -255,6 +283,12 @@ class ExerciseInsightViewModel @Inject constructor(
             totalVolume = totalVolume,
             maxReps = maxReps
         )
+    }
+
+    private fun calculateEstimated1RM(weight: Float, reps: Int): Float {
+        if (reps <= 0 || weight <= 0) return 0f
+        if (reps == 1) return weight
+        return weight * (1 + reps / 30f)
     }
 }
 

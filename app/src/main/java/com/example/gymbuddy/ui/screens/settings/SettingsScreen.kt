@@ -153,7 +153,15 @@ fun SettingsScreen(
             SettingsSection(title = "Your Stats")
             
             UserStatsCard()
-            
+
+            SettingsItem(
+                icon = Icons.Default.Refresh,
+                title = "Reset Records",
+                subtitle = "Clear all personal and predicted records",
+                onClick = { viewModel.showResetConfirmation() }
+
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
             
             SettingsSection(title = "About")
@@ -207,6 +215,29 @@ fun SettingsScreen(
             onSave = { hour, minute, enabled ->
                 viewModel.setStreakReminderTime(hour, minute, enabled)
                 showStreakReminderDialog = false
+            }
+        )
+    }
+
+    if (uiState.showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.hideResetConfirmation() },
+            title = { Text("Reset All Records?") },
+            text = {
+                Text("This will permanently delete all personal records (best 1RM, 2RM, etc.) and predicted records for all exercises. This action cannot be undone.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.resetAllRecords() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Reset")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.hideResetConfirmation() }) {
+                    Text("Cancel")
+                }
             }
         )
     }
