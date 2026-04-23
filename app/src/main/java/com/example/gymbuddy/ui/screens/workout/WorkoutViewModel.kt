@@ -116,6 +116,10 @@ class WorkoutViewModel @Inject constructor(
     }
     
     fun startWorkoutWithRoutine(routine: Routine, sessionManager: WorkoutSessionManager) {
+        if (sessionManager.isActive.value) {
+            sessionManager.expand()
+            return
+        }
         viewModelScope.launch {
             val fullRoutine = routineRepository.getRoutineByIdWithExercises(routine.id)
             val workout = Workout(

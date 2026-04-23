@@ -58,7 +58,13 @@ fun WorkoutScreen(
 
         // Start Workout Button
         Button(
-            onClick = { viewModel.startQuickWorkout(sessionManager) },
+            onClick = {
+                if (sessionManager.isActive.value) {
+                    sessionManager.expand()
+                } else {
+                    viewModel.startQuickWorkout(sessionManager)
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -86,7 +92,11 @@ fun WorkoutScreen(
                 viewModel.saveScheduledWorkout(dayOfWeek, routineId, isRestDay)
             },
             onStartWorkout = { routine ->
-                viewModel.startWorkoutWithRoutine(routine, sessionManager)
+                if (sessionManager.isActive.value) {
+                    sessionManager.expand()
+                } else {
+                    viewModel.startWorkoutWithRoutine(routine, sessionManager)
+                }
             }
         )
 
@@ -128,7 +138,13 @@ fun WorkoutScreen(
                 items(uiState.routines) { routine ->
                     RoutineCard(
                         routine = routine,
-                        onStart = { viewModel.startWorkoutWithRoutine(routine, sessionManager) },
+                        onStart = {
+                            if (sessionManager.isActive.value) {
+                                sessionManager.expand()
+                            } else {
+                                viewModel.startWorkoutWithRoutine(routine, sessionManager)
+                            }
+                        },
                         onEdit = { navController.navigate(Screen.CreateRoutine.createRoute(routine.id)) },
                         onDelete = { viewModel.deleteRoutine(routine) }
                     )
