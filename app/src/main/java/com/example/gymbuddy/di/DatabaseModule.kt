@@ -1,6 +1,7 @@
 package com.example.gymbuddy.di
 
 import android.content.Context
+import com.example.gymbuddy.data.local.CalendarPreferences
 import com.example.gymbuddy.data.local.GymBuddyDatabase
 import com.example.gymbuddy.data.local.dao.*
 import dagger.Module
@@ -18,6 +19,12 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GymBuddyDatabase {
         return GymBuddyDatabase.getDatabase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCalendarPreferences(@ApplicationContext context: Context): CalendarPreferences {
+        return CalendarPreferences(context)
     }
     
     @Provides

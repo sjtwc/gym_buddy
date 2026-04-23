@@ -11,9 +11,21 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileInputStream
+import java.util.Properties
 import javax.inject.Inject
 import javax.inject.Singleton
+
+data class CalendarAuthState(
+    val isConnected: Boolean = false,
+    val email: String? = null,
+    val error: String? = null
+)
 
 @Singleton
 class CalendarAuthManager @Inject constructor(
@@ -21,21 +33,48 @@ class CalendarAuthManager @Inject constructor(
 ) {
     private val calendarPreferences by lazy { CalendarPreferences(context) }
 
+    private val _authState = MutableStateFlow(CalendarAuthState())
+    val authState: StateFlow<CalendarAuthState> = _authState.asStateFlow()
+
     companion object {
         const val CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar"
         const val CALENDAR_READ_ONLY_SCOPE = "https://www.googleapis.com/auth/calendar.readonly"
+        private const val SECRETS_FILE = "secrets.properties"
+        private const val CLIENT_ID_KEY = "CLIENT_ID"
     }
 
     private var signInClient: GoogleSignInClient? = null
     private var activityResultLauncher: ActivityResultLauncher<Intent>? = null
 
+    private fun getClientId(): String {
+        return try {
+            val secretsFile = File(context.filesDir.parent, SECRETS_FILE)
+            if (secretsFile.exists()) {
+                val properties = Properties()
+                FileInputStream(secretsFile).use { fis ->
+                    properties.load(fis)
+                }
+                properties.getProperty(CLIENT_ID_KEY, "")
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
     fun getSignInClient(): GoogleSignInClient {
         if (signInClient == null) {
-            val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            val clientId = getClientId()
+            val optionsBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestScopes(Scope(CALENDAR_SCOPE))
-                .build()
-            signInClient = GoogleSignIn.getClient(context, options)
+
+            if (clientId.isNotEmpty()) {
+                optionsBuilder.requestServerAuthCode(clientId)
+            }
+
+            signInClient = GoogleSignIn.getClient(context, optionsBuilder.build())
         }
         return signInClient!!
     }
@@ -55,54 +94,42 @@ class CalendarAuthManager @Inject constructor(
         }
     }
 
-    suspend fun handleSignInResult(
-        intent: Intent,
-        onSuccess: (GoogleSignInAccount) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) = withContext(Dispatchers.Main) {
+    suspend fun handleSignInResult(intent: Intent): Boolean = withContext(Dispatchers.Main) {
         try {
             val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
+            var success = false
             task.addOnSuccessListener { account ->
-                val authCode = account.serverAuthCode
-                if (authCode != null) {
-                    calendarPreferences.saveAccessToken(authCode)
-                    calendarPreferences.saveRefreshToken("")
-                    calendarPreferences.saveTokenExpiry(System.currentTimeMillis() + 3600_000)
-                    calendarPreferences.saveAccountEmail(account.email ?: "")
-                    onSuccess(account)
-                } else {
-                    onFailure(Exception("No server auth code"))
+                kotlinx.coroutines.runBlocking {
+                    try {
+                        val serverAuthCode = account.serverAuthCode
+                        if (serverAuthCode != null) {
+                            calendarPreferences.saveAccessToken(serverAuthCode)
+                            calendarPreferences.saveRefreshToken("")
+                            calendarPreferences.saveTokenExpiry(System.currentTimeMillis() + 3600_000)
+                            calendarPreferences.saveAccountEmail(account.email ?: "")
+
+                            _authState.value = CalendarAuthState(
+                                isConnected = true,
+                                email = account.email
+                            )
+                            success = true
+                        } else {
+                            _authState.value = CalendarAuthState(error = "No server auth code received")
+                        }
+                    } catch (e: Exception) {
+                        _authState.value = CalendarAuthState(error = e.message)
+                    }
                 }
             }.addOnFailureListener { e ->
-                onFailure(e)
+                kotlinx.coroutines.runBlocking {
+                    _authState.value = CalendarAuthState(error = e.message)
+                }
             }
+            success
         } catch (e: Exception) {
-            onFailure(e)
+            _authState.value = CalendarAuthState(error = e.message)
+            false
         }
-    }
-
-    private suspend fun exchangeAuthCodeForTokens(authCode: String): Pair<String, String>? {
-        return withContext(Dispatchers.IO) {
-            try {
-                calendarPreferences.saveAccessToken(authCode)
-                Pair(authCode, "")
-            } catch (e: Exception) {
-                null
-            }
-        }
-    }
-
-    suspend fun refreshTokenIfNeeded(): Boolean = withContext(Dispatchers.IO) {
-        if (!calendarPreferences.isTokenExpired()) {
-            return@withContext true
-        }
-
-        val refreshToken = calendarPreferences.getRefreshToken()
-        if (refreshToken.isNullOrEmpty()) {
-            return@withContext false
-        }
-
-        false
     }
 
     fun isSignedIn(): Boolean {
@@ -122,10 +149,21 @@ class CalendarAuthManager @Inject constructor(
         try {
             getSignInClient().signOut()
             calendarPreferences.clearTokens()
+            _authState.value = CalendarAuthState()
             true
         } catch (e: Exception) {
             calendarPreferences.clearTokens()
+            _authState.value = CalendarAuthState()
             false
         }
+    }
+
+    fun refreshAuthState() {
+        val isConnected = isSignedIn()
+        val email = getSignedInAccountEmail()
+        _authState.value = CalendarAuthState(
+            isConnected = isConnected,
+            email = email
+        )
     }
 }

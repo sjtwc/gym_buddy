@@ -4,6 +4,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -76,6 +77,8 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.50")
     ksp("com.google.dagger:hilt-compiler:2.50")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
 

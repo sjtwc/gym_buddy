@@ -3,9 +3,9 @@ package com.example.gymbuddy.ui.screens.settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gymbuddy.auth.AuthManager
 import com.example.gymbuddy.data.local.NotificationPreferences
 import com.example.gymbuddy.domain.model.FreeTimeSlot
-import com.example.gymbuddy.service.CalendarAuthManager
 import com.example.gymbuddy.service.CalendarService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -35,7 +35,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val notificationPreferences: NotificationPreferences,
-    private val calendarAuthManager: CalendarAuthManager,
+    private val authManager: AuthManager,
     private val calendarService: CalendarService
 ) : ViewModel() {
 
@@ -44,7 +44,20 @@ class SettingsViewModel @Inject constructor(
 
     init {
         loadNotificationSettings()
-        checkCalendarConnection()
+        observeCalendarAuth()
+    }
+
+    private fun observeCalendarAuth() {
+        viewModelScope.launch {
+            authManager.authState.collect { state ->
+                _uiState.update {
+                    it.copy(
+                        isCalendarConnected = state.isConnected,
+                        googleAccountEmail = state.email
+                    )
+                }
+            }
+        }
     }
 
     private fun loadNotificationSettings() {
@@ -59,26 +72,11 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun checkCalendarConnection() {
-        viewModelScope.launch {
-            val isConnected = calendarAuthManager.isSignedIn()
-            val email = if (isConnected) calendarAuthManager.getSignedInAccountEmail() else null
-            _uiState.update {
-                it.copy(
-                    isCalendarConnected = isConnected,
-                    googleAccountEmail = email
-                )
-            }
-        }
-    }
-
     fun setDefaultRestTimer(seconds: Int) {
-        // TODO: Save to preferences
         _uiState.update { it.copy(defaultRestTimerSeconds = seconds) }
     }
 
     fun setWeightUnit(unit: String) {
-        // TODO: Save to preferences
         _uiState.update { it.copy(weightUnit = unit) }
     }
 
@@ -102,22 +100,11 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun signInToCalendar() {
-        viewModelScope.launch {
-            calendarAuthManager.signIn()
-            checkCalendarConnection()
-        }
+        authManager.launchSignIn()
     }
 
     fun signOutFromCalendar() {
-        viewModelScope.launch {
-            calendarAuthManager.signOut()
-            _uiState.update {
-                it.copy(
-                    isCalendarConnected = false,
-                    googleAccountEmail = null
-                )
-            }
-        }
+        authManager.signOut()
     }
 
     fun setAutoSyncEnabled(enabled: Boolean) {

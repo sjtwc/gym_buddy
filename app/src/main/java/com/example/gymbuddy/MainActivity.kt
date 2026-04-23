@@ -3,38 +3,36 @@ package com.example.gymbuddy
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.gymbuddy.auth.AuthManager
 import com.example.gymbuddy.BuildConfig
-import com.example.gymbuddy.service.CalendarAuthManager
 import com.example.gymbuddy.service.StreakAlarmReceiver
 import com.example.gymbuddy.service.WorkoutSessionManager
 import com.example.gymbuddy.ui.navigation.GymBuddyNavigation
 import com.example.gymbuddy.ui.theme.DarkBackground
 import com.example.gymbuddy.ui.theme.GymBuddyTheme
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    
+
     @Inject
     lateinit var sessionManager: WorkoutSessionManager
 
     @Inject
-    lateinit var calendarAuthManager: CalendarAuthManager
-    
+    lateinit var authManager: AuthManager
+
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -46,32 +44,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val googleSignInLauncher = registerForActivityResult(
+    private val signInLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        lifecycleScope.launch {
-            calendarAuthManager.handleSignInResult(
-                result.data ?: return@launch,
-                onSuccess = { account ->
-                    Log.d("MainActivity", "Google sign-in successful: ${account.email}")
-                },
-                onFailure = { e ->
-                    Log.e("MainActivity", "Google sign-in failed", e)
-                }
-            )
-        }
+        Log.d("MainActivity", "Sign-in result: ${result.resultCode}")
+        authManager.handleSignInResult(result.data)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        calendarAuthManager.setActivityResultLauncher(googleSignInLauncher)
+        authManager.setActivityResultLauncher(signInLauncher)
 
         handleDeepLink(intent)
 
         requestNotificationPermission()
-        
+
         if (savedInstanceState == null) {
             intent?.getBooleanExtra("expand_overlay", false)?.let { shouldExpand ->
                 if (shouldExpand) {
@@ -79,7 +68,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        
+
         setContent {
             GymBuddyTheme {
                 Surface(
@@ -107,17 +96,16 @@ class MainActivity : ComponentActivity() {
 
                 if (routineId != null) {
                     Log.d("MainActivity", "Opening routine $routineId for date $date")
-                    // TODO: Navigate to routine detail screen
                 }
             }
         }
     }
-    
+
     override fun onDestroy() {
         super.onDestroy()
         sessionManager.onCleared()
     }
-    
+
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {
@@ -138,7 +126,7 @@ class MainActivity : ComponentActivity() {
             scheduleStreakReminder()
         }
     }
-    
+
     private fun scheduleStreakReminder() {
         val intervalMinutes = if (BuildConfig.DEBUG) {
             Log.d("StreakReminder", "DEBUG MODE: Scheduling notification every 2 minutes")
@@ -147,7 +135,7 @@ class MainActivity : ComponentActivity() {
             Log.d("StreakReminder", "PRODUCTION MODE: Scheduling daily reminder")
             1440L
         }
-        
+
         StreakAlarmReceiver.scheduleAlarm(this, intervalMinutes)
     }
 }
