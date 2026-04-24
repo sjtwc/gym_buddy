@@ -2,11 +2,11 @@ package com.example.gymbuddy.service
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import com.example.gymbuddy.data.local.GymBuddyDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,43 +26,49 @@ class HealthConnectManager @Inject constructor(
         const val TYPE_CARDIO = "CARDIO"
         const val TYPE_FLEXIBILITY = "FLEXIBILITY"
         
-        // Health Connect app package
-        const val HEALTH_CONNECT_PACKAGE = "com.google.android.apps.healthdata"
+        val HEALTH_FITNESS_PACKAGES = listOf(
+            "com.google.android.apps.fitness",
+            "com.google.android.apps.healthdata",
+            "com.samsung.android.shealth",
+            "com.huawei.health",
+            "com.oneplus.health",
+            "com.mi.health",
+            "com.oppo.health"
+        )
+        
+        const val GOOGLE_FIT_PACKAGE = "com.google.android.apps.fitness"
+        const val GOOGLE_HEALTH_CONNECT_PACKAGE = "com.google.android.apps.healthdata"
     }
 
-    // Use Health Connect SDK if available
-    private val isSdkAvailable: Boolean
-        get() = try {
-            androidx.health.connect.client.HealthConnectClient.getSdkStatus(context) == 
-                androidx.health.connect.client.HealthConnectClient.SDK_AVAILABLE
-        } catch (e: Exception) {
-            false
+    private var availablePackage: String? = null
+    
+    private fun findAvailableHealthPackage(): String? {
+        for (pkg in HEALTH_FITNESS_PACKAGES) {
+            try {
+                context.packageManager.getPackageInfo(pkg, 0)
+                return pkg
+            } catch (e: PackageManager.NameNotFoundException) {
+                continue
+            }
         }
+        return null
+    }
 
     fun isAvailable(): Boolean {
-        return try {
-            val packageManager = context.packageManager
-            packageManager.getPackageInfo(HEALTH_CONNECT_PACKAGE, 0)
-            isSdkAvailable || checkIntentPossible()
-        } catch (e: Exception) {
-            false
-        }
+        if (availablePackage != null) return true
+        availablePackage = findAvailableHealthPackage()
+        return availablePackage != null
     }
     
-    private fun checkIntentPossible(): Boolean {
-        return try {
-            val intent = context.packageManager.getLaunchIntentForPackage(HEALTH_CONNECT_PACKAGE)
-            intent != null
-        } catch (e: Exception) {
-            false
+    fun getAvailableAppName(): String {
+        return when (availablePackage) {
+            GOOGLE_FIT_PACKAGE -> "Google Fit"
+            GOOGLE_HEALTH_CONNECT_PACKAGE -> "Google Health Connect"
+            else -> "Health App"
         }
     }
 
-    fun hasAllPermissions(): Boolean {
-        // For basic implementation, we don't require permissions
-        // Full implementation would check Health Connect SDK permissions
-        return isAvailable()
-    }
+    fun hasAllPermissions(): Boolean = isAvailable()
 
     suspend fun getRecentSessions(limit: Int = 10): List<ExerciseSession> {
         return try {
@@ -71,7 +77,6 @@ class HealthConnectManager @Inject constructor(
                 .getRecentCompletedWorkouts(limit)
                 .first()
                 .filter { it.isCompleted }
-                .filter { it.duration != null }
             
             workouts.map { workout ->
                 ExerciseSession(
@@ -87,26 +92,36 @@ class HealthConnectManager @Inject constructor(
     }
 
     suspend fun exportSession(session: ExerciseSession): Boolean {
-        // Basic implementation - open Health Connect app with workout info
         return try {
-            openHealthConnectWithWorkout(session)
-            true
+            openHealthAppWithSession(session)
         } catch (e: Exception) {
             false
         }
     }
-
-    private fun openHealthConnectWithWorkout(session: ExerciseSession) {
-        try {
-            // Try to open Health Connect directly
-            val intent = context.packageManager.getLaunchIntentForPackage(HEALTH_CONNECT_PACKAGE)
-            intent?.let {
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(it)
-            }
-        } catch (e: Exception) {
-            // Fallback: open Play Store
+    
+    private fun openHealthAppWithSession(session: ExerciseSession): Boolean {
+        val packageName = availablePackage ?: findAvailableHealthPackage()
+        
+        if (packageName == null) {
             openPlayStore()
+            return false
+        }
+        
+        try {
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                return true
+            }
+            
+            // Try Play Store for this app
+            openPlayStoreForApp(packageName)
+            return true
+            
+        } catch (e: Exception) {
+            openPlayStore()
+            return false
         }
     }
 
@@ -122,27 +137,59 @@ class HealthConnectManager @Inject constructor(
 
     suspend fun connect(): Boolean = isAvailable()
 
-    fun openHealthConnect() {
-        try {
-            val intent = context.packageManager.getLaunchIntentForPackage(HEALTH_CONNECT_PACKAGE)
-            intent?.let {
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(it)
-            } ?: openPlayStore()
-        } catch (e: Exception) {
+    fun openApp(): Boolean {
+        if (!isAvailable()) {
             openPlayStore()
+            return false
         }
+        
+        return availablePackage?.let { pkg ->
+            try {
+                val intent = context.packageManager.getLaunchIntentForPackage(pkg)
+                if (intent != null) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                    true
+                } else {
+                    openPlayStoreForApp(pkg)
+                    true
+                }
+            } catch (e: Exception) {
+                openPlayStore()
+                false
+            }
+        } ?: false
     }
 
     private fun openPlayStore() {
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("market://details?id=$HEALTH_CONNECT_PACKAGE")
+                data = Uri.parse("market://search?q=Google+Fit+health+connect")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            // Ignore
+            try {
+                val webIntent = Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.fitness")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(webIntent)
+            } catch (e2: Exception) {
+                // Ignore
+            }
+        }
+    }
+    
+    private fun openPlayStoreForApp(packageName: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("market://details?id=$packageName")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            openPlayStore()
         }
     }
 }
