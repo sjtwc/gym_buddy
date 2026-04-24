@@ -14,10 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Chat interface with streaming responses
   - AI has access to user's fitness profile, stats, and workout history
   - Provides personalized motivation and fitness advice
-  - **Infrastructure ready** - Model integration pending KSP2/Room compatibility fix
+  - **Infrastructure ready** - LiteRT integration pending API compatibility
 
 ### New Files
-- `LlmService.kt` - LLM inference service (stub implementation)
+- `LlmService.kt` - LLM inference service (stub - outputs "no response from (pet name)")
 - `LlmRepository.kt` - LLM chat repository with prompt engineering
 - `LlmModule.kt` - Hilt DI module for LLM services
 - `PetChatDialog.kt` - Chat UI dialog (85% width, 75% height)
@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `UserSummaryGenerator.kt` - Service to generate user insights
 - `UserSummaryWorker.kt` - WorkManager for daily summary updates
 - `UserSummary.kt` - Domain model with profile, stats, metrics
+- `data/api/NominatimDto.kt` - DTO for geocoding API (separated from service layer)
 - `gemma3-270m-it-q8.litertlm` - Gemma 270M INT8 model (304MB, in assets)
 
 ### Updated
@@ -36,11 +37,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GymBuddyDatabase.kt` - Added UserSummaryEntity, version bumped to 7
 - `DatabaseModule.kt` - Added UserSummaryDao provider
 - `AndroidManifest.xml` - Added GPU native library permissions for LiteRT
-- GPU native libraries (`libvndksupport.so`, `libOpenCL.so`) - For future LiteRT acceleration
+- `GeocodingService.kt` - Now imports DTO from `data/api/` package
+- **Build Configuration:**
+  - Kotlin upgraded to 2.1.21
+  - KSP2 enabled (`ksp.useKSP2=true`)
+  - Room upgraded to 2.8.0
+  - Hilt upgraded to 2.56.2
+  - Compose plugin enabled (`org.jetbrains.kotlin.plugin.compose`)
+  - LiteRT-LM 0.8.0 dependency added (API usage pending)
+
+### Architecture
+- Separated DTOs from service layer (`data/api/` package)
+- Domain models use reflection-based JSON serialization (no @Serializable annotations)
+- Network DTOs remain @Serializable for Ktor deserialization
 
 ### Note
-LlmService outputs "no response from (pet name)" due to KSP2 bug with Room + @Serializable.
-Infrastructure ready for real LLM integration when KSP compatibility is resolved.
+LlmService outputs "no response from (pet name)" - LiteRT API differs from documentation.
+Infrastructure ready for real LLM integration when API is understood.
 Model file `gemma3-270m-it-q8.litertlm` in assets (not committed to git, 304MB).
 
 ---

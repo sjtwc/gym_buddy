@@ -1,5 +1,6 @@
 package com.example.gymbuddy.service
 
+import com.example.gymbuddy.data.api.NominatimResult
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
@@ -9,18 +10,9 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
-
-@Serializable
-data class NominatimResult(
-    val lat: String,
-    val lon: String,
-    val display_name: String,
-    val place_id: Long? = null
-)
 
 data class LatLng(
     val latitude: Double,
