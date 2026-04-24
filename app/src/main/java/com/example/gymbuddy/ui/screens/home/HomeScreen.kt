@@ -97,6 +97,7 @@ fun HomeScreen(
             petEmoji = petChatState.petEmoji,
             aiPetEmoji = petChatState.aiPetEmoji,
             petName = petChatState.petName,
+            userAvatarUri = petChatState.userAvatarUri,
             onSendMessage = { message -> petChatViewModel.sendMessage(message) },
             onDismiss = {
                 showPetChat = false

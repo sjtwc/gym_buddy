@@ -15,11 +15,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.gymbuddy.data.repository.ChatMessage
 import com.example.gymbuddy.ui.theme.*
 
@@ -30,6 +34,7 @@ fun PetChatDialog(
     petEmoji: String,
     aiPetEmoji: String,
     petName: String,
+    userAvatarUri: String?,
     onSendMessage: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -75,14 +80,15 @@ fun PetChatDialog(
                     items(messages) { message ->
                         ChatBubble(
                             message = message,
-                            petEmoji = petEmoji,
-                            petName = petName
+                            aiPetEmoji = aiPetEmoji,
+                            petName = petName,
+                            userAvatarUri = userAvatarUri
                         )
                     }
 
                     if (isLoading) {
                         item {
-                            LoadingIndicator(petEmoji = petEmoji)
+                            LoadingIndicator(aiPetEmoji = aiPetEmoji)
                         }
                     }
                 }
@@ -159,8 +165,9 @@ private fun ChatHeader(
 @Composable
 private fun ChatBubble(
     message: ChatMessage,
-    petEmoji: String,
-    petName: String
+    aiPetEmoji: String,
+    petName: String,
+    userAvatarUri: String?
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -175,9 +182,37 @@ private fun ChatBubble(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = petEmoji,
+                    text = aiPetEmoji,
                     fontSize = 16.sp
                 )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+        } else {
+            if (userAvatarUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(userAvatarUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "User Avatar",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(PetHappy.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🙂",
+                        fontSize = 16.sp
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -209,7 +244,7 @@ private fun ChatBubble(
 }
 
 @Composable
-private fun LoadingIndicator(petEmoji: String) {
+private fun LoadingIndicator(aiPetEmoji: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -221,7 +256,7 @@ private fun LoadingIndicator(petEmoji: String) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = petEmoji,
+                text = aiPetEmoji,
                 fontSize = 16.sp
             )
         }

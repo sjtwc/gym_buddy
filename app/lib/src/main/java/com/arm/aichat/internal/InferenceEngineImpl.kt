@@ -154,30 +154,53 @@ internal class InferenceEngineImpl private constructor(
             }
 
             try {
-                Log.i(TAG, "Checking access to model file... \n$pathToModel")
-                File(pathToModel).let {
-                    require(it.exists()) { "File not found" }
-                    require(it.isFile) { "Not a valid file" }
-                    require(it.canRead()) { "Cannot read file" }
-                }
+                val modelFile = File(pathToModel)
+                Log.i(TAG, "=== MODEL LOADING DEBUG ===")
+                Log.i(TAG, "Path: $pathToModel")
+                Log.i(TAG, "Exists: ${modelFile.exists()}")
+                Log.i(TAG, "IsFile: ${modelFile.isFile}")
+                Log.i(TAG, "CanRead: ${modelFile.canRead()}")
+                Log.i(TAG, "Size: ${modelFile.length()} bytes")
+                Log.i(TAG, "===========================")
 
-                Log.i(TAG, "Loading model... \n$pathToModel")
+                require(modelFile.exists()) { "File not found: $pathToModel" }
+                require(modelFile.isFile) { "Not a valid file: $pathToModel" }
+                require(modelFile.canRead()) { "Cannot read file: $pathToModel" }
+
+                Log.i(TAG, "Loading model from: $pathToModel")
                 _readyForSystemPrompt = false
                 _state.value = InferenceEngine.State.LoadingModel
-                load(pathToModel).let {
-                    // TODO-han.yin: find a better way to pass other error codes
-                    if (it != 0) throw UnsupportedArchitectureException()
+                val loadResult = load(pathToModel)
+                Log.i(TAG, "Native load() returned: $loadResult")
+
+                if (loadResult != 0) {
+                    Log.e(TAG, "Model loading failed with code: $loadResult")
+                    Log.e(TAG, "This error code $loadResult indicates the model could not be loaded.")
+                    Log.e(TAG, "Possible causes:")
+                    Log.e(TAG, "  1. Unsupported model architecture (Gemma 3 may not be fully supported)")
+                    Log.e(TAG, "  2. Corrupted model file")
+                    Log.e(TAG, "  3. File format mismatch (GGUF version incompatibility)")
+                    throw UnsupportedArchitectureException()
                 }
-                prepare().let {
-                    if (it != 0) throw IOException("Failed to prepare resources")
+                Log.i(TAG, "Model loaded successfully, preparing context...")
+
+                val prepareResult = prepare()
+                Log.i(TAG, "Native prepare() returned: $prepareResult")
+                if (prepareResult != 0) {
+                    Log.e(TAG, "Model preparation failed with code: $prepareResult")
+                    throw IOException("Failed to prepare resources: $prepareResult")
                 }
-                Log.i(TAG, "Model loaded!")
+                Log.i(TAG, "Model prepared successfully!")
                 _readyForSystemPrompt = true
 
                 _cancelGeneration = false
                 _state.value = InferenceEngine.State.ModelReady
             } catch (e: Exception) {
-                Log.e(TAG, (e.message ?: "Error loading model") + "\n" + pathToModel, e)
+                Log.e(TAG, "=== MODEL LOADING FAILED ===")
+                Log.e(TAG, "Exception: ${e.javaClass.simpleName}")
+                Log.e(TAG, "Message: ${e.message}")
+                Log.e(TAG, "Stack trace:", e)
+                Log.e(TAG, "==============================")
                 _state.value = InferenceEngine.State.Error(e)
                 throw e
             }
@@ -196,18 +219,24 @@ internal class InferenceEngineImpl private constructor(
                 "Cannot process system prompt in ${_state.value.javaClass.simpleName}!"
             }
 
-            Log.i(TAG, "Sending system prompt...")
+            Log.i(TAG, "=== SET SYSTEM PROMPT ===")
+            Log.i(TAG, "Prompt length: ${prompt.length} chars")
+            Log.i(TAG, "Prompt preview: ${prompt.take(100)}...")
+            Log.i(TAG, "=========================")
+
             _readyForSystemPrompt = false
             _state.value = InferenceEngine.State.ProcessingSystemPrompt
-            processSystemPrompt(prompt).let { result ->
-                if (result != 0) {
-                    RuntimeException("Failed to process system prompt: $result").also {
-                        _state.value = InferenceEngine.State.Error(it)
-                        throw it
-                    }
+            val result = processSystemPrompt(prompt)
+            Log.i(TAG, "processSystemPrompt() returned: $result")
+
+            if (result != 0) {
+                Log.e(TAG, "FAILED to process system prompt, error code: $result")
+                RuntimeException("Failed to process system prompt: $result").also {
+                    _state.value = InferenceEngine.State.Error(it)
+                    throw it
                 }
             }
-            Log.i(TAG, "System prompt processed! Awaiting user prompt...")
+            Log.i(TAG, "System prompt processed successfully!")
             _state.value = InferenceEngine.State.ModelReady
         }
 
@@ -224,28 +253,40 @@ internal class InferenceEngineImpl private constructor(
         }
 
         try {
-            Log.i(TAG, "Sending user prompt...")
+            Log.i(TAG, "=== SEND USER PROMPT ===")
+            Log.i(TAG, "Message length: ${message.length} chars")
+            Log.i(TAG, "Message preview: ${message.take(100)}...")
+            Log.i(TAG, "Max tokens to generate: $predictLength")
+            Log.i(TAG, "========================")
+
             _readyForSystemPrompt = false
             _state.value = InferenceEngine.State.ProcessingUserPrompt
 
-            processUserPrompt(message, predictLength).let { result ->
-                if (result != 0) {
-                    Log.e(TAG, "Failed to process user prompt: $result")
-                    return@flow
-                }
+            val processResult = processUserPrompt(message, predictLength)
+            Log.i(TAG, "processUserPrompt() returned: $processResult")
+
+            if (processResult != 0) {
+                Log.e(TAG, "FAILED to process user prompt, error code: $processResult")
+                return@flow
             }
 
-            Log.i(TAG, "User prompt processed. Generating assistant prompt...")
+            Log.i(TAG, "User prompt processed. Starting token generation...")
             _state.value = InferenceEngine.State.Generating
+
+            var tokenCount = 0
             while (!_cancelGeneration) {
                 generateNextToken()?.let { utf8token ->
-                    if (utf8token.isNotEmpty()) emit(utf8token)
+                    if (utf8token.isNotEmpty()) {
+                        tokenCount++
+                        emit(utf8token)
+                    }
                 } ?: break
             }
+
             if (_cancelGeneration) {
-                Log.i(TAG, "Assistant generation aborted per requested.")
+                Log.i(TAG, "Generation aborted after $tokenCount tokens")
             } else {
-                Log.i(TAG, "Assistant generation complete. Awaiting user prompt...")
+                Log.i(TAG, "Generation complete. Total tokens: $tokenCount")
             }
             _state.value = InferenceEngine.State.ModelReady
         } catch (e: CancellationException) {
@@ -253,7 +294,10 @@ internal class InferenceEngineImpl private constructor(
             _state.value = InferenceEngine.State.ModelReady
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Error during generation!", e)
+            Log.e(TAG, "=== GENERATION ERROR ===")
+            Log.e(TAG, "Exception: ${e.javaClass.simpleName}")
+            Log.e(TAG, "Message: ${e.message}")
+            Log.e(TAG, "========================")
             _state.value = InferenceEngine.State.Error(e)
             throw e
         }

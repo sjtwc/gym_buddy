@@ -16,7 +16,8 @@ data class PetChatUiState(
     val isModelReady: Boolean = false,
     val petEmoji: String = "🤖",
     val aiPetEmoji: String = "🐱",
-    val petName: String = "GymBuddy"
+    val petName: String = "GymBuddy",
+    val userAvatarUri: String? = null
 )
 
 @HiltViewModel
@@ -42,7 +43,8 @@ class PetChatViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     petName = profile?.pet?.name ?: "GymBot",
-                    petEmoji = profile?.pet?.mood?.emoji ?: "🤖"
+                    petEmoji = profile?.pet?.mood?.emoji ?: "🤖",
+                    userAvatarUri = profile?.avatarUri
                 )
             }
         }

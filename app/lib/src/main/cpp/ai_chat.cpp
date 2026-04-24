@@ -62,13 +62,16 @@ Java_com_arm_aichat_internal_InferenceEngineImpl_load(JNIEnv *env, jobject, jstr
     llama_model_params model_params = llama_model_default_params();
 
     const auto *model_path = env->GetStringUTFChars(jmodel_path, 0);
-    LOGd("%s: Loading model from: \n%s\n", __func__, model_path);
+    LOGi("%s: Loading model from: \n%s\n", __func__, model_path);
 
     auto *model = llama_model_load_from_file(model_path, model_params);
     env->ReleaseStringUTFChars(jmodel_path, model_path);
     if (!model) {
+        LOGe("%s: FAILED to load model from: %s", __func__, model_path);
+        LOGe("%s: This may indicate unsupported model architecture or corrupted file", __func__);
         return 1;
     }
+    LOGi("%s: Model loaded successfully from: %s", __func__, model_path);
     g_model = model;
     return 0;
 }
@@ -363,19 +366,21 @@ Java_com_arm_aichat_internal_InferenceEngineImpl_processSystemPrompt(
 
     // Obtain system prompt from JEnv
     const auto *system_prompt = env->GetStringUTFChars(jsystem_prompt, nullptr);
-    LOGd("%s: System prompt received: \n%s", __func__, system_prompt);
+    LOGi("%s: System prompt received (%d chars)", __func__, (int) strlen(system_prompt));
     std::string formatted_system_prompt(system_prompt);
 
     // Format system prompt if applicable
     const bool has_chat_template = common_chat_templates_was_explicit(g_chat_templates.get());
     if (has_chat_template) {
         formatted_system_prompt = chat_add_and_format(ROLE_SYSTEM, system_prompt);
+        LOGi("%s: Applied chat template, formatted length: %d", __func__, (int) formatted_system_prompt.length());
     }
     env->ReleaseStringUTFChars(jsystem_prompt, system_prompt);
 
     // Tokenize system prompt
     const auto system_tokens = common_tokenize(g_context, formatted_system_prompt,
                                                has_chat_template, has_chat_template);
+    LOGi("%s: Tokenized to %d tokens", __func__, (int) system_tokens.size());
     for (auto id: system_tokens) {
         LOGv("token: `%s`\t -> `%d`", common_token_to_piece(g_context, id).c_str(), id);
     }
@@ -390,12 +395,13 @@ Java_com_arm_aichat_internal_InferenceEngineImpl_processSystemPrompt(
 
     // Decode system tokens in batches
     if (decode_tokens_in_batches(g_context, g_batch, system_tokens, current_position)) {
-        LOGe("%s: llama_decode() failed!", __func__);
+        LOGe("%s: llama_decode() failed during system prompt!", __func__);
         return 2;
     }
 
     // Update position
     system_prompt_position = current_position = (int) system_tokens.size();
+    LOGi("%s: System prompt processed successfully, position: %d", __func__, current_position);
     return 0;
 }
 
@@ -412,18 +418,20 @@ Java_com_arm_aichat_internal_InferenceEngineImpl_processUserPrompt(
 
     // Obtain and tokenize user prompt
     const auto *const user_prompt = env->GetStringUTFChars(juser_prompt, nullptr);
-    LOGd("%s: User prompt received: \n%s", __func__, user_prompt);
+    LOGi("%s: User prompt received (%d chars)", __func__, (int) strlen(user_prompt));
     std::string formatted_user_prompt(user_prompt);
 
     // Format user prompt if applicable
     const bool has_chat_template = common_chat_templates_was_explicit(g_chat_templates.get());
     if (has_chat_template) {
         formatted_user_prompt = chat_add_and_format(ROLE_USER, user_prompt);
+        LOGi("%s: Applied chat template, formatted length: %d", __func__, (int) formatted_user_prompt.length());
     }
     env->ReleaseStringUTFChars(juser_prompt, user_prompt);
 
     // Decode formatted user prompts
     auto user_tokens = common_tokenize(g_context, formatted_user_prompt, has_chat_template, has_chat_template);
+    LOGi("%s: Tokenized to %d tokens", __func__, (int) user_tokens.size());
     for (auto id: user_tokens) {
         LOGv("token: `%s`\t -> `%d`", common_token_to_piece(g_context, id).c_str(), id);
     }
@@ -439,13 +447,14 @@ Java_com_arm_aichat_internal_InferenceEngineImpl_processUserPrompt(
 
     // Decode user tokens in batches
     if (decode_tokens_in_batches(g_context, g_batch, user_tokens, current_position, true)) {
-        LOGe("%s: llama_decode() failed!", __func__);
+        LOGe("%s: llama_decode() failed during user prompt!", __func__);
         return 2;
     }
 
     // Update position
     current_position += user_prompt_size;
     stop_generation_position = current_position + user_prompt_size + n_predict;
+    LOGi("%s: User prompt processed, stop position: %d", __func__, stop_generation_position);
     return 0;
 }
 
