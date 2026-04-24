@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.13.1] - 2026-04-24
+
+### Fixed
+- **Widget Navigation Click Handling** - Fixed widget taps not registering properly
+  - Added `widget_root` ID to all 4 widget layouts (QuickStart, Streak, Today, Weekly)
+  - Changed PendingIntent target from individual child views to root layout
+  - Added unique REQUEST_CODE (1-4) per widget to prevent intent conflicts
+  - Added `android:focusable="false"` to widget child views to prevent touch issues
+- **Widget Overlay Not Showing** - WorkoutOverlay now renders inside Scaffold content Box
+  - Moved overlay from outside Scaffold to inside content Box after NavHost
+  - Ensures proper z-ordering within main navigation structure
+- **Widget Navigation Stacking** - Added skip-navigation logic when already at target screen
+  - Profile, Home, and Progress widgets now skip navigation if already on that screen
+- **Widget Intent Processing** - Fixed race conditions in widget action handling
+  - `onNewIntent` now saves `pendingWidgetIntent` instead of processing directly
+  - `LaunchedEffect` triggers on both `navController` AND `pendingWidgetIntent` changes
+  - Added `isProcessingWidgetIntent` flag to prevent re-entrant handling
+  - Added debug logging for widget action handling
+- **WorkoutSessionManager Race Condition** - Fixed exercises not loading when starting from routine
+  - `onServiceConnected` now properly handles empty pending exercises list
+
+### Updated
+- Resized all widgets to 120dp x 70dp (1x2 format) in widget_info XMLs
+- `MainActivity.kt` - Refactored widget intent handling with proper state management
+- `WorkoutSessionManager.kt` - Fixed exercise loading logic in onServiceConnected
+
+---
+
 ## [1.13.0] - 2026-04-23
 
 ### Fixed
@@ -410,6 +438,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.13.1]: https://github.com/example/gymbuddy/compare/v1.13.0...v1.13.1
 [1.13.0]: https://github.com/example/gymbuddy/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/example/gymbuddy/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/example/gymbuddy/compare/v1.11.0...v1.11.1
