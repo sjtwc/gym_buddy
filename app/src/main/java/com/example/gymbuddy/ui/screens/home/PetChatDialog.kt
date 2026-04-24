@@ -28,6 +28,7 @@ fun PetChatDialog(
     messages: List<ChatMessage>,
     isLoading: Boolean,
     petEmoji: String,
+    aiPetEmoji: String,
     petName: String,
     onSendMessage: (String) -> Unit,
     onDismiss: () -> Unit
@@ -57,6 +58,7 @@ fun PetChatDialog(
             ) {
                 ChatHeader(
                     petEmoji = petEmoji,
+                    aiPetEmoji = aiPetEmoji,
                     petName = petName,
                     onDismiss = onDismiss
                 )
@@ -104,6 +106,7 @@ fun PetChatDialog(
 @Composable
 private fun ChatHeader(
     petEmoji: String,
+    aiPetEmoji: String,
     petName: String,
     onDismiss: () -> Unit
 ) {
@@ -122,7 +125,7 @@ private fun ChatHeader(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = petEmoji,
+                text = aiPetEmoji,
                 fontSize = 24.sp
             )
         }
@@ -137,7 +140,7 @@ private fun ChatHeader(
                 color = TextPrimary
             )
             Text(
-                text = "AI Coach",
+                text = "AI Pet",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary
             )

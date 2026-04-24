@@ -15,7 +15,8 @@ data class PetChatUiState(
     val isLoading: Boolean = false,
     val isModelReady: Boolean = false,
     val petEmoji: String = "🤖",
-    val petName: String = "GymBot"
+    val aiPetEmoji: String = "🐱",
+    val petName: String = "GymBuddy"
 )
 
 @HiltViewModel

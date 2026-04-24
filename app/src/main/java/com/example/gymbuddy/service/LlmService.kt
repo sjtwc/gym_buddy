@@ -2,16 +2,10 @@ package com.example.gymbuddy.service
 
 import android.content.Context
 import android.util.Log
-import com.google.ai.edge.litertlm.Backend
-import com.google.ai.edge.litertlm.Content
-import com.google.ai.edge.litertlm.Conversation
-import com.google.ai.edge.litertlm.ConversationConfig
-import com.google.ai.edge.litertlm.Engine
-import com.google.ai.edge.litertlm.EngineConfig
-import com.google.ai.edge.litertlm.Message
-import com.google.ai.edge.litertlm.MessageCallback
-import com.google.ai.edge.litertlm.SamplerConfig
+import com.arm.aichat.AiChat
+import com.arm.aichat.InferenceEngine
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +13,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
@@ -28,8 +23,7 @@ import javax.inject.Singleton
 class LlmService @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private var engine: Engine? = null
-    private var conversation: Conversation? = null
+    private val engine = AiChat.getInferenceEngine(context)
 
     private val _generationFlow = MutableSharedFlow<String>(replay = 0)
     val generationFlow: SharedFlow<String> = _generationFlow.asSharedFlow()
@@ -40,7 +34,9 @@ class LlmService @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val modelFileName = "gemma3-270m-it-q8.litertlm"
+    private val modelFileName = "gemma-3-270m-it-Q4_K_M.gguf"
+
+    private var isModelReady = false
 
     private val fallbackResponses = listOf(
         "Oops! My brain is taking a nap right now 💤 Try again in a moment, coach!",
@@ -50,14 +46,43 @@ class LlmService @Inject constructor(
         "Error 404: Motivation not found! 🔍 Let me search my archives..."
     )
 
+    init {
+        observeEngineState()
+    }
+
+    private fun observeEngineState() {
+        CoroutineScope(Dispatchers.IO).launch {
+            engine.state.collect { state ->
+                when (state) {
+                    is InferenceEngine.State.ModelReady,
+                    is InferenceEngine.State.Generating -> {
+                        if (!isModelReady) {
+                            isModelReady = true
+                            _isModelLoaded.tryEmit(true)
+                        }
+                    }
+                    is InferenceEngine.State.Initialized -> {
+                        isModelReady = false
+                        _isModelLoaded.tryEmit(false)
+                    }
+                    is InferenceEngine.State.Error -> {
+                        isModelReady = false
+                        _isModelLoaded.tryEmit(false)
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
     suspend fun ensureModelReady(): Boolean = withContext(Dispatchers.IO) {
+        if (isModelReady) {
+            _isModelLoaded.tryEmit(true)
+            return@withContext true
+        }
+
         _isLoading.value = true
         try {
-            if (engine != null) {
-                _isModelLoaded.tryEmit(true)
-                return@withContext true
-            }
-
             val modelFile = getModelFile()
             if (!modelFile.exists()) {
                 Log.e(TAG, "Model file not found: ${modelFile.absolutePath}")
@@ -65,21 +90,18 @@ class LlmService @Inject constructor(
                 return@withContext false
             }
 
-            val engineConfig = EngineConfig(
-                modelPath = modelFile.absolutePath,
-                backend = Backend.GPU,
-                maxNumTokens = 512,
-                cacheDir = context.cacheDir.absolutePath
-            )
+            Log.d(TAG, "Loading model from: ${modelFile.absolutePath}")
+            engine.loadModel(modelFile.absolutePath)
 
-            engine = Engine(engineConfig)
-            engine?.initialize()
+            engine.setSystemPrompt(SYSTEM_PROMPT)
 
+            isModelReady = true
             _isModelLoaded.tryEmit(true)
             Log.d(TAG, "Model loaded successfully")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load model", e)
+            isModelReady = false
             _isModelLoaded.tryEmit(false)
             false
         } finally {
@@ -90,60 +112,20 @@ class LlmService @Inject constructor(
     suspend fun generate(
         prompt: String,
         maxTokens: Int = 512,
-        temperature: Float = 0.7f,
-        stopTokens: List<String> = listOf("<end_of_turn>", "\n\n")
+        temperature: Float = 0.7f
     ) = withContext(Dispatchers.IO) {
         _generationFlow.tryEmit("")
 
-        val currentEngine = engine
-        if (currentEngine == null) {
-            Log.e(TAG, "Engine not initialized")
+        if (!isModelReady) {
+            Log.e(TAG, "Engine not ready")
             emitFallback()
             return@withContext
         }
 
         try {
-            val systemMessage = Message.of(
-                Content.Text("You are GymBot, a motivational AI fitness coach. Be cheerful, supportive, and give practical advice. Keep responses concise and conversational.")
-            )
-            val samplerConfig = SamplerConfig(
-                topK = 40,
-                topP = 0.95,
-                temperature = temperature.toDouble(),
-                seed = 0
-            )
-            val conversationConfig = ConversationConfig(
-                systemMessage = systemMessage,
-                samplerConfig = samplerConfig
-            )
-
-            currentEngine.createConversation(conversationConfig).use { conv ->
-                conversation = conv
-                val message = Message.of(Content.Text(prompt))
-
-                conv.sendMessageAsync(message, object : MessageCallback {
-                    override fun onMessage(msg: Message) {
-                        msg.contents.firstOrNull()?.let { content ->
-                            when (content) {
-                                is Content.Text -> {
-                                    _generationFlow.tryEmit(content.text)
-                                }
-                                else -> {}
-                            }
-                        }
-                    }
-
-                    override fun onDone() {
-                        Log.d(TAG, "Generation complete")
-                    }
-
-                    override fun onError(e: Throwable) {
-                        Log.e(TAG, "Generation error", e)
-                        _generationFlow.tryEmit("")
-                    }
-                })
+            engine.sendUserPrompt(prompt, maxTokens).collect { token ->
+                _generationFlow.tryEmit(token)
             }
-            conversation = null
         } catch (e: Exception) {
             Log.e(TAG, "Generation error", e)
             emitFallback()
@@ -160,10 +142,8 @@ class LlmService @Inject constructor(
 
     fun unload() {
         try {
-            conversation?.close()
-            conversation = null
-            engine?.close()
-            engine = null
+            isModelReady = false
+            engine.cleanUp()
             _isModelLoaded.tryEmit(false)
             Log.d(TAG, "Model unloaded")
         } catch (e: Exception) {
@@ -187,5 +167,7 @@ class LlmService @Inject constructor(
 
     companion object {
         private const val TAG = "LlmService"
+        private const val SYSTEM_PROMPT =
+            "You are GymBuddy, a motivational AI fitness coach. Be cheerful, supportive, and give practical advice. Keep responses concise and conversational."
     }
 }
