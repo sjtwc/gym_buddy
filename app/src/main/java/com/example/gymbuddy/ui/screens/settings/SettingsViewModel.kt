@@ -186,7 +186,7 @@ class SettingsViewModel @Inject constructor(
     fun exportToHealthConnect() {
         viewModelScope.launch {
             if (!healthConnectManager.isAvailable()) {
-                val appName = healthConnectManager.getAvailableAppName()
+                val appName = healthConnectManager.getAppName()
                 _uiState.update { 
                     it.copy(lastSyncResult = "No health app found. Please install Google Fit from Play Store.") 
                 }
@@ -198,7 +198,7 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(isExportingHealth = true) }
             
             try {
-                val appName = healthConnectManager.getAvailableAppName()
+                val appName = healthConnectManager.getAppName()
                 val sessions = healthConnectManager.getRecentSessions(10)
                 
                 if (sessions.isEmpty()) {
