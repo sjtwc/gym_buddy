@@ -3,7 +3,12 @@ package com.example.gymbuddy.di
 import android.content.Context
 import com.example.gymbuddy.data.local.CalendarPreferences
 import com.example.gymbuddy.data.local.GymBuddyDatabase
+import com.example.gymbuddy.data.local.MuscleGoalPreferences
 import com.example.gymbuddy.data.local.dao.*
+import com.example.gymbuddy.data.repository.RoutineRepository
+import com.example.gymbuddy.data.repository.ScheduledWorkoutRepository
+import com.example.gymbuddy.service.CalendarEventExporter
+import com.example.gymbuddy.service.CalendarService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,6 +30,12 @@ object DatabaseModule {
     @Singleton
     fun provideCalendarPreferences(@ApplicationContext context: Context): CalendarPreferences {
         return CalendarPreferences(context)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideMuscleGoalPreferences(@ApplicationContext context: Context): MuscleGoalPreferences {
+        return MuscleGoalPreferences(context)
     }
     
     @Provides
@@ -85,5 +96,33 @@ object DatabaseModule {
     @Provides
     fun provideScheduledWorkoutDao(database: GymBuddyDatabase): ScheduledWorkoutDao {
         return database.scheduledWorkoutDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideScheduledWorkoutRepository(
+        scheduledWorkoutDao: ScheduledWorkoutDao,
+        routineRepository: RoutineRepository,
+        muscleGoalPreferences: MuscleGoalPreferences
+    ): ScheduledWorkoutRepository {
+        return ScheduledWorkoutRepository(scheduledWorkoutDao, routineRepository, muscleGoalPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCalendarEventExporter(
+        @ApplicationContext context: Context,
+        calendarService: CalendarService,
+        scheduledWorkoutRepository: ScheduledWorkoutRepository
+    ): CalendarEventExporter {
+        return CalendarEventExporter(context, calendarService, scheduledWorkoutRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCalendarService(
+        @ApplicationContext context: Context
+    ): CalendarService {
+        return CalendarService(context)
     }
 }
