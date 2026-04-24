@@ -295,10 +295,12 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 | `pet_happiness` | `Int` | NOT NULL, DEFAULT 50 | Pet happiness (0-100) |
 | `pet_mood` | `String` | NOT NULL, DEFAULT "neutral" | Pet mood |
 | `last_workout_date` | `Long` | NULLABLE | Last workout timestamp |
+| `title` | `String` | NOT NULL, DEFAULT "Novice" | User title based on level |
 | `gender` | `String` | NULLABLE | User gender |
 | `age` | `Int` | NULLABLE | User age |
 | `height` | `Float` | NULLABLE | User height (cm) |
 | `weight` | `Float` | NULLABLE | User weight (kg) |
+| `avatar_uri` | `String` | NULLABLE | User avatar image URI |
 | `created_at` | `Long` | NOT NULL | Unix timestamp |
 
 **Indexes**: None (singleton table)
@@ -351,6 +353,46 @@ The Gym Buddy app uses an **offline-first** architecture with **Room** as the lo
 
 **Indexes**:
 - `idx_body_measurements_date` ON `date`
+
+---
+
+### 13. Achievement Entity
+
+**Table Name**: `achievements`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `Long` | PRIMARY KEY, AUTOINCREMENT | Unique identifier |
+| `type` | `String` | NOT NULL | Achievement type enum |
+| `earned_at` | `Long` | NOT NULL | Timestamp when earned |
+| `claim_count` | `Int` | NOT NULL, DEFAULT 0 | Times this achievement was earned |
+| `workout_id` | `Long` | NULLABLE, FK → `workouts.id` | Associated workout |
+
+**Foreign Keys**:
+- `workout_id` → `workouts.id` (ON DELETE SET NULL)
+
+**Indexes**:
+- `idx_achievements_type` ON `type`
+
+---
+
+### 14. ScheduledWorkout Entity
+
+**Table Name**: `scheduled_workouts`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `schedule_key` | `String` | PRIMARY KEY | Composite key: `{weekStartDate}_{dayOfWeek}` |
+| `week_start_date` | `Long` | NOT NULL | Start of the week (Unix timestamp) |
+| `day_of_week` | `Int` | NOT NULL | Day of week (0=Sunday, 6=Saturday) |
+| `routine_id` | `Long` | NULLABLE, FK → `routines.id` | Assigned routine |
+| `is_rest_day` | `Boolean` | NOT NULL, DEFAULT FALSE | Whether this is a rest day |
+
+**Foreign Keys**:
+- `routine_id` → `routines.id` (ON DELETE SET NULL)
+
+**Indexes**:
+- `idx_scheduled_workouts_week_start_date` ON `week_start_date`
 
 ---
 
@@ -447,6 +489,12 @@ suspend fun deleteSet(set: SetEntity)
 
 // Delete all sets for workout exercise
 suspend fun deleteAllForWorkoutExercise(workoutExerciseId: Long)
+
+// Get total volume for a muscle group within a date range
+fun getVolumeForMuscleGroup(targetMuscle: String, startDate: Long, endDate: Long): Flow<Float>
+
+// Get daily volumes for the last N days
+fun getDailyVolumes(days: Int): Flow<List<DailyVolume>>
 ```
 
 ### UserProfileDao
@@ -491,6 +539,50 @@ suspend fun insertRecord(record: PersonalRecordEntity): Long
 
 // Delete record
 suspend fun deleteRecord(record: PersonalRecordEntity)
+
+// Reset all personal records
+suspend fun deleteAllRecords()
+```
+
+### AchievementDao
+
+```kotlin
+// Get all earned achievements
+fun getAllAchievements(): Flow<List<AchievementEntity>>
+
+// Get achievements by type
+fun getAchievementsByType(type: String): Flow<List<AchievementEntity>>
+
+// Insert achievement
+suspend fun insertAchievement(achievement: AchievementEntity)
+
+// Update claim count
+suspend fun updateClaimCount(id: Long, count: Int)
+
+// Reset all achievements
+suspend fun deleteAllAchievements()
+```
+
+### ScheduledWorkoutDao
+
+```kotlin
+// Get scheduled workouts for a week
+fun getScheduledWorkoutsForWeek(weekStartDate: Long): Flow<List<ScheduledWorkoutEntity>>
+
+// Get single scheduled workout for a day
+suspend fun getScheduledWorkout(weekStartDate: Long, dayOfWeek: Int): ScheduledWorkoutEntity?
+
+// Insert or update scheduled workout
+suspend fun insertScheduledWorkout(scheduledWorkout: ScheduledWorkoutEntity)
+
+// Insert multiple scheduled workouts
+suspend fun insertScheduledWorkouts(scheduledWorkouts: List<ScheduledWorkoutEntity>)
+
+// Delete scheduled workout
+suspend fun deleteScheduledWorkout(scheduledWorkout: ScheduledWorkoutEntity)
+
+// Clear all scheduled workouts for a week
+suspend fun clearWeekSchedule(weekStartDate: Long)
 ```
 
 ---
@@ -573,5 +665,9 @@ suspend fun deleteRecord(record: PersonalRecordEntity)
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | Initial | 9 tables, DAOs, repositories |
-| 6 | 2026-04-22 | Added routine_sets and routine_timers tables with indices; Added target_reps column to workout_exercises |
-| 7 | 2026-04-23 | Added gender, age, height, weight columns to user_profile table for personal information |
+| 3 | 2026-04-13 | Routine redesign: added routine_sets and routine_timers tables |
+| 4→5 | 2026-04-22 | Added routine_sets and routine_timers tables with indices; Added target_reps column to workout_exercises |
+| 6 | 2026-04-22 | Added scheduled_workouts table for weekly schedule persistence |
+| 7 | 2026-04-23 | Added avatar_uri column to user_profile; title field added to entity |
+
+**Note**: Database is currently at version 6 (exportSchema disabled). The v1.13.0 profile edit fields (gender, age, height, weight) were added to the existing UserProfileEntity without requiring a migration since all fields are nullable.

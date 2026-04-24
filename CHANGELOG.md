@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MainActivity.kt` - Refactored widget intent handling with proper state management
 - `WorkoutSessionManager.kt` - Fixed exercise loading logic in onServiceConnected
 
+### Added (undocumented)
+- **Pet Tap Interaction** - Tap on pet section to cycle through mood messages
+- **Avatar Upload** - Users can upload a profile picture
+- **Time-based Greeting** - Home screen greeting changes based on time of day
+
 ---
 
 ## [1.13.0] - 2026-04-23
@@ -94,6 +99,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ExerciseInsightViewModel.kt` - Added `resetPredictedRecords()` method
 - `SettingsViewModel.kt` - Added `resetAllRecords()` with PersonalRecordDao
 - `SettingsScreen.kt` - Added reset button UI with confirmation dialog
+
+### Added (undocumented)
+- **Weekly Schedule with Auto-suggest** - Added weekly workout schedule with day picker and auto-suggest based on existing routines
+- **Default All-Rest Schedule** - Shows closest 3 days when no schedule exists
+- **Calendar Integration (WIP)** - Google Sign-In and Calendar export infrastructure (not fully functional)
+- **ScheduledWorkout Entity** - New table for persisting weekly workout schedule
 
 ---
 
@@ -216,6 +227,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 - `WorkoutSessionManager.kt` - Update widget on workout completion
+
+### Added (undocumented)
+- **Gym Finder Section** - New section on home screen with WebView map showing nearest gym locations
+- **Nominatim Geocoding** - Integrated Nominatim API for address-to-coordinates conversion
+- **OSMDroid Map** - Replaced WebView Google Maps with native OSMDroid map showing up to 15 nearest gyms
+- **User Location Badge** - Shows user's location and distance to nearest gym
+- **Share Button** - Added share button to user stats card in Settings
 
 ---
 
