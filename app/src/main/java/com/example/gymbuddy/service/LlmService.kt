@@ -14,8 +14,11 @@ import com.google.ai.edge.litertlm.SamplerConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
@@ -34,6 +37,9 @@ class LlmService @Inject constructor(
     private val _isModelLoaded = MutableSharedFlow<Boolean>(replay = 1)
     val isModelLoaded: SharedFlow<Boolean> = _isModelLoaded.asSharedFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val modelFileName = "gemma3-270m-it-q8.litertlm"
 
     private val fallbackResponses = listOf(
@@ -45,6 +51,7 @@ class LlmService @Inject constructor(
     )
 
     suspend fun ensureModelReady(): Boolean = withContext(Dispatchers.IO) {
+        _isLoading.value = true
         try {
             if (engine != null) {
                 _isModelLoaded.tryEmit(true)
@@ -75,6 +82,8 @@ class LlmService @Inject constructor(
             Log.e(TAG, "Failed to load model", e)
             _isModelLoaded.tryEmit(false)
             false
+        } finally {
+            _isLoading.value = false
         }
     }
 

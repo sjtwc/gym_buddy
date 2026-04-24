@@ -5,6 +5,7 @@ import com.example.gymbuddy.domain.model.UserSummary
 import com.example.gymbuddy.domain.model.Improvement
 import com.example.gymbuddy.service.LlmService
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,6 +17,7 @@ class LlmRepository @Inject constructor(
 ) {
     val generationFlow: SharedFlow<String> = llmService.generationFlow
     val isModelLoaded: SharedFlow<Boolean> = llmService.isModelLoaded
+    val isLoading: StateFlow<Boolean> = llmService.isLoading
 
     suspend fun ensureModelReady(): Boolean = llmService.ensureModelReady()
 

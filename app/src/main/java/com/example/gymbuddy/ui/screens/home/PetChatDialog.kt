@@ -94,7 +94,7 @@ fun PetChatDialog(
                             inputText = ""
                         }
                     },
-                    enabled = !isLoading
+                    isSending = isLoading
                 )
             }
         }
@@ -247,7 +247,7 @@ private fun ChatInput(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
-    enabled: Boolean
+    isSending: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -262,7 +262,7 @@ private fun ChatInput(
             modifier = Modifier.weight(1f),
             placeholder = {
                 Text(
-                    text = "Ask me anything...",
+                    text = if (isSending) "AI is typing..." else "Ask me anything...",
                     color = TextTertiary
                 )
             },
@@ -276,7 +276,7 @@ private fun ChatInput(
                 unfocusedIndicatorColor = DarkSurfaceVariant
             ),
             shape = RoundedCornerShape(24.dp),
-            enabled = enabled,
+            enabled = true,
             singleLine = true
         )
 
@@ -284,19 +284,19 @@ private fun ChatInput(
 
         IconButton(
             onClick = onSend,
-            enabled = enabled && value.isNotBlank(),
+            enabled = !isSending && value.isNotBlank(),
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(
-                    if (enabled && value.isNotBlank()) NeonTeal
+                    if (!isSending && value.isNotBlank()) NeonTeal
                     else DarkSurfaceVariant
                 )
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Send,
                 contentDescription = "Send",
-                tint = if (enabled && value.isNotBlank()) DarkBackground else TextTertiary
+                tint = if (!isSending && value.isNotBlank()) DarkBackground else TextTertiary
             )
         }
     }
