@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **llama.cpp Integration** - On-device LLM inference replacing LiteRT
+  - Uses `InferenceEngine` API from llama.android library
+  - Supports Gemma 3 270M GGUF model on both device and emulator
+  - Compiled with `GGML_CPU_ALL_VARIANTS` for x86_64 emulator compatibility
+  - Model: `gemma-3-270m-it-Q4_K_M.gguf` (241MB, tracked via Git LFS)
+
+### Changed
+- **Build Configuration:**
+  - Kotlin downgraded to 2.0.21 (KSP 2.0.21-1.0.28 with `ksp.allow.jvm.signature=V` workaround)
+  - AGP upgraded to 8.7.0
+  - Gradle upgraded to 8.9
+  - minSdk: 26 → 33
+  - compileSdk/targetSdk: 34 → 36
+  - Hilt: 2.56.2 → 2.51.1
+
+### New Files
+- `app/lib/` - llama.android wrapper module with llama.cpp bindings
+- `app/src/main/assets/gemma-3-270m-it-Q4_K_M.gguf` - Gemma 3 270M GGUF model
+- `SETUP.md` - Setup guide for llama.cpp and build requirements
+
+### Removed
+- LiteRT-LM dependency (replaced by llama.cpp)
+
+---
+
 ## [1.14.0] - 2026-04-24
 
 ### Added

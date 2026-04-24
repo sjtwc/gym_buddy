@@ -24,3 +24,5 @@
 .cxx
 local.properties
 secrets.properties
+.kotlin/
+llama.cpp

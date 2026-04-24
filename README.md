@@ -10,6 +10,7 @@ A premium native Android gym workout tracking application written in Kotlin with
 - **Routine Management** - Pre-built Push/Pull/Legs templates with custom routine creation
 - **Progress Tracking** - PRs, volume charts, muscle heat maps, 10-day volume trends
 - **Virtual Pet Companion** - Gamification with pet happiness tied to workout streaks
+- **AI Pet Coach** - On-device LLM chat with Gemma 3 270M for personalized fitness advice
 
 ### User Experience
 - **Avatar Upload** - Personal avatar with internal storage
@@ -45,8 +46,9 @@ A premium native Android gym workout tracking application written in Kotlin with
 - **Database**: Room
 - **DI**: Hilt
 - **Navigation**: Navigation Compose
-- **Min SDK**: 26 (Android 8.0)
-- **Target SDK**: 34 (Android 14)
+- **LLM**: llama.cpp (Gemma 3 270M GGUF)
+- **Min SDK**: 33 (Android 13)
+- **Target SDK**: 36 (Android 16)
 
 ## Project Structure
 
@@ -142,6 +144,14 @@ app/src/main/java/com/example/gymbuddy/
 - `StreakReminderWorker.kt` - Background streak reminder notifications
 - `LocationService.kt` - GPS location for gym finder
 
+### 10. LLM Service (1 file)
+- `LlmService.kt` - On-device LLM inference via llama.cpp InferenceEngine
+
+### 11. AI Chat Module (app/lib/)
+- `InferenceEngine.kt` - llama.cpp inference API
+- `ai_chat.cpp` - JNI bindings to llama.cpp
+- Supports Gemma 3 270M GGUF models on both device and emulator
+
 ### 9. Widget Layer (5 files)
 - `QuickStartWidgetProvider.kt` - Quick start workout widget
 - `StreakWidgetProvider.kt` - Current streak display widget
@@ -151,11 +161,19 @@ app/src/main/java/com/example/gymbuddy/
 
 ## Building
 
+**Note:** See [SETUP.md](SETUP.md) for initial setup including llama.cpp source and model files.
+
 ```bash
 ./gradlew assembleDebug
 ```
 
 APK location: `app/build/outputs/apk/debug/app-debug.apk`
+
+**Build Requirements:**
+- Java 21
+- CMake 3.31.6+
+- Android SDK with NDK 30.0.14904198
+- Git LFS (for model files)
 
 ## Screenshots
 
