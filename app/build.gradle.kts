@@ -88,6 +88,9 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.1.0")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
+    // Health Connect Client
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
+
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation("io.ktor:ktor-client-android:2.3.7")

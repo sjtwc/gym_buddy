@@ -192,6 +192,14 @@ class SettingsViewModel @Inject constructor(
                 return@launch
             }
             
+            // Check and request permissions if needed
+            if (!healthConnectManager.hasAllPermissions()) {
+                _uiState.update { 
+                    it.copy(lastSyncResult = "Health Connect permissions required. Please grant permissions when prompted.") 
+                }
+                return@launch
+            }
+            
             _uiState.update { it.copy(isExportingHealth = true) }
             try {
                 val sessions = healthConnectManager.getRecentSessions(10)
