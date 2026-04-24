@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -8,7 +9,6 @@
     android:background="@drawable/widget_background">
 
     <TextView
-        android:id="@+id/tvWeeklyLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="This Week"
@@ -29,7 +29,8 @@
             android:text="0"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF"
+            android:focusable="false" />
 
         <TextView
             android:id="@+id/tvWeeklyTarget"
@@ -50,6 +51,7 @@
         android:layout_marginTop="8dp"
         android:progress="0"
         android:max="100"
-        android:progressDrawable="@drawable/widget_progress" />
+        android:progressDrawable="@drawable/widget_progress"
+        android:focusable="false" />
 
 </LinearLayout>

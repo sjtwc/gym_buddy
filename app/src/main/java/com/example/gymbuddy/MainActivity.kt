@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
 
     private var navController: NavHostController? = null
     private var pendingWidgetIntent: Intent? = null
+    private var isProcessingWidgetIntent = false
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -96,9 +97,9 @@ class MainActivity : ComponentActivity() {
                         onNavControllerReady = { nc -> navController = nc }
                     )
 
-                    LaunchedEffect(Unit) {
-                        pendingWidgetIntent?.let { intent ->
-                            handleWidgetAction(intent)
+                    LaunchedEffect(navController, pendingWidgetIntent) {
+                        if (navController != null && pendingWidgetIntent != null) {
+                            handleWidgetAction(pendingWidgetIntent)
                             pendingWidgetIntent = null
                         }
                     }
@@ -110,36 +111,75 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleDeepLink(intent)
-        handleWidgetAction(intent)
+        pendingWidgetIntent = intent
     }
 
     private fun handleWidgetAction(intent: Intent?) {
-        when (intent?.getStringExtra("action")) {
-            "quick_start" -> {
-                if (sessionManager.isActive.value) {
-                    sessionManager.expand()
-                } else {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val workout = Workout(
-                            name = "Quick Workout",
-                            date = System.currentTimeMillis(),
-                            startedAt = System.currentTimeMillis(),
-                            isCompleted = false
-                        )
-                        val workoutId = workoutRepository.startWorkout(workout)
-                        sessionManager.startSession(workoutId, "Quick Workout")
+        if (isProcessingWidgetIntent) {
+            Log.d("MainActivity", "handleWidgetAction: already processing, skipping")
+            return
+        }
+        isProcessingWidgetIntent = true
+        val action = intent?.getStringExtra("action")
+        Log.d("MainActivity", "handleWidgetAction: action=$action, navController=${navController != null}")
+        try {
+            when (action) {
+                "quick_start" -> {
+                    Log.d("MainActivity", "quick_start: isActive=${sessionManager.isActive.value}")
+                    if (sessionManager.isActive.value) {
+                        sessionManager.expand()
+                    } else {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            Log.d("MainActivity", "quick_start: creating workout...")
+                            val workout = Workout(
+                                name = "Quick Workout",
+                                date = System.currentTimeMillis(),
+                                startedAt = System.currentTimeMillis(),
+                                isCompleted = false
+                            )
+                            val workoutId = workoutRepository.startWorkout(workout)
+                            Log.d("MainActivity", "quick_start: workoutId=$workoutId")
+                            sessionManager.startSession(workoutId, "Quick Workout")
+                            Log.d("MainActivity", "quick_start: session started")
+                        }
                     }
                 }
+                "navigate_profile" -> {
+                    Log.d("MainActivity", "Navigating to Profile")
+                    val nc = navController ?: return
+                    if (nc.currentDestination?.route == Screen.Profile.route) {
+                        Log.d("MainActivity", "Already at Profile, skipping")
+                    } else {
+                        nc.navigate(Screen.Profile.route)
+                    }
+                }
+                "navigate_home" -> {
+                    Log.d("MainActivity", "Navigating to Home")
+                    val nc = navController ?: return
+                    if (nc.currentDestination?.route == Screen.Home.route) {
+                        Log.d("MainActivity", "Already at Home, skipping")
+                    } else {
+                        nc.navigate(Screen.Home.route)
+                    }
+                }
+                "navigate_progress" -> {
+                    Log.d("MainActivity", "Navigating to Progress")
+                    val nc = navController ?: return
+                    if (nc.currentDestination?.route == Screen.Progress.route) {
+                        Log.d("MainActivity", "Already at Progress, skipping")
+                    } else {
+                        nc.navigate(Screen.Progress.route)
+                    }
+                }
+                else -> {
+                    Log.w("MainActivity", "handleWidgetAction: unknown action=$action")
+                }
             }
-            "navigate_profile" -> {
-                navController?.navigate(Screen.Profile.route)
-            }
-            "navigate_home" -> {
-                navController?.navigate(Screen.Home.route)
-            }
-            "navigate_progress" -> {
-                navController?.navigate(Screen.Progress.route)
-            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "handleWidgetAction: error", e)
+        } finally {
+            isProcessingWidgetIntent = false
+            pendingWidgetIntent = null
         }
     }
 

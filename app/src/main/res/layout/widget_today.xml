@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -13,7 +14,8 @@
         android:layout_height="wrap_content"
         android:text="Today"
         android:textSize="12sp"
-        android:textColor="#888888" />
+        android:textColor="#888888"
+        android:focusable="false" />
 
     <TextView
         android:id="@+id/tvTodayStatus"
@@ -23,6 +25,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="#FFFF6B6B"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="4dp"
+        android:focusable="false" />
 
 </LinearLayout>

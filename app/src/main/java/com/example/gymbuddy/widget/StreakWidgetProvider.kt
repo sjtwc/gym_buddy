@@ -10,28 +10,29 @@ import com.example.gymbuddy.R
 import com.example.gymbuddy.MainActivity
 
 class StreakWidgetProvider : AppWidgetProvider() {
-    
+
     companion object {
+        private const val REQUEST_CODE = 1
+
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val views = RemoteViews(context.packageName, R.layout.widget_streak)
-            
+
             val streak = WidgetPreferences.getStreak(context)
             views.setTextViewText(R.id.tvStreakCount, streak.toString())
-            
+
             val pendingIntent = createOpenAppIntent(context)
-            views.setOnClickPendingIntent(R.id.tvStreakEmoji, pendingIntent)
-            views.setOnClickPendingIntent(R.id.tvStreakCount, pendingIntent)
-            
+            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
-        
+
         private fun createOpenAppIntent(context: Context): PendingIntent {
             val intent = Intent(context, MainActivity::class.java).apply {
                 putExtra("action", "navigate_profile")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             return PendingIntent.getActivity(
-                context, 0, intent,
+                context, REQUEST_CODE, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }

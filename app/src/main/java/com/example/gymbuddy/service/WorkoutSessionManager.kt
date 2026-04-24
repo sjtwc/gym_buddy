@@ -74,7 +74,11 @@ class WorkoutSessionManager @Inject constructor(
                 pendingWorkoutId = null
                 pendingExercisesToLoad = null
                 scope.launch {
-                    loadExercisesInternal(workoutId, pendingExercises)
+                    if (pendingExercises != null && pendingExercises.isNotEmpty()) {
+                        loadExercisesInternal(workoutId, pendingExercises)
+                    } else {
+                        loadExercisesInternal(workoutId, null)
+                    }
                 }
             }
         }

@@ -94,27 +94,27 @@ fun GymBuddyNavigation(
                 composable(Screen.Home.route) {
                     HomeScreen(navController = navController)
                 }
-                
+
                 composable(Screen.Workout.route) {
                     WorkoutScreen(navController = navController, sessionManager = sessionManager)
                 }
-                
+
                 composable(Screen.Exercise.route) {
                     ExerciseScreen(navController = navController)
                 }
-                
+
                 composable(Screen.Progress.route) {
                     ProgressScreen(navController = navController)
                 }
-                
+
                 composable(Screen.Profile.route) {
                     ProfileScreen(navController = navController)
                 }
-                
+
                 composable(Screen.Achievement.route) {
                     AchievementScreen(navController = navController)
                 }
-                
+
                 composable(
                     route = Screen.ExerciseDetail.route,
                     arguments = listOf(navArgument("exerciseId") { type = NavType.LongType })
@@ -122,7 +122,7 @@ fun GymBuddyNavigation(
                     val exerciseId = backStackEntry.arguments?.getLong("exerciseId") ?: 0L
                     ExerciseDetailScreen(exerciseId = exerciseId, navController = navController)
                 }
-                
+
                 composable(
                     route = Screen.CreateRoutine.route,
                     arguments = listOf(navArgument("routineId") {
@@ -133,7 +133,7 @@ fun GymBuddyNavigation(
                     val routineId = backStackEntry.arguments?.getLong("routineId") ?: 0L
                     CreateRoutineScreen(navController = navController, routineId = routineId)
                 }
-                
+
                 composable(Screen.Settings.route) {
                     SettingsScreen(navController = navController)
                 }
