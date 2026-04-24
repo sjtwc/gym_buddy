@@ -4,11 +4,15 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymbuddy.auth.AuthManager
+import com.example.gymbuddy.data.local.CalendarPreferences
 import com.example.gymbuddy.data.local.NotificationPreferences
 import com.example.gymbuddy.data.local.dao.PersonalRecordDao
+import com.example.gymbuddy.data.local.dao.ScheduledWorkoutDao
 import com.example.gymbuddy.data.local.entity.PersonalRecordEntity
 import com.example.gymbuddy.domain.model.FreeTimeSlot
+import com.example.gymbuddy.service.CalendarEventExporter
 import com.example.gymbuddy.service.CalendarService
+import com.example.gymbuddy.service.HealthConnectManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,8 +34,12 @@ data class SettingsUiState(
     val isCalendarConnected: Boolean = false,
     val googleAccountEmail: String? = null,
     val autoSyncEnabled: Boolean = false,
+    val isSyncing: Boolean = false,
+    val lastSyncResult: String? = null,
     val showFreeTimeDialog: Boolean = false,
     val freeTimeSlots: List<FreeTimeSlot> = emptyList(),
+    val isHealthConnectAvailable: Boolean = false,
+    val isExportingHealth: Boolean = false,
     val showResetDialog: Boolean = false,
     val isResetting: Boolean = false
 )
@@ -40,9 +48,13 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val notificationPreferences: NotificationPreferences,
+    private val calendarPreferences: CalendarPreferences,
     private val authManager: AuthManager,
     private val calendarService: CalendarService,
-    private val personalRecordDao: PersonalRecordDao
+    private val calendarEventExporter: CalendarEventExporter,
+    private val healthConnectManager: HealthConnectManager,
+    private val personalRecordDao: PersonalRecordDao,
+    private val scheduledWorkoutDao: ScheduledWorkoutDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -50,7 +62,21 @@ class SettingsViewModel @Inject constructor(
 
     init {
         loadNotificationSettings()
+        loadCalendarSettings()
+        checkHealthConnect()
         observeCalendarAuth()
+    }
+
+    private fun checkHealthConnect() {
+        _uiState.update {
+            it.copy(isHealthConnectAvailable = healthConnectManager.isAvailable())
+        }
+    }
+
+    private fun loadCalendarSettings() {
+        _uiState.update {
+            it.copy(autoSyncEnabled = calendarPreferences.isAutoSyncEnabled())
+        }
     }
 
     private fun observeCalendarAuth() {
@@ -114,6 +140,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setAutoSyncEnabled(enabled: Boolean) {
+        calendarPreferences.setAutoSyncEnabled(enabled)
         _uiState.update { it.copy(autoSyncEnabled = enabled) }
     }
 
@@ -135,7 +162,56 @@ class SettingsViewModel @Inject constructor(
 
     fun syncToCalendar() {
         viewModelScope.launch {
-            // TODO: Trigger calendar sync
+            _uiState.update { it.copy(isSyncing = true, lastSyncResult = null) }
+            try {
+                val exportedCount = calendarEventExporter.exportWeeklySchedule()
+                val message = if (exportedCount > 0) {
+                    "Successfully exported $exportedCount workout(s) to calendar"
+                } else {
+                    "No workouts to export. Make sure you have a weekly schedule set up."
+                }
+                _uiState.update { it.copy(isSyncing = false, lastSyncResult = message) }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(isSyncing = false, lastSyncResult = "Sync failed: ${e.message}") 
+                }
+            }
+        }
+    }
+    
+    fun clearSyncResult() {
+        _uiState.update { it.copy(lastSyncResult = null) }
+    }
+
+    fun exportToHealthConnect() {
+        viewModelScope.launch {
+            if (!healthConnectManager.isAvailable()) {
+                _uiState.update { 
+                    it.copy(lastSyncResult = "Health Connect is not available. Please install the Health Connect app from Play Store.") 
+                }
+                return@launch
+            }
+            
+            _uiState.update { it.copy(isExportingHealth = true) }
+            try {
+                val sessions = healthConnectManager.getRecentSessions(10)
+                var exported = 0
+                for (session in sessions) {
+                    if (healthConnectManager.exportSession(session)) {
+                        exported++
+                    }
+                }
+                val message = if (exported > 0) {
+                    "Exported $exported workout(s) to Health Connect"
+                } else {
+                    "No workouts to export or export failed"
+                }
+                _uiState.update { it.copy(isExportingHealth = false, lastSyncResult = message) }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(isExportingHealth = false, lastSyncResult = "Export failed: ${e.message}") 
+                }
+            }
         }
     }
 

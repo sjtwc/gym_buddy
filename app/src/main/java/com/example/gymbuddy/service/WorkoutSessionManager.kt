@@ -359,7 +359,7 @@ class WorkoutSessionManager @Inject constructor(
                 }
             }
             
-            com.example.gymbuddy.widget.WidgetPreferences.updateFromDatabase(context)
+            com.example.gymbuddy.widget.WidgetPreferences.updateFromProvider(context)
         }
         
         resetState()

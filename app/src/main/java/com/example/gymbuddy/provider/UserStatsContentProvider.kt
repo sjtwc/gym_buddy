@@ -17,6 +17,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
+import java.util.Calendar
 import javax.inject.Inject
 
 class UserStatsContentProvider : ContentProvider() {
@@ -26,12 +27,15 @@ class UserStatsContentProvider : ContentProvider() {
         private const val WORKOUT_STATS = 2
         private const val EXERCISE_STATS = 3
         private const val EXERCISE_RECORDS = 4
+        private const val DAILY_SUMMARY = 5
+        private const val WEEKLY_TARGET = 4
 
         private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
             addURI(UserStatsContract.AUTHORITY, UserStatsContract.PersonalRecords.PATH, PERSONAL_RECORDS)
             addURI(UserStatsContract.AUTHORITY, UserStatsContract.WorkoutStats.PATH, WORKOUT_STATS)
             addURI(UserStatsContract.AUTHORITY, UserStatsContract.ExerciseStats.PATH, EXERCISE_STATS)
             addURI(UserStatsContract.AUTHORITY, "${UserStatsContract.PersonalRecords.PATH}/#", EXERCISE_RECORDS)
+            addURI(UserStatsContract.AUTHORITY, UserStatsContract.DailySummary.PATH, DAILY_SUMMARY)
         }
     }
 
@@ -67,6 +71,7 @@ class UserStatsContentProvider : ContentProvider() {
                 val exerciseId = ContentUris.parseId(uri)
                 queryPersonalRecordsForExercise(exerciseId)
             }
+            DAILY_SUMMARY -> queryDailySummary()
             else -> null
         }
     }
@@ -251,12 +256,70 @@ class UserStatsContentProvider : ContentProvider() {
         return cursor
     }
 
+    private fun queryDailySummary(): Cursor {
+        val database = getDatabase()
+        val workoutDao = database.workoutDao()
+        val userProfileDao = database.userProfileDao()
+
+        val cursor = MatrixCursor(
+            arrayOf(
+                UserStatsContract.DailySummary.COLUMN_CURRENT_STREAK,
+                UserStatsContract.DailySummary.COLUMN_WORKOUTS_THIS_WEEK,
+                UserStatsContract.DailySummary.COLUMN_TODAY_COMPLETED,
+                UserStatsContract.DailySummary.COLUMN_WEEKLY_TARGET,
+                UserStatsContract.DailySummary.COLUMN_LEVEL,
+                UserStatsContract.DailySummary.COLUMN_TITLE
+            )
+        )
+
+        try {
+            val profile = kotlinx.coroutines.runBlocking {
+                userProfileDao.getUserProfileSync()
+            }
+            val currentStreak = profile?.currentStreak ?: 0
+            val level = profile?.level ?: 1
+            val title = profile?.title ?: "Novice"
+
+            val now = System.currentTimeMillis()
+            val weekStart = now - (7 * 24 * 60 * 60 * 1000L)
+            val workoutsThisWeek = kotlinx.coroutines.runBlocking {
+                workoutDao.getWorkoutsByDateRangeSync(weekStart, now)
+            }.filter { it.isCompleted }
+
+            val today = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+
+            val todayCompleted = workoutsThisWeek.any { it.date >= today }
+
+            cursor.addRow(
+                arrayOf(
+                    currentStreak,
+                    workoutsThisWeek.size,
+                    if (todayCompleted) 1 else 0,
+                    WEEKLY_TARGET,
+                    level,
+                    title
+                )
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            cursor.addRow(arrayOf(0, 0, 0, WEEKLY_TARGET, 1, "Novice"))
+        }
+
+        return cursor
+    }
+
     override fun getType(uri: Uri): String? {
         return when (uriMatcher.match(uri)) {
             PERSONAL_RECORDS -> UserStatsContract.PersonalRecords.CONTENT_TYPE
             WORKOUT_STATS -> UserStatsContract.WorkoutStats.CONTENT_TYPE
             EXERCISE_STATS -> UserStatsContract.ExerciseStats.CONTENT_TYPE
             EXERCISE_RECORDS -> UserStatsContract.PersonalRecords.CONTENT_ITEM_TYPE
+            DAILY_SUMMARY -> UserStatsContract.DailySummary.CONTENT_TYPE
             else -> null
         }
     }

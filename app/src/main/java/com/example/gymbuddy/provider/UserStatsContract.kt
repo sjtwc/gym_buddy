@@ -50,4 +50,18 @@ object UserStatsContract {
 
         const val CONTENT_TYPE = "vnd.android.cursor.dir/vnd.$AUTHORITY.$PATH"
     }
+
+    object DailySummary {
+        const val PATH = "daily_summary"
+        val CONTENT_URI: Uri = Uri.withAppendedPath(BASE_URI, PATH)
+
+        const val COLUMN_CURRENT_STREAK = "currentStreak"
+        const val COLUMN_WORKOUTS_THIS_WEEK = "workoutsThisWeek"
+        const val COLUMN_TODAY_COMPLETED = "todayCompleted"
+        const val COLUMN_WEEKLY_TARGET = "weeklyTarget"
+        const val COLUMN_LEVEL = "level"
+        const val COLUMN_TITLE = "title"
+
+        const val CONTENT_TYPE = "vnd.android.cursor.item/vnd.$AUTHORITY.$PATH"
+    }
 }

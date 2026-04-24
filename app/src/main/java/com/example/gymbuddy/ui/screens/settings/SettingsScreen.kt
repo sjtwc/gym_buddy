@@ -136,8 +136,8 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.CloudSync,
                     title = "Sync Now",
-                    subtitle = "Export schedule to calendar",
-                    onClick = { viewModel.syncToCalendar() }
+                    subtitle = if (uiState.isSyncing) "Syncing..." else "Export schedule to calendar",
+                    onClick = { if (!uiState.isSyncing) viewModel.syncToCalendar() }
                 )
             } else {
                 SettingsItem(
@@ -154,12 +154,29 @@ fun SettingsScreen(
             
             UserStatsCard()
 
-            SettingsItem(
+SettingsItem(
                 icon = Icons.Default.Refresh,
                 title = "Reset Records",
                 subtitle = "Clear all personal and predicted records",
                 onClick = { viewModel.showResetConfirmation() }
 
+            )
+
+            SettingsItem(
+                icon = Icons.Default.Favorite,
+                title = "Export to Health Connect",
+                subtitle = when {
+                    uiState.isExportingHealth -> "Exporting..."
+                    uiState.isHealthConnectAvailable -> "Sync workouts to Health app"
+                    else -> "Requires Health Connect app"
+                },
+                onClick = { 
+                    if (!uiState.isHealthConnectAvailable) {
+                        viewModel.exportToHealthConnect()
+                    } else if (!uiState.isExportingHealth) {
+                        viewModel.exportToHealthConnect()
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -237,6 +254,19 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { viewModel.hideResetConfirmation() }) {
                     Text("Cancel")
+                }
+            }
+        )
+    }
+
+    uiState.lastSyncResult?.let { result ->
+        AlertDialog(
+            onDismissRequest = { viewModel.clearSyncResult() },
+            title = { Text("Calendar Sync") },
+            text = { Text(result) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearSyncResult() }) {
+                    Text("OK")
                 }
             }
         )
@@ -580,11 +610,15 @@ fun UserStatsCard() {
     val context = LocalContext.current
     var totalWorkouts by remember { mutableIntStateOf(0) }
     var totalVolume by remember { mutableFloatStateOf(0f) }
+    var currentStreak by remember { mutableIntStateOf(0) }
+    var level by remember { mutableIntStateOf(1) }
+    var title by remember { mutableStateOf("Novice") }
     var personalRecordsCount by remember { mutableIntStateOf(0) }
     var topExercises by remember { mutableStateOf<List<Pair<String, Float>>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         try {
+            // Fetch workout stats
             val workoutStatsUri = UserStatsContract.WorkoutStats.CONTENT_URI
             val workoutCursor: Cursor? = context.contentResolver.query(
                 workoutStatsUri,
@@ -594,6 +628,20 @@ fun UserStatsCard() {
                 if (it.moveToFirst()) {
                     totalWorkouts = it.getInt(it.getColumnIndexOrThrow(UserStatsContract.WorkoutStats.COLUMN_TOTAL_WORKOUTS))
                     totalVolume = it.getFloat(it.getColumnIndexOrThrow(UserStatsContract.WorkoutStats.COLUMN_TOTAL_VOLUME))
+                }
+            }
+
+            // Fetch daily summary for streak, level, title
+            val dailySummaryUri = UserStatsContract.DailySummary.CONTENT_URI
+            val dailyCursor: Cursor? = context.contentResolver.query(
+                dailySummaryUri,
+                null, null, null, null
+            )
+            dailyCursor?.use {
+                if (it.moveToFirst()) {
+                    currentStreak = it.getInt(it.getColumnIndexOrThrow(UserStatsContract.DailySummary.COLUMN_CURRENT_STREAK))
+                    level = it.getInt(it.getColumnIndexOrThrow(UserStatsContract.DailySummary.COLUMN_LEVEL))
+                    title = it.getString(it.getColumnIndexOrThrow(UserStatsContract.DailySummary.COLUMN_TITLE)) ?: "Novice"
                 }
             }
 
@@ -648,7 +696,9 @@ fun UserStatsCard() {
                 )
                 IconButton(
                     onClick = {
-                        val statsText = buildShareText(totalWorkouts, totalVolume, personalRecordsCount, topExercises)
+                        val statsText = buildShareText(
+                            totalWorkouts, totalVolume, currentStreak, level, title, personalRecordsCount, topExercises
+                        )
                         val shareIntent = Intent().apply {
                             action = Intent.ACTION_SEND
                             putExtra(Intent.EXTRA_TEXT, statsText)
@@ -733,6 +783,9 @@ fun UserStatsCard() {
 private fun buildShareText(
     totalWorkouts: Int,
     totalVolume: Float,
+    currentStreak: Int,
+    level: Int,
+    title: String,
     personalRecordsCount: Int,
     topExercises: List<Pair<String, Float>>
 ): String {
@@ -742,6 +795,9 @@ private fun buildShareText(
         "${totalVolume.toInt()} kg"
     }
 
+    val streakText = if (currentStreak > 0) "\n🔥 Current Streak: $currentStreak days" else ""
+    val levelText = "\n⭐ Level $level • $title"
+    
     val topWeightsText = if (topExercises.isNotEmpty()) {
         "\n🏆 Top Weights:\n" + topExercises.joinToString("\n") { (name, weight) ->
             "• $name: ${weight.toInt()} kg"
@@ -750,6 +806,8 @@ private fun buildShareText(
 
     return """
         💪 My GymBuddy Stats
+        $streakText
+        $levelText
         
         📊 Total Workouts: $totalWorkouts
         ⚖️ Total Volume: $volumeText  

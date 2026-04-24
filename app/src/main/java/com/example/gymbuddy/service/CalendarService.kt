@@ -7,6 +7,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -25,6 +26,25 @@ class CalendarService @Inject constructor(
     companion object {
         private const val CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3"
     }
+    
+    private fun getApiKey(): String {
+        // Try reading from gradle.properties file
+        val projectRoot = context.filesDir.parentFile?.parentFile?.parentFile
+        val gradleProps = File(projectRoot, "gradle.properties")
+        
+        if (gradleProps.exists()) {
+            gradleProps.readLines().forEach { line ->
+                if (line.startsWith("CALENDAR_API_KEY=")) {
+                    val key = line.substringAfter("CALENDAR_API_KEY=").trim()
+                    if (key.isNotEmpty() && key != "YOUR_API_KEY_HERE") {
+                        return key
+                    }
+                }
+            }
+        }
+        
+        throw IllegalStateException("CALENDAR_API_KEY not configured in gradle.properties. Add CALENDAR_API_KEY=your-key-here to gradle.properties")
+    }
 
     suspend fun findFreeTimeSlots(): List<FreeTimeSlot> = withContext(Dispatchers.IO) {
         try {
@@ -39,7 +59,7 @@ class CalendarService @Inject constructor(
             now.add(Calendar.DAY_OF_YEAR, 7)
             val timeMax = dateFormat.format(now.time)
 
-            val url = URL("$CALENDAR_API_BASE/freeBusy?key=AIzaSyDEMO_KEY")
+            val url = URL("$CALENDAR_API_BASE/freeBusy?key=${getApiKey()}")
 
             val body = """
             {

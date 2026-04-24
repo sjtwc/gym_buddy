@@ -2,6 +2,8 @@ package com.example.gymbuddy.widget
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.ComponentName
+import android.appwidget.AppWidgetManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -16,6 +18,8 @@ object WidgetPreferences {
     private const val KEY_WORKOUTS_THIS_WEEK = "workouts_this_week"
     private const val KEY_TODAY_DONE = "today_done"
     private const val KEY_LAST_WORKOUT_DATE = "last_workout_date"
+    private const val KEY_LEVEL = "level"
+    private const val KEY_TITLE = "title"
     
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -33,6 +37,34 @@ object WidgetPreferences {
         return getPrefs(context).getBoolean(KEY_TODAY_DONE, false)
     }
     
+    fun getLevel(context: Context): Int {
+        return getPrefs(context).getInt(KEY_LEVEL, 1)
+    }
+    
+    fun getTitle(context: Context): String {
+        return getPrefs(context).getString(KEY_TITLE, "Novice") ?: "Novice"
+    }
+    
+    fun updateFromProvider(context: Context) {
+        try {
+            val stats = WidgetDataManager.queryWidgetStatsFromProvider(context)
+            val prefs = getPrefs(context)
+            
+            prefs.edit()
+                .putInt(KEY_STREAK, stats.currentStreak)
+                .putInt(KEY_WORKOUTS_THIS_WEEK, stats.workoutsThisWeek)
+                .putBoolean(KEY_TODAY_DONE, stats.todayCompleted)
+                .putInt(KEY_LEVEL, stats.level)
+                .putString(KEY_TITLE, stats.title)
+                .apply()
+            
+            updateAllWidgets(context)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            updateFromDatabase(context)
+        }
+    }
+    
     fun updateFromDatabase(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -42,6 +74,8 @@ object WidgetPreferences {
                 // Get user profile for streak
                 val profile = database.userProfileDao().getUserProfileSync()
                 val streak = profile?.currentStreak ?: 0
+                val level = profile?.level ?: 1
+                val title = profile?.title ?: "Novice"
                 
                 // Get workouts this week
                 val now = System.currentTimeMillis()
@@ -65,6 +99,8 @@ object WidgetPreferences {
                     .putInt(KEY_STREAK, streak)
                     .putInt(KEY_WORKOUTS_THIS_WEEK, workoutsThisWeek)
                     .putBoolean(KEY_TODAY_DONE, todayDone)
+                    .putInt(KEY_LEVEL, level)
+                    .putString(KEY_TITLE, title)
                     .apply()
                 
                 // Update all widgets
