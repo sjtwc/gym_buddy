@@ -43,6 +43,7 @@ import com.example.gymbuddy.ui.theme.*
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.util.Calendar
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun HomeScreen(
@@ -50,11 +51,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    val petChatViewModel: PetChatViewModel = hiltViewModel()
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || 
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             viewModel.onLocationPermissionGranted()
         }
@@ -71,6 +73,7 @@ fun HomeScreen(
         }
     }
 
+    var showPetChat by remember { mutableStateOf(false) }
     var petInteractionIndex by remember { mutableIntStateOf(0) }
     var lastPetInteractionTime by remember { mutableLongStateOf(0L) }
 
@@ -82,6 +85,26 @@ fun HomeScreen(
                 petInteractionIndex = (petInteractionIndex + 1) % (mood.extraMessages.size + 1)
             }
             lastPetInteractionTime = currentTime
+        }
+    }
+
+    val petChatState by petChatViewModel.uiState.collectAsState()
+
+    if (showPetChat) {
+        PetChatDialog(
+            messages = petChatState.messages,
+            isLoading = petChatState.isLoading,
+            petEmoji = petChatState.petEmoji,
+            petName = petChatState.petName,
+            onSendMessage = { message -> petChatViewModel.sendMessage(message) },
+            onDismiss = {
+                showPetChat = false
+                petChatViewModel.onGenerationComplete()
+            }
+        )
+
+        LaunchedEffect(Unit) {
+            petChatViewModel.initializeAndGenerateGreeting()
         }
     }
 
@@ -110,7 +133,7 @@ fun HomeScreen(
             happiness = uiState.effectivePetHappiness,
             mood = uiState.effectivePetMood,
             interactionIndex = petInteractionIndex,
-            onInteraction = handlePetInteraction
+            onInteraction = { showPetChat = true }
         )
         
         Spacer(modifier = Modifier.height(24.dp))

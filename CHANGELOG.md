@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.14.0] - 2026-04-24
+
+### Added
+- **AI Coach Pet Chat** - Tap the pet on Home screen to chat with an AI fitness coach
+  - Chat interface with streaming responses
+  - AI has access to user's fitness profile, stats, and workout history
+  - Provides personalized motivation and fitness advice
+  - **Infrastructure ready** - Model integration pending KSP2/Room compatibility fix
+
+### New Files
+- `LlmService.kt` - LLM inference service (stub implementation)
+- `LlmRepository.kt` - LLM chat repository with prompt engineering
+- `LlmModule.kt` - Hilt DI module for LLM services
+- `PetChatDialog.kt` - Chat UI dialog (85% width, 75% height)
+- `PetChatViewModel.kt` - ViewModel for chat state management
+- `UserSummaryEntity.kt` - Room entity for cached user summary
+- `UserSummaryDao.kt` - DAO for user summary persistence
+- `UserSummaryRepository.kt` - Repository for user summary
+- `UserSummaryGenerator.kt` - Service to generate user insights
+- `UserSummaryWorker.kt` - WorkManager for daily summary updates
+- `UserSummary.kt` - Domain model with profile, stats, metrics
+- `gemma3-270m-it-q8.litertlm` - Gemma 270M INT8 model (304MB, in assets)
+
+### Updated
+- `HomeScreen.kt` - Pet click now opens PetChatDialog
+- `MainActivity.kt` - Schedules daily summary work
+- `GymBuddyDatabase.kt` - Added UserSummaryEntity, version bumped to 7
+- `DatabaseModule.kt` - Added UserSummaryDao provider
+- `AndroidManifest.xml` - Added GPU native library permissions for LiteRT
+- GPU native libraries (`libvndksupport.so`, `libOpenCL.so`) - For future LiteRT acceleration
+
+### Note
+LlmService outputs "no response from (pet name)" due to KSP2 bug with Room + @Serializable.
+Infrastructure ready for real LLM integration when KSP compatibility is resolved.
+Model file `gemma3-270m-it-q8.litertlm` in assets (not committed to git, 304MB).
+
+---
+
 ## [1.13.1] - 2026-04-24
 
 ### Fixed
@@ -438,6 +476,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.14.0]: https://github.com/example/gymbuddy/compare/v1.13.1...v1.14.0
 [1.13.1]: https://github.com/example/gymbuddy/compare/v1.13.0...v1.13.1
 [1.13.0]: https://github.com/example/gymbuddy/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/example/gymbuddy/compare/v1.11.1...v1.12.0

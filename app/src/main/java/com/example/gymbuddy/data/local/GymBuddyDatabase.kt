@@ -26,9 +26,10 @@ import kotlinx.coroutines.launch
         PersonalRecordEntity::class,
         BodyMeasurementEntity::class,
         AchievementEntity::class,
-        ScheduledWorkoutEntity::class
+        ScheduledWorkoutEntity::class,
+        UserSummaryEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class GymBuddyDatabase : RoomDatabase() {
@@ -44,6 +45,7 @@ abstract class GymBuddyDatabase : RoomDatabase() {
     abstract fun personalRecordDao(): PersonalRecordDao
     abstract fun achievementDao(): AchievementDao
     abstract fun scheduledWorkoutDao(): ScheduledWorkoutDao
+    abstract fun userSummaryDao(): UserSummaryDao
 
     companion object {
         @Volatile
@@ -64,6 +66,25 @@ abstract class GymBuddyDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS user_summary (
+                        id INTEGER PRIMARY KEY NOT NULL,
+                        generatedAt INTEGER NOT NULL,
+                        profileJson TEXT NOT NULL,
+                        statsJson TEXT NOT NULL,
+                        weeklyProgressJson TEXT NOT NULL,
+                        fourWeekComparisonJson TEXT NOT NULL,
+                        derivedMetricsJson TEXT NOT NULL,
+                        recentPrsJson TEXT NOT NULL,
+                        topImprovementsJson TEXT NOT NULL,
+                        insightsJson TEXT NOT NULL
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getDatabase(context: Context): GymBuddyDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -72,7 +93,7 @@ abstract class GymBuddyDatabase : RoomDatabase() {
                     "gym_buddy_database"
                 )
                 .addCallback(DatabaseCallback())
-                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

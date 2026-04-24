@@ -21,12 +21,16 @@ import com.example.gymbuddy.BuildConfig
 import com.example.gymbuddy.data.repository.WorkoutRepository
 import com.example.gymbuddy.domain.model.Workout
 import com.example.gymbuddy.service.StreakAlarmReceiver
+import com.example.gymbuddy.service.UserSummaryWorker
 import com.example.gymbuddy.service.WorkoutSessionManager
 import com.example.gymbuddy.ui.navigation.GymBuddyNavigation
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.DarkBackground
 import com.example.gymbuddy.ui.theme.GymBuddyTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +48,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var workoutRepository: WorkoutRepository
+
+    @Inject
+    lateinit var llmService: com.example.gymbuddy.service.LlmService
 
     private var navController: NavHostController? = null
     private var pendingWidgetIntent: Intent? = null
@@ -85,6 +92,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        preloadLlmModel()
+        scheduleUserSummaryWork()
 
         setContent {
             GymBuddyTheme {
@@ -234,5 +244,33 @@ class MainActivity : ComponentActivity() {
         }
 
         StreakAlarmReceiver.scheduleAlarm(this, intervalMinutes)
+    }
+
+    private fun preloadLlmModel() {
+        Log.d("MainActivity", "Preloading LLM model...")
+        CoroutineScope(Dispatchers.Main).launch {
+            val ready = llmService.ensureModelReady()
+            if (ready) {
+                Log.d("MainActivity", "LLM model preloaded successfully")
+            } else {
+                Log.w("MainActivity", "LLM model preload failed - will load on demand")
+            }
+        }
+    }
+
+    private fun scheduleUserSummaryWork() {
+        Log.d("MainActivity", "Scheduling user summary work...")
+        val workRequest = androidx.work.PeriodicWorkRequestBuilder<UserSummaryWorker>(
+            1, java.util.concurrent.TimeUnit.DAYS
+        )
+            .setInitialDelay(1, java.util.concurrent.TimeUnit.HOURS)
+            .build()
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            UserSummaryWorker.WORK_NAME,
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+        Log.d("MainActivity", "User summary work scheduled")
     }
 }
