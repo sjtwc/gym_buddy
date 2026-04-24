@@ -186,7 +186,7 @@ SettingsItem(
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "App Version",
-                subtitle = "1.11.1",
+                subtitle = "1.13.1",
                 onClick = { }
             )
             

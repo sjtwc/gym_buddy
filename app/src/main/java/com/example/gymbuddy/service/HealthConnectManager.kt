@@ -27,10 +27,9 @@ class HealthConnectManager @Inject constructor(
 
     fun isAvailable(): Boolean {
         return try {
-            // Check if Health Connect is available
-            // This requires the health-connect-client dependency
-            // For now, return false as the dependency is not yet added
-            false
+            val packageManager = context.packageManager
+            packageManager.getPackageInfo("com.google.android.apps.healthdata", 0)
+            true
         } catch (e: Exception) {
             false
         }
