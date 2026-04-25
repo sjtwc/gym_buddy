@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Binder
 import android.os.IBinder
@@ -26,6 +27,8 @@ class WorkoutSessionService : Service() {
     
     private var timerJob: Job? = null
     private var restTimerJob: Job? = null
+    private var currentRingtone: Ringtone? = null
+    private var isAppInForeground = true
     
     private val _workoutSession = MutableStateFlow<WorkoutSession?>(null)
     val workoutSession: StateFlow<WorkoutSession?> = _workoutSession.asStateFlow()
@@ -47,6 +50,9 @@ class WorkoutSessionService : Service() {
     
     private val _activeRestSetIndex = MutableStateFlow(-1)
     val activeRestSetIndex: StateFlow<Int> = _activeRestSetIndex.asStateFlow()
+    
+    private val _isTimerComplete = MutableStateFlow(false)
+    val isTimerComplete: StateFlow<Boolean> = _isTimerComplete.asStateFlow()
     
     companion object {
         const val CHANNEL_ID = "workout_session_channel"
@@ -379,9 +385,14 @@ class WorkoutSessionService : Service() {
             _isTimerMinimized.value = false
             _activeRestExerciseIndex.value = -1
             _activeRestSetIndex.value = -1
-            sendTimerEndNotification()
-            playTimerSound()
+            _isTimerComplete.value = true
             updateNotification()
+            
+            if (isAppInForeground) {
+                playTimerSound()
+            } else {
+                sendTimerEndNotification()
+            }
         }
     }
     
@@ -410,11 +421,39 @@ class WorkoutSessionService : Service() {
     
     private fun stopRestTimer() {
         restTimerJob?.cancel()
+        _isTimerComplete.value = false
+        stopRingtone()
+        cancelTimerEndNotification()
         _workoutSession.value = _workoutSession.value?.copy(isResting = false)
         _restTime.value = 0
         _isTimerMinimized.value = false
         _activeRestExerciseIndex.value = -1
         _activeRestSetIndex.value = -1
+    }
+    
+    fun acknowledgeTimerComplete() {
+        _isTimerComplete.value = false
+        stopRingtone()
+        cancelTimerEndNotification()
+        _restTime.value = 0
+        _workoutSession.value = _workoutSession.value?.copy(isResting = false)
+        _isTimerMinimized.value = false
+        _activeRestExerciseIndex.value = -1
+        _activeRestSetIndex.value = -1
+    }
+    
+    fun setAppForegroundState(inForeground: Boolean) {
+        isAppInForeground = inForeground
+    }
+    
+    private fun stopRingtone() {
+        currentRingtone?.stop()
+        currentRingtone = null
+    }
+    
+    private fun cancelTimerEndNotification() {
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.cancel(TIMER_END_NOTIFICATION_ID)
     }
     
     fun minimizeTimer() {
@@ -486,9 +525,10 @@ class WorkoutSessionService : Service() {
     
     private fun playTimerSound() {
         try {
+            stopRingtone()
             val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            val ringtone = RingtoneManager.getRingtone(applicationContext, notification)
-            ringtone.play()
+            currentRingtone = RingtoneManager.getRingtone(applicationContext, notification)
+            currentRingtone?.play()
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -202,6 +202,16 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         sessionManager.onCleared()
     }
+    
+    override fun onResume() {
+        super.onResume()
+        sessionManager.setAppForegroundState(true)
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        sessionManager.setAppForegroundState(false)
+    }
 
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

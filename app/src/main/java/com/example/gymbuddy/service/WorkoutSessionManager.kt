@@ -58,6 +58,9 @@ class WorkoutSessionManager @Inject constructor(
     
     private val _activeRestSetIndex = MutableStateFlow(-1)
     val activeRestSetIndex: StateFlow<Int> = _activeRestSetIndex.asStateFlow()
+    
+    private var _isTimerComplete = MutableStateFlow(false)
+    val isTimerComplete: StateFlow<Boolean> = _isTimerComplete.asStateFlow()
 
     private var pendingWorkoutId: Long? = null
     private var pendingExercisesToLoad: List<WorkoutExerciseSession>? = null
@@ -128,7 +131,21 @@ class WorkoutSessionManager @Inject constructor(
                     _activeRestSetIndex.value = index
                 }
             }
+            scope.launch {
+                svc.isTimerComplete.collect { complete ->
+                    _isTimerComplete.value = complete
+                }
+            }
         }
+    }
+    
+    fun acknowledgeTimerComplete() {
+        service?.acknowledgeTimerComplete()
+        _isTimerComplete.value = false
+    }
+    
+    fun setAppForegroundState(inForeground: Boolean) {
+        service?.setAppForegroundState(inForeground)
     }
     
     fun startSession(workoutId: Long, workoutName: String) {

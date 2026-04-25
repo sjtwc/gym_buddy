@@ -58,6 +58,7 @@ fun WorkoutOverlay(
     val timerTotalTime by sessionManager.timerTotalTime.collectAsState()
     val activeRestExerciseIndex by sessionManager.activeRestExerciseIndex.collectAsState()
     val activeRestSetIndex by sessionManager.activeRestSetIndex.collectAsState()
+    val isTimerComplete by sessionManager.isTimerComplete.collectAsState()
 
     AnimatedVisibility(
         visible = isVisible,
@@ -127,9 +128,10 @@ fun WorkoutOverlay(
                         RestTimerPopup(
                             remainingSeconds = restTime,
                             totalSeconds = timerTotalTime,
+                            isComplete = isTimerComplete,
                             onMinimize = { sessionManager.minimizeTimer() },
                             onAdjustTime = { sessionManager.adjustTimerTime(it) },
-                            onClose = { sessionManager.adjustTimerTime(-restTime) },
+                            onClose = { sessionManager.acknowledgeTimerComplete() },
                             modifier = Modifier.align(Alignment.BottomCenter)
                         )
                     }

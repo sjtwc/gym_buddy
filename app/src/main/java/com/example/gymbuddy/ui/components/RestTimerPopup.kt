@@ -21,6 +21,7 @@ import com.csci3310.gymbuddy.ui.theme.*
 fun RestTimerPopup(
     remainingSeconds: Int,
     totalSeconds: Int,
+    isComplete: Boolean = false,
     onMinimize: () -> Unit,
     onAdjustTime: (Int) -> Unit,
     onClose: () -> Unit,
@@ -63,38 +64,47 @@ fun RestTimerPopup(
                         fontSize = 72.sp,
                         fontWeight = FontWeight.Bold
                     ),
-                    color = NeonCyan
+                    color = if (isComplete) NeonTeal else NeonCyan
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(12.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(ProgressBarBackground)
-                ) {
+                if (isComplete) {
+                    Text(
+                        text = "Timer Complete!",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = NeonTeal,
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .fillMaxHeight()
-                            .background(
-                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                    colors = listOf(NeonTeal, NeonCyan)
-                                ),
-                                shape = RoundedCornerShape(6.dp)
-                            )
+                            .fillMaxWidth()
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(ProgressBarBackground)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progress)
+                                .fillMaxHeight()
+                                .background(
+                                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                        colors = listOf(NeonTeal, NeonCyan)
+                                    ),
+                                    shape = RoundedCornerShape(6.dp)
+                                )
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "${formatTime(remainingSeconds)} remaining",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
                     )
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "${formatTime(remainingSeconds)} remaining",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
             }
             
             Row(
@@ -102,50 +112,63 @@ fun RestTimerPopup(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FilledTonalButton(
-                    onClick = { onAdjustTime(-10) },
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = DarkSurfaceElevated,
-                        contentColor = TextPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(Icons.Default.Remove, contentDescription = "Decrease 10s")
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("-10s")
-                }
-                
-                Button(
-                    onClick = onMinimize,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = WarningOrange
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Minimize", fontWeight = FontWeight.Bold)
-                }
-                
-                FilledTonalButton(
-                    onClick = { onAdjustTime(10) },
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = DarkSurfaceElevated,
-                        contentColor = TextPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Increase 10s")
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("+10s")
-                }
-                
-                IconButton(
-                    onClick = onClose,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = ErrorRed.copy(alpha = 0.2f),
-                        contentColor = ErrorRed
-                    )
-                ) {
-                    Icon(Icons.Default.Close, contentDescription = "Close")
+                if (isComplete) {
+                    Button(
+                        onClick = onClose,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = NeonTeal
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    ) {
+                        Text("Done ✓", fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    FilledTonalButton(
+                        onClick = { onAdjustTime(-10) },
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = DarkSurfaceElevated,
+                            contentColor = TextPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.Remove, contentDescription = "Decrease 10s")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("-10s")
+                    }
+                    
+                    Button(
+                        onClick = onMinimize,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = WarningOrange
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Minimize", fontWeight = FontWeight.Bold)
+                    }
+                    
+                    FilledTonalButton(
+                        onClick = { onAdjustTime(10) },
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = DarkSurfaceElevated,
+                            contentColor = TextPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Increase 10s")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("+10s")
+                    }
+                    
+                    IconButton(
+                        onClick = onClose,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = ErrorRed.copy(alpha = 0.2f),
+                            contentColor = ErrorRed
+                        )
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
+                    }
                 }
             }
         }
