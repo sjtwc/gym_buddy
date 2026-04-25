@@ -31,8 +31,10 @@ class CalendarEventExporter(
                 val dateStr = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(date.time)
 
                 val exercisesDescription = buildExercisesDescription(routine.exercises)
-                val title = "[GymBuddy] ${getDayName(scheduledWorkout.dayOfWeek)} - ${routine.name}"
+                val title = "[GymBuddy] ${getDayName(scheduledWorkout.dayOfWeek)} - ${routine.name} (${routine.estimatedMinutes} min)"
                 val description = """
+                    ${routine.type} - ${routine.estimatedMinutes} minutes
+
                     Exercises:
                     $exercisesDescription
 

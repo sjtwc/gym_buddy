@@ -88,6 +88,8 @@ fun WorkoutScreen(
             dayNames = dayNames,
             onToggleExpand = { viewModel.toggleSection("weeklySchedule") },
             onClearSchedule = { viewModel.clearWeekSchedule() },
+            onSyncCalendar = { viewModel.syncToCalendar() },
+            isSyncing = viewModel.syncState.value.isSyncing,
             onSaveDay = { dayOfWeek, routineId, isRestDay ->
                 viewModel.saveScheduledWorkout(dayOfWeek, routineId, isRestDay)
             },
@@ -162,6 +164,8 @@ fun WeeklyScheduleSection(
     dayNames: List<String>,
     onToggleExpand: () -> Unit,
     onClearSchedule: () -> Unit,
+    onSyncCalendar: () -> Unit,
+    isSyncing: Boolean,
     onSaveDay: (Int, Long?, Boolean) -> Unit,
     onStartWorkout: (Routine) -> Unit
 ) {
@@ -205,14 +209,38 @@ fun WeeklyScheduleSection(
 
             AnimatedVisibility(visible = isExpanded) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Button(
-                        onClick = onClearSchedule,
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = TextTertiary),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Clear All", style = MaterialTheme.typography.labelMedium)
+                        Button(
+                            onClick = onClearSchedule,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = TextTertiary),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            Text("Clear All", style = MaterialTheme.typography.labelMedium)
+                        }
+
+                        Button(
+                            onClick = onSyncCalendar,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = NeonTeal),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp),
+                            enabled = !isSyncing
+                        ) {
+                            if (isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = TextPrimary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Sync to Calendar", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))

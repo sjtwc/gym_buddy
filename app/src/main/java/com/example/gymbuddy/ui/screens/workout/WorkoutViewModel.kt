@@ -8,6 +8,7 @@ import com.csci3310.gymbuddy.data.repository.WorkoutRepository
 import com.csci3310.gymbuddy.domain.model.Routine
 import com.csci3310.gymbuddy.domain.model.ScheduledWorkout
 import com.csci3310.gymbuddy.domain.model.Workout
+import com.csci3310.gymbuddy.service.CalendarEventExporter
 import com.csci3310.gymbuddy.service.WorkoutSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -22,16 +23,24 @@ data class WorkoutUiState(
     val expandedSections: Set<String> = emptySet()
 )
 
+data class SyncCalendarState(
+    val isSyncing: Boolean = false,
+    val message: String? = null
+)
+
 @HiltViewModel
 class WorkoutViewModel @Inject constructor(
     private val routineRepository: RoutineRepository,
     private val workoutRepository: WorkoutRepository,
     private val scheduledWorkoutRepository: ScheduledWorkoutRepository,
-    private val sessionManager: WorkoutSessionManager
+    private val sessionManager: WorkoutSessionManager,
+    private val calendarEventExporter: CalendarEventExporter
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WorkoutUiState())
     val uiState: StateFlow<WorkoutUiState> = _uiState.asStateFlow()
+    private val _syncState = MutableStateFlow(SyncCalendarState())
+    val syncState: StateFlow<SyncCalendarState> = _syncState.asStateFlow()
 
     init {
         loadRoutines()
@@ -143,5 +152,31 @@ class WorkoutViewModel @Inject constructor(
         viewModelScope.launch {
             routineRepository.deleteRoutine(routine)
         }
+    }
+
+    fun syncToCalendar() {
+        viewModelScope.launch {
+            _syncState.update { it.copy(isSyncing = true, message = null) }
+            try {
+                val count = calendarEventExporter.exportWeeklySchedule()
+                _syncState.update {
+                    it.copy(
+                        isSyncing = false,
+                        message = if (count > 0) "Exported $count workout(s) to calendar" else "No workouts to export"
+                    )
+                }
+            } catch (e: Exception) {
+                _syncState.update {
+                    it.copy(
+                        isSyncing = false,
+                        message = "Failed: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearSyncMessage() {
+        _syncState.update { it.copy(message = null) }
     }
 }
