@@ -5,24 +5,24 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="16dp"
+    android:padding="12dp"
     android:background="@drawable/widget_background">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="🏋️"
-        android:textSize="32sp" />
+        android:textSize="28sp" />
 
     <TextView
         android:id="@+id/tvQuickStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start Workout"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="#4ECDC4"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:focusable="false" />
 
 </LinearLayout>
