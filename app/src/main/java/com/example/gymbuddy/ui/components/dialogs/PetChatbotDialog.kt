@@ -344,12 +344,12 @@ private fun formatWeeklySummary(summary: WorkoutSummary): String {
     val topMuscles = summary.muscleGroupsTrained.entries
         .sortedByDescending { it.value }
         .take(3)
-        .joinToString(", ") { "${it.key}: ${(it.value / 1000).toInt()}k" }
+        .joinToString(", ") { "${it.key}: ${it.value.toInt()} kg" }
     
     return """
         🏋️ Workouts: ${summary.totalWorkouts}
-        📦 Total Volume: ${(summary.totalVolume / 1000).toInt()}k lbs
-        ⏱️ Duration: ${summary.totalDuration / 60}min
+        📦 Total Volume: ${summary.totalVolume.toInt()} kg
+        ⏱️ Duration: ${summary.totalDuration}min
         💪 Top Muscles: $topMuscles
         🏆 PRs: ${summary.recordsBroken}
     """.trimIndent()
