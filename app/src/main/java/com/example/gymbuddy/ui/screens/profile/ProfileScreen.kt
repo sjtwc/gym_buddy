@@ -134,7 +134,7 @@ fun ProfileHeader(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Text(text = petMood.emoji, fontSize = 40.sp)
+                    Text(text = "👤", fontSize = 40.sp)
                 }
             }
             
