@@ -14,6 +14,7 @@ import com.csci3310.gymbuddy.domain.model.Routine
 import com.csci3310.gymbuddy.domain.model.UserProfile
 import com.csci3310.gymbuddy.domain.model.VirtualPet
 import com.csci3310.gymbuddy.domain.model.Workout
+import com.csci3310.gymbuddy.domain.usecase.GetWorkoutSummaryUseCase
 import com.csci3310.gymbuddy.service.GeocodingService
 import com.csci3310.gymbuddy.service.LocationService
 import com.csci3310.gymbuddy.util.GymLocationHelper
@@ -45,7 +46,8 @@ class HomeViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val locationService: LocationService,
     private val geocodingService: GeocodingService,
-    private val scheduledWorkoutRepository: ScheduledWorkoutRepository
+    private val scheduledWorkoutRepository: ScheduledWorkoutRepository,
+    val getWorkoutSummaryUseCase: GetWorkoutSummaryUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())

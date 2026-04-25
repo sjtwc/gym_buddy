@@ -64,37 +64,68 @@ enum class PetMood(
     val displayName: String,
     val emoji: String,
     val message: String,
-    val extraMessages: List<String> = emptyList()
+    val extraMessages: List<String> = emptyList(),
+    val meowResponses: List<String> = emptyList()
 ) {
-    HAPPY("Happy", "😊", "Great workout! Let's keep the momentum going!", listOf(
+    HAPPY("Happy", "😺", "Great workout! Let's keep the momentum going!", listOf(
         "You're doing amazing! 💪",
         "Keep up the great work! 🎯",
         "Your dedication inspires me! ⭐"
+    ), listOf(
+        "Meow! 😸",
+        "Meow meow! 🐾",
+        "Meow~ 💕",
+        "nyaa~ 😺"
     )),
-    EXCITED("Excited", "🎉", "Amazing! New personal record! I'm so proud!", listOf(
+    EXCITED("Excited", "😸", "Amazing! New personal record! I'm so proud!", listOf(
         "Let's crush today's workout! 🔥",
         "Time to level up! 📈",
         "You're unstoppable! 🚀"
+    ), listOf(
+        "MEOW!! 🎉",
+        "MEOW MEOW!! 😸",
+        "NYA!! 😻",
+        "Meow!!! 💖"
     )),
-    NEUTRAL("Neutral", "😐", "Ready for another workout? Let's go!", listOf(
+    NEUTRAL("Neutral", "🐱", "Ready for another workout? Let's go!", listOf(
         "Every rep counts! 💯",
         "Let's get moving! 🏃",
         "Challenge yourself today! 🎖️"
+    ), listOf(
+        "Meow~ 🐱",
+        "Meow!",
+        "Nya~",
+        "Meow?"
     )),
-    SAD("Sad", "😢", "I've been waiting for you... Don't let me down!", listOf(
+    SAD("Sad", "😿", "I've been waiting for you... Don't let me down!", listOf(
         "I believe in you! 💝",
         "A workout will cheer us up! 🌟",
         "You got this! 💪"
+    ), listOf(
+        "Meow... 😿",
+        "Meow... 💭",
+        "nyaa... 😢",
+        "Meow~ (sad)"
     )),
-    DISAPPOINTED("Disappointed", "😔", "It's been a while... I miss our workouts!", listOf(
+    DISAPPOINTED("Disappointed", "🙀", "It's been a while... I miss our workouts!", listOf(
         "I miss you... please come back! 🙏",
         "Even a short workout helps! ⏱️",
         "I'll be happy to see you! 🥺"
+    ), listOf(
+        "MEOW? 😿",
+        "Nya... 😾",
+        "Meow-- 🙀",
+        "meow... 💔"
     )),
-    WAITING("Waiting", "⏳", "Take your time... but not too long!", listOf(
+    WAITING("Waiting", "😼", "Take your time... but not too long!", listOf(
         "Rest up, but don't forget me! 😢",
         "Recovery is important! 🧘",
         "I'll be here when you're ready! 🏋️"
+    ), listOf(
+        "Meow~ 🐱",
+        "Nya~ 😸",
+        "Meow!",
+        "nyaa~"
     ))
 }
 

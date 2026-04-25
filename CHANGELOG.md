@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.15.0] - 2026-04-25
+
+### Added
+- **Pet Chatbot** - Tap pet to open chatbot dialog
+  - Pet emoji changed to cat emojis (😺😸🐱😿🙀😼) based on mood
+  - Shows pet name and mood status in header
+  - Chat messages with meow responses based on mood
+  - Preset "Weekly Summary" button for workout report
+  - Structured summary: workouts, volume, duration, muscle groups, PRs
+
+### Changed
+- **Pet Mood Emojis** - All pet moods now use cat emojis:
+  - EXCITED: 😸, HAPPY: 😺, NEUTRAL: 🐱, SAD: 😿, DISAPPOINTED: 🙀, WAITING: 😼
+
+### New Files
+- `ui/components/dialogs/PetChatbotDialog.kt` - Full-screen chatbot dialog
+- `domain/usecase/GetWorkoutSummaryUseCase.kt` - Weekly/4-week summary calculations
+
+### Updated
+- `UserProfile.kt` - Added meowResponses to PetMood enum
+- `HomeScreen.kt` - Tap pet opens chatbot dialog
+- `HomeViewModel.kt` - Injected GetWorkoutSummaryUseCase
+- `PersonalRecordDao.kt` - Added getPersonalRecordsForDateRangeSync() method
+
+---
+
 ## [1.14.0] - 2026-04-25
 
 ### Changed

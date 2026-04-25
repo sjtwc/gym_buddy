@@ -18,6 +18,9 @@ interface PersonalRecordDao {
     @Query("SELECT * FROM personal_records WHERE exerciseId = :exerciseId AND type = :type AND reps = :reps ORDER BY date DESC LIMIT 1")
     suspend fun getRecordForRepMax(exerciseId: Long, type: String, reps: Int): PersonalRecordEntity?
     
+    @Query("SELECT * FROM personal_records WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    suspend fun getPersonalRecordsForDateRangeSync(startDate: Long, endDate: Long): List<PersonalRecordEntity>
+    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecord(record: PersonalRecordEntity): Long
     

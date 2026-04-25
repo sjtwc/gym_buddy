@@ -41,6 +41,8 @@ import com.csci3310.gymbuddy.domain.model.UserTitle
 import com.csci3310.gymbuddy.ui.navigation.Screen
 import com.csci3310.gymbuddy.ui.theme.*
 import com.csci3310.gymbuddy.ui.components.common.StatCard
+import com.csci3310.gymbuddy.ui.components.dialogs.PetChatbotDialog
+import com.csci3310.gymbuddy.domain.usecase.GetWorkoutSummaryUseCase
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.util.Calendar
@@ -72,18 +74,17 @@ fun HomeScreen(
         }
     }
 
-    var petInteractionIndex by remember { mutableIntStateOf(0) }
-    var lastPetInteractionTime by remember { mutableLongStateOf(0L) }
+    var showPetChatbot by remember { mutableStateOf(false) }
 
-    val handlePetInteraction: () -> Unit = {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastPetInteractionTime > 1000) {
-            val mood = uiState.effectivePetMood
-            if (mood.extraMessages.isNotEmpty()) {
-                petInteractionIndex = (petInteractionIndex + 1) % (mood.extraMessages.size + 1)
-            }
-            lastPetInteractionTime = currentTime
-        }
+    if (showPetChatbot) {
+        PetChatbotDialog(
+            petName = uiState.userProfile?.pet?.name ?: "GymBot",
+            petMood = uiState.effectivePetMood,
+            petHappiness = uiState.effectivePetHappiness,
+            lastWorkoutDate = uiState.userProfile?.lastWorkoutDate,
+            onDismiss = { showPetChatbot = false },
+            getWorkoutSummaryUseCase = viewModel.getWorkoutSummaryUseCase
+        )
     }
 
     Column(
@@ -110,8 +111,7 @@ fun HomeScreen(
             petName = uiState.userProfile?.pet?.name ?: "GymBot",
             happiness = uiState.effectivePetHappiness,
             mood = uiState.effectivePetMood,
-            interactionIndex = petInteractionIndex,
-            onInteraction = handlePetInteraction
+            onInteraction = { showPetChatbot = true }
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -276,16 +276,9 @@ fun PetSection(
     petName: String,
     happiness: Int,
     mood: PetMood,
-    interactionIndex: Int = 0,
     onInteraction: () -> Unit = {}
 ) {
     val animatedScale = remember { androidx.compose.runtime.mutableFloatStateOf(1f) }
-
-    val displayedMessage = if (interactionIndex > 0 && mood.extraMessages.isNotEmpty()) {
-        mood.extraMessages.getOrNull((interactionIndex - 1) % mood.extraMessages.size) ?: mood.message
-    } else {
-        mood.message
-    }
 
     Card(
         modifier = Modifier
@@ -343,9 +336,9 @@ fun PetSection(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "\"$displayedMessage\"",
+                    text = "Tap to chat!",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (interactionIndex > 0) NeonTeal else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = NeonTeal
                 )
             }
 

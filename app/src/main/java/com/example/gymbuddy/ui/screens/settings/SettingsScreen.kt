@@ -186,14 +186,7 @@ SettingsItem(
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "App Version",
-                subtitle = "1.13.1",
-                onClick = { }
-            )
-            
-            SettingsItem(
-                icon = Icons.Default.Code,
-                title = "Open Source Licenses",
-                subtitle = "View third-party licenses",
+                subtitle = "1.15.0",
                 onClick = { }
             )
             
