@@ -339,8 +339,11 @@ class WorkoutSessionService : Service() {
     }
     
     fun finishWorkout() {
-        _workoutSession.value = _workoutSession.value?.copy(isCompleted = true)
+        timerJob?.cancel()
         restTimerJob?.cancel()
+        _workoutSession.value = null
+        _elapsedTime.value = 0
+        _restTime.value = 0
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
