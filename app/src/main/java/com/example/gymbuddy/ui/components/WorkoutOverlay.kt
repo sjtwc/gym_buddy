@@ -6,7 +6,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,6 +31,14 @@ import com.example.gymbuddy.domain.model.*
 import com.example.gymbuddy.service.WorkoutSessionManager
 import com.example.gymbuddy.ui.screens.exercise.ExercisePickerPage
 import com.example.gymbuddy.ui.theme.*
+import com.example.gymbuddy.ui.components.common.SwipeableRow
+import com.example.gymbuddy.ui.components.common.WeightInputField
+import com.example.gymbuddy.ui.components.common.RepsInputField
+import com.example.gymbuddy.ui.components.common.SetTypeColors
+import com.example.gymbuddy.ui.components.common.SetTypeButton as SetTypeButtonComposable
+import com.example.gymbuddy.ui.components.dialogs.EditNameDialog
+import com.example.gymbuddy.ui.components.dialogs.EditStartTimeDialog
+import com.example.gymbuddy.ui.components.dialogs.FeelingRatingDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -450,104 +457,6 @@ fun HeaderSection(
 }
 
 @Composable
-fun EditNameDialog(
-    currentName: String,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    var name by remember { mutableStateOf(currentName) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Edit Workout Name") },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Workout Name") }
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(name) }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun EditStartTimeDialog(
-    currentStartTime: Long,
-    onDismiss: () -> Unit,
-    onConfirm: (Long) -> Unit
-) {
-    var startTimeText by remember { mutableStateOf("") }
-    var startDateText by remember { mutableStateOf("") }
-    
-    LaunchedEffect(currentStartTime) {
-        val calendar = java.util.Calendar.getInstance().apply { timeInMillis = currentStartTime }
-        val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
-        val minute = calendar.get(java.util.Calendar.MINUTE)
-        val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
-        val month = calendar.get(java.util.Calendar.MONTH) + 1
-        val year = calendar.get(java.util.Calendar.YEAR)
-        startTimeText = String.format("%02d:%02d", hour, minute)
-        startDateText = String.format("%02d/%02d/%04d", day, month, year)
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Edit Start Time") },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                OutlinedTextField(
-                    value = startTimeText,
-                    onValueChange = { startTimeText = it },
-                    label = { Text("Time (HH:mm)") },
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = startDateText,
-                    onValueChange = { startDateText = it },
-                    label = { Text("Date (dd/MM/yyyy)") },
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val timeParts = startTimeText.split(":")
-                val dateParts = startDateText.split("/")
-                if (timeParts.size == 2 && dateParts.size == 3) {
-                    val calendar = java.util.Calendar.getInstance()
-                    calendar.set(java.util.Calendar.YEAR, dateParts[2].toIntOrNull() ?: calendar.get(java.util.Calendar.YEAR))
-                    calendar.set(java.util.Calendar.MONTH, (dateParts[1].toIntOrNull() ?: 1) - 1)
-                    calendar.set(java.util.Calendar.DAY_OF_MONTH, dateParts[0].toIntOrNull() ?: 1)
-                    calendar.set(java.util.Calendar.HOUR_OF_DAY, timeParts[0].toIntOrNull() ?: 0)
-                    calendar.set(java.util.Calendar.MINUTE, timeParts[1].toIntOrNull() ?: 0)
-                    calendar.set(java.util.Calendar.SECOND, 0)
-                    onConfirm(calendar.timeInMillis)
-                }
-            }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
 fun EmptyExerciseState() {
     Column(
         modifier = Modifier
@@ -673,8 +582,9 @@ fun ExerciseCard(
 
             exerciseSession.sets.forEachIndexed { setIndex, set ->
                 val previousSetCompleted = if (setIndex == 0) true else exerciseSession.sets[setIndex - 1].isCompleted
-                SwipeableSetRow(
-                    onDelete = { onDeleteSet(setIndex) }
+                SwipeableRow(
+                    onDelete = { onDeleteSet(setIndex) },
+                    height = 36
                 ) {
                     SetRow(
                         set = set,
@@ -703,8 +613,9 @@ fun ExerciseCard(
                     if (timerDuration > 0) {
                         when {
                             isThisSetActive && isTimerMinimized -> {
-                                SwipeableTimerRow(
-                                    onDelete = { onDeleteRestTimer(currentSet.setType) }
+                                SwipeableRow(
+                                    onDelete = { onDeleteRestTimer(currentSet.setType) },
+                                    height = 52
                                 ) {
                                     TimerRow(
                                         remainingSeconds = restTime,
@@ -716,8 +627,9 @@ fun ExerciseCard(
                             isResting && !isTimerMinimized -> {
                             }
                             else -> {
-                                SwipeableTimerRow(
-                                    onDelete = { onDeleteRestTimer(currentSet.setType) }
+                                SwipeableRow(
+                                    onDelete = { onDeleteRestTimer(currentSet.setType) },
+                                    height = 52
                                 ) {
                                     TimerPreviewRow(durationSeconds = timerDuration)
                                 }
@@ -754,116 +666,6 @@ fun SetHeader() {
         Text("Weight", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.weight(1f))
         Text("Reps", style = MaterialTheme.typography.labelSmall, color = TextSecondary, modifier = Modifier.width(60.dp))
         Spacer(modifier = Modifier.size(32.dp))
-    }
-}
-
-@Composable
-fun SwipeableSetRow(
-    onDelete: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    var isDeleting by remember { mutableStateOf(false) }
-    
-    val stage1Threshold = -50f
-    val stage2Threshold = -120f
-    
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onDragEnd = {
-                        if (offsetX < stage2Threshold) {
-                            isDeleting = true
-                            onDelete()
-                        }
-                        offsetX = 0f
-                    },
-                    onHorizontalDrag = { _, dragAmount ->
-                        offsetX = (offsetX + dragAmount).coerceIn(-200f, 0f)
-                    }
-                )
-            }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(36.dp)
-                .background(if (offsetX < stage1Threshold) ErrorRed else DarkSurfaceElevated)
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            if (offsetX < stage1Threshold) {
-                Text(
-                    text = "Delete",
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(offsetX.toInt(), 0) }
-                .background(DarkSurface)
-        ) {
-            content()
-        }
-    }
-}
-
-@Composable
-fun SwipeableTimerRow(
-    onDelete: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    
-    val stage1Threshold = -50f
-    val stage2Threshold = -120f
-    
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onDragEnd = {
-                        if (offsetX < stage2Threshold) {
-                            onDelete()
-                        }
-                        offsetX = 0f
-                    },
-                    onHorizontalDrag = { _, dragAmount ->
-                        offsetX = (offsetX + dragAmount).coerceIn(-200f, 0f)
-                    }
-                )
-            }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .background(if (offsetX < stage1Threshold) ErrorRed else DarkSurfaceElevated)
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            if (offsetX < stage1Threshold) {
-                Text(
-                    text = "Delete",
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(offsetX.toInt(), 0) }
-                .background(DarkSurface)
-        ) {
-            content()
-        }
     }
 }
 
@@ -909,68 +711,23 @@ fun SetRow(
                 modifier = Modifier.width(52.dp)
             )
 
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(44.dp)
-                    .background(DarkSurface, RoundedCornerShape(4.dp))
-                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BasicTextField(
-                    value = weightText,
-                    onValueChange = { newValue ->
-                        weightText = newValue
-                        newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
-                    },
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        color = TextPrimary
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (weightText.isEmpty()) {
-                    Text("kg", fontSize = 14.sp, color = TextSecondary, textAlign = TextAlign.Center)
-                }
-            }
+            WeightInputField(
+                value = weightText,
+                onValueChange = { newValue ->
+                    weightText = newValue
+                    newValue.toDoubleOrNull()?.let { w -> onUpdateSet(set.copy(weight = w)) }
+                },
+                modifier = Modifier.weight(1f)
+            )
 
-            Box(
-                modifier = Modifier
-                    .width(64.dp)
-                    .height(44.dp)
-                    .background(DarkSurface, RoundedCornerShape(4.dp))
-                    .border(1.dp, TextTertiary, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BasicTextField(
-                    value = repsText,
-                    onValueChange = { newValue ->
-                        repsText = newValue
-                        newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
-                    },
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        color = TextPrimary
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (repsText.isEmpty()) {
-                    Text(
-                        text = targetReps?.let { "$it reps" } ?: "reps",
-                        fontSize = 14.sp,
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+            RepsInputField(
+                value = repsText,
+                onValueChange = { newValue ->
+                    repsText = newValue
+                    newValue.toIntOrNull()?.let { r -> onUpdateSet(set.copy(reps = r)) }
+                },
+                targetReps = targetReps
+            )
 
             Checkbox(
                 checked = set.isCompleted,
@@ -999,74 +756,12 @@ fun SetTypeButton(
     onToggle: (SetType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showDropdown by remember { mutableStateOf(false) }
-    
-    val displayText = if (setType == SetType.NORMAL) setNumber.toString() else setType.abbreviation
-    val backgroundColor = when (setType) {
-        SetType.NORMAL -> DarkSurfaceElevated
-        SetType.WORK -> NeonTeal.copy(alpha = 0.2f)
-        SetType.WARMUP -> WarningOrange.copy(alpha = 0.2f)
-        SetType.DROP -> NeonCyan.copy(alpha = 0.2f)
-        SetType.FAILURE -> NeonPurple.copy(alpha = 0.2f)
-    }
-    val textColor = when (setType) {
-        SetType.NORMAL -> TextPrimary
-        SetType.WORK -> NeonTeal
-        SetType.WARMUP -> WarningOrange
-        SetType.DROP -> NeonCyan
-        SetType.FAILURE -> NeonPurple
-    }
-
-    Box(modifier = modifier) {
-        Surface(
-            onClick = { showDropdown = true },
-            shape = RoundedCornerShape(4.dp),
-            color = backgroundColor
-        ) {
-            Text(
-                text = displayText,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = textColor,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-            )
-        }
-        
-        DropdownMenu(
-            expanded = showDropdown,
-            onDismissRequest = { showDropdown = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Normal (${setNumber})") },
-                onClick = {
-                    onToggle(SetType.NORMAL)
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Warmup Set", color = WarningOrange) },
-                onClick = {
-                    onToggle(SetType.WARMUP)
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Drop Set", color = NeonCyan) },
-                onClick = {
-                    onToggle(SetType.DROP)
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Failure Set", color = NeonPurple) },
-                onClick = {
-                    onToggle(SetType.FAILURE)
-                    showDropdown = false
-                }
-            )
-        }
-    }
+    SetTypeButtonComposable(
+        setType = setType,
+        setNumber = setNumber,
+        onToggle = onToggle,
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1077,14 +772,8 @@ fun RestTimerConfigRow(
     onDelete: () -> Unit,
     isConfigured: Boolean = false
 ) {
-    val timerLabel = when (timer.type) {
-        SetType.WARMUP -> "Warmup Set Timer"
-        SetType.WORK -> "Work Set Timer"
-        SetType.DROP -> "Drop Set Timer"
-        SetType.NORMAL -> "Timer"
-        SetType.FAILURE -> "Failure Set Timer"
-    }
-    
+    val timerLabel = SetTypeColors.getTimerLabel(timer.type)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()

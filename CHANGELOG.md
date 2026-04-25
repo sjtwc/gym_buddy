@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.14.0] - 2026-04-25
+
+### Changed
+- **UI Code Refactoring** - Reduced code duplication and improved maintainability
+  - Extracted `SwipeableRow` component from WorkoutOverlay (108 lines → 10 lines)
+  - Extracted `WeightInputField` and `RepsInputField` reusable components
+  - Extracted `SetTypeColors` and `SetTypeButton` shared component (used in 2 files)
+  - Extracted dialogs: `EditNameDialog`, `EditStartTimeDialog`, `FeelingRatingDialog`
+- **Repository Layer** - Split consolidated repositories into separate files
+  - WorkoutRepository now only contains core workout logic
+  - Split SetRepository to its own file (was duplicated in WorkoutRepository)
+  - Split WorkoutExerciseRepository to its own file
+
+### New Files
+- `ui/components/common/SwipeableRow.kt` - Swipeable row composable
+- `ui/components/common/NumberInputField.kt` - Weight/reps input fields
+- `ui/components/common/SetTypeColors.kt` - Set type colors and SetTypeButton
+- `ui/components/dialogs/EditDialogs.kt` - Edit name/start time dialogs
+- `ui/components/dialogs/FeelingRatingDialog.kt` - Feeling rating dialog
+- `data/repository/SetRepository.kt` - Set operations (split from WorkoutRepository)
+- `data/repository/WorkoutExerciseRepository.kt` - Workout exercise operations (split)
+- `domain/usecase/GetCurrentDayOfWeekUseCase.kt` - Day of week utility use case
+- `domain/usecase/CalculateLevelUseCase.kt` - Level calculation use case
+
+### Updated
+- `WorkoutOverlay.kt` - 1400 → 1090 lines (-22% in this file)
+- `CreateRoutineScreen.kt` - 965 → 903 lines (-6% in this file)
+- `WorkoutRepository.kt` - 334 → ~170 lines (-50%, now only contains core workout logic)
+
+---
+
 ## [1.13.1] - 2026-04-24
 
 ### Fixed
@@ -456,6 +487,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.14.0]: https://github.com/example/gymbuddy/compare/v1.13.1...v1.14.0
 [1.13.1]: https://github.com/example/gymbuddy/compare/v1.13.0...v1.13.1
 [1.13.0]: https://github.com/example/gymbuddy/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/example/gymbuddy/compare/v1.11.1...v1.12.0

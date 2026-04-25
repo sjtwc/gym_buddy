@@ -39,6 +39,8 @@ import com.example.gymbuddy.domain.model.RoutineSetData
 import com.example.gymbuddy.domain.model.SetType
 import com.example.gymbuddy.ui.screens.exercise.ExercisePickerPage
 import com.example.gymbuddy.ui.theme.*
+import com.example.gymbuddy.ui.components.common.SetTypeColors
+import com.example.gymbuddy.ui.components.common.SetTypeButton as SetTypeButtonComposable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -587,74 +589,12 @@ fun SetTypeBadge(
     onToggle: (SetType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showDropdown by remember { mutableStateOf(false) }
-
-    val displayText = if (setType == SetType.NORMAL) setNumber.toString() else setType.abbreviation
-    val backgroundColor = when (setType) {
-        SetType.NORMAL -> DarkSurfaceElevated
-        SetType.WORK -> NeonTeal.copy(alpha = 0.2f)
-        SetType.WARMUP -> WarningOrange.copy(alpha = 0.2f)
-        SetType.DROP -> NeonCyan.copy(alpha = 0.2f)
-        SetType.FAILURE -> NeonPurple.copy(alpha = 0.2f)
-    }
-    val textColor = when (setType) {
-        SetType.NORMAL -> TextPrimary
-        SetType.WORK -> NeonTeal
-        SetType.WARMUP -> WarningOrange
-        SetType.DROP -> NeonCyan
-        SetType.FAILURE -> NeonPurple
-    }
-
-    Box(modifier = modifier) {
-        Surface(
-            onClick = { showDropdown = true },
-            shape = RoundedCornerShape(4.dp),
-            color = backgroundColor
-        ) {
-            Text(
-                text = displayText,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = textColor,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-            )
-        }
-
-        DropdownMenu(
-            expanded = showDropdown,
-            onDismissRequest = { showDropdown = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Normal (${setNumber})") },
-                onClick = {
-                    onToggle(SetType.NORMAL)
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Warmup Set", color = WarningOrange) },
-                onClick = {
-                    onToggle(SetType.WARMUP)
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Drop Set", color = NeonCyan) },
-                onClick = {
-                    onToggle(SetType.DROP)
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Failure Set", color = NeonPurple) },
-                onClick = {
-                    onToggle(SetType.FAILURE)
-                    showDropdown = false
-                }
-            )
-        }
-    }
+    com.example.gymbuddy.ui.components.common.SetTypeButton(
+        setType = setType,
+        setNumber = setNumber,
+        onToggle = onToggle,
+        modifier = modifier
+    )
 }
 
 @Composable
