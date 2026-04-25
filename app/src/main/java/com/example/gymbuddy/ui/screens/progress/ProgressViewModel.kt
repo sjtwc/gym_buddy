@@ -104,7 +104,7 @@ class ProgressViewModel @Inject constructor(
     }
     
     private fun loadPersonalRecords() {
-        personalRecordDao.getAllRecords(20)
+        personalRecordDao.getAllRecords(100)
             .onEach { records ->
                 val exerciseIds = records.map { it.exerciseId }.distinct()
                 exerciseCache.clear()
@@ -114,7 +114,13 @@ class ProgressViewModel @Inject constructor(
                     }
                 }
                 
-                val prList = records.map { record ->
+                val deduplicated = records
+                    .groupBy { "${it.exerciseId}_${it.reps}" }
+                    .mapNotNull { (_, group) -> group.maxByOrNull { it.weight } }
+                    .sortedByDescending { it.weight }
+                    .take(10)
+                
+                val prList = deduplicated.map { record ->
                     PersonalRecordItem(
                         exerciseId = record.exerciseId,
                         exerciseName = exerciseCache[record.exerciseId] ?: "Unknown",
