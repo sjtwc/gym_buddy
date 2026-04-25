@@ -412,14 +412,14 @@ private fun GraphTab(graphData: GraphData?) {
 
         item {
             Text(
-                text = "Max Reps",
+                text = "Total Sets",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = NeonPink
             )
             Spacer(modifier = Modifier.height(8.dp))
             SimpleLineChart(
-                data = graphData?.maxReps ?: emptyList(),
+                data = graphData?.totalSets ?: emptyList(),
                 lineColor = NeonPink
             )
         }
@@ -535,8 +535,8 @@ private fun RecordTab(
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    title = "Max Reps",
-                    value = "${summary.maxReps}",
+                    title = "Total Sets",
+                    value = "${summary.totalSets}",
                     modifier = Modifier.weight(1f)
                 )
             }

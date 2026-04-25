@@ -23,7 +23,7 @@ data class GraphData(
     val bestEstimated1RM: List<GraphPoint>,
     val bestMaxWeight: List<GraphPoint>,
     val totalVolume: List<GraphPoint>,
-    val maxReps: List<GraphPoint>
+    val totalSets: List<GraphPoint>
 )
 
 data class GraphPoint(
