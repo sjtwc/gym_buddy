@@ -40,6 +40,7 @@ import com.example.gymbuddy.domain.model.PetMood
 import com.example.gymbuddy.domain.model.UserTitle
 import com.example.gymbuddy.ui.navigation.Screen
 import com.example.gymbuddy.ui.theme.*
+import com.example.gymbuddy.ui.components.common.StatCard
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.util.Calendar
