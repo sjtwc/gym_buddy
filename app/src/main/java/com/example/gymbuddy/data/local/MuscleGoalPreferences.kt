@@ -1,4 +1,4 @@
-package com.example.gymbuddy.data.local
+package com.csci3310.gymbuddy.data.local
 
 import android.content.Context
 import android.content.SharedPreferences

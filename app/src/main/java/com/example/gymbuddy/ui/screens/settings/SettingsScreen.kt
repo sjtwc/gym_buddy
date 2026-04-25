@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.settings
+package com.csci3310.gymbuddy.ui.screens.settings
 
 import android.content.Intent
 import android.database.Cursor
@@ -20,9 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.data.local.NotificationPreferences
-import com.example.gymbuddy.provider.UserStatsContract
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.data.local.NotificationPreferences
+import com.csci3310.gymbuddy.provider.UserStatsContract
+import com.csci3310.gymbuddy.ui.theme.*
 
 @Composable
 fun SettingsScreen(

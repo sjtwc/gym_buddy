@@ -1,4 +1,4 @@
-package com.example.gymbuddy.provider
+package com.csci3310.gymbuddy.provider
 
 import android.content.ContentProvider
 import android.content.ContentUris
@@ -7,11 +7,11 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
-import com.example.gymbuddy.data.local.GymBuddyDatabase
-import com.example.gymbuddy.data.local.dao.ExerciseDao
-import com.example.gymbuddy.data.local.dao.PersonalRecordDao
-import com.example.gymbuddy.data.local.dao.SetDao
-import com.example.gymbuddy.data.local.dao.WorkoutDao
+import com.csci3310.gymbuddy.data.local.GymBuddyDatabase
+import com.csci3310.gymbuddy.data.local.dao.ExerciseDao
+import com.csci3310.gymbuddy.data.local.dao.PersonalRecordDao
+import com.csci3310.gymbuddy.data.local.dao.SetDao
+import com.csci3310.gymbuddy.data.local.dao.WorkoutDao
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors

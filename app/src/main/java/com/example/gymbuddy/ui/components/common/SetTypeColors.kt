@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components.common
+package com.csci3310.gymbuddy.ui.components.common
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -19,13 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.gymbuddy.domain.model.SetType
-import com.example.gymbuddy.ui.theme.DarkSurfaceElevated
-import com.example.gymbuddy.ui.theme.NeonCyan
-import com.example.gymbuddy.ui.theme.NeonPurple
-import com.example.gymbuddy.ui.theme.NeonTeal
-import com.example.gymbuddy.ui.theme.TextPrimary
-import com.example.gymbuddy.ui.theme.WarningOrange
+import com.csci3310.gymbuddy.domain.model.SetType
+import com.csci3310.gymbuddy.ui.theme.DarkSurfaceElevated
+import com.csci3310.gymbuddy.ui.theme.NeonCyan
+import com.csci3310.gymbuddy.ui.theme.NeonPurple
+import com.csci3310.gymbuddy.ui.theme.NeonTeal
+import com.csci3310.gymbuddy.ui.theme.TextPrimary
+import com.csci3310.gymbuddy.ui.theme.WarningOrange
 
 object SetTypeColors {
     fun getBackgroundColor(setType: SetType): Color {

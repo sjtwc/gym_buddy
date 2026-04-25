@@ -1,9 +1,9 @@
-package com.example.gymbuddy.ui.screens.exercise
+package com.csci3310.gymbuddy.ui.screens.exercise
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.repository.ExerciseRepository
-import com.example.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.data.repository.ExerciseRepository
+import com.csci3310.gymbuddy.domain.model.Exercise
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

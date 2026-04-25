@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components.common
+package com.csci3310.gymbuddy.ui.components.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -20,11 +20,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.example.gymbuddy.ui.theme.DarkSurface
-import com.example.gymbuddy.ui.theme.DarkSurfaceElevated
-import com.example.gymbuddy.ui.theme.ErrorRed
-import com.example.gymbuddy.ui.theme.TextPrimary
-import com.example.gymbuddy.ui.theme.TextSecondary
+import com.csci3310.gymbuddy.ui.theme.DarkSurface
+import com.csci3310.gymbuddy.ui.theme.DarkSurfaceElevated
+import com.csci3310.gymbuddy.ui.theme.ErrorRed
+import com.csci3310.gymbuddy.ui.theme.TextPrimary
+import com.csci3310.gymbuddy.ui.theme.TextSecondary
 
 @Composable
 fun SwipeableRow(

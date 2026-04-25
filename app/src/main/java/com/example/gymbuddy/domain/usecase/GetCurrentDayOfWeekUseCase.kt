@@ -1,4 +1,4 @@
-package com.example.gymbuddy.domain.usecase
+package com.csci3310.gymbuddy.domain.usecase
 
 import java.util.Calendar
 import javax.inject.Inject

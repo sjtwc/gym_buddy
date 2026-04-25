@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.theme
+package com.csci3310.gymbuddy.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme

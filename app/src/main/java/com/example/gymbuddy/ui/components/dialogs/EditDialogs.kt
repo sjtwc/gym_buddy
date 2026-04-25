@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components.dialogs
+package com.csci3310.gymbuddy.ui.components.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

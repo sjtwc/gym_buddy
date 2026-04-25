@@ -1,4 +1,4 @@
-package com.example.gymbuddy.widget
+package com.csci3310.gymbuddy.widget
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -69,7 +69,7 @@ object WidgetPreferences {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val prefs = getPrefs(context)
-                val database = com.example.gymbuddy.data.local.GymBuddyDatabase.getDatabase(context)
+                val database = com.csci3310.gymbuddy.data.local.GymBuddyDatabase.getDatabase(context)
                 
                 // Get user profile for streak
                 val profile = database.userProfileDao().getUserProfileSync()

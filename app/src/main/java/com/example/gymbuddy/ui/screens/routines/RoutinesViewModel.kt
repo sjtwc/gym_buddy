@@ -1,10 +1,10 @@
-package com.example.gymbuddy.ui.screens.routines
+package com.csci3310.gymbuddy.ui.screens.routines
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.repository.RoutineRepository
-import com.example.gymbuddy.domain.model.Routine
+import com.csci3310.gymbuddy.data.repository.RoutineRepository
+import com.csci3310.gymbuddy.domain.model.Routine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

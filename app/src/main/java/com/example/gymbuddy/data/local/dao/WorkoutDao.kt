@@ -1,7 +1,7 @@
-package com.example.gymbuddy.data.local.dao
+package com.csci3310.gymbuddy.data.local.dao
 
 import androidx.room.*
-import com.example.gymbuddy.data.local.entity.WorkoutEntity
+import com.csci3310.gymbuddy.data.local.entity.WorkoutEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

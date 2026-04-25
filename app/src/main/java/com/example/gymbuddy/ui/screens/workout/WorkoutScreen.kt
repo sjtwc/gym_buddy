@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.workout
+package com.csci3310.gymbuddy.ui.screens.workout
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -25,11 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.domain.model.ScheduledWorkout
-import com.example.gymbuddy.service.WorkoutSessionManager
-import com.example.gymbuddy.ui.navigation.Screen
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.domain.model.Routine
+import com.csci3310.gymbuddy.domain.model.ScheduledWorkout
+import com.csci3310.gymbuddy.service.WorkoutSessionManager
+import com.csci3310.gymbuddy.ui.navigation.Screen
+import com.csci3310.gymbuddy.ui.theme.*
 import java.util.Calendar
 
 @Composable

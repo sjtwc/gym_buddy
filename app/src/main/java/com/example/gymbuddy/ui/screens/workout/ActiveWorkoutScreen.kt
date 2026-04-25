@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.workout
+package com.csci3310.gymbuddy.ui.screens.workout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.theme.*
 
 @Composable
 fun ActiveWorkoutScreen(

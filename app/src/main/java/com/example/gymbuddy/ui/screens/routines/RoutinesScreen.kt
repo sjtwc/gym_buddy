@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.routines
+package com.csci3310.gymbuddy.ui.screens.routines
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,9 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.ui.navigation.Screen
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.domain.model.Routine
+import com.csci3310.gymbuddy.ui.navigation.Screen
+import com.csci3310.gymbuddy.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

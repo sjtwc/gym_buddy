@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components
+package com.csci3310.gymbuddy.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -27,18 +27,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gymbuddy.domain.model.*
-import com.example.gymbuddy.service.WorkoutSessionManager
-import com.example.gymbuddy.ui.screens.exercise.ExercisePickerPage
-import com.example.gymbuddy.ui.theme.*
-import com.example.gymbuddy.ui.components.common.SwipeableRow
-import com.example.gymbuddy.ui.components.common.WeightInputField
-import com.example.gymbuddy.ui.components.common.RepsInputField
-import com.example.gymbuddy.ui.components.common.SetTypeColors
-import com.example.gymbuddy.ui.components.common.SetTypeButton as SetTypeButtonComposable
-import com.example.gymbuddy.ui.components.dialogs.EditNameDialog
-import com.example.gymbuddy.ui.components.dialogs.EditStartTimeDialog
-import com.example.gymbuddy.ui.components.dialogs.FeelingRatingDialog
+import com.csci3310.gymbuddy.domain.model.*
+import com.csci3310.gymbuddy.service.WorkoutSessionManager
+import com.csci3310.gymbuddy.ui.screens.exercise.ExercisePickerPage
+import com.csci3310.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.components.common.SwipeableRow
+import com.csci3310.gymbuddy.ui.components.common.WeightInputField
+import com.csci3310.gymbuddy.ui.components.common.RepsInputField
+import com.csci3310.gymbuddy.ui.components.common.SetTypeColors
+import com.csci3310.gymbuddy.ui.components.common.SetTypeButton as SetTypeButtonComposable
+import com.csci3310.gymbuddy.ui.components.dialogs.EditNameDialog
+import com.csci3310.gymbuddy.ui.components.dialogs.EditStartTimeDialog
+import com.csci3310.gymbuddy.ui.components.dialogs.FeelingRatingDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

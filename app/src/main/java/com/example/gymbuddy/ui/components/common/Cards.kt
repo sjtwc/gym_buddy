@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components.common
+package com.csci3310.gymbuddy.ui.components.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,11 +28,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.ui.theme.DarkSurfaceElevated
-import com.example.gymbuddy.ui.theme.NeonCyan
-import com.example.gymbuddy.ui.theme.NeonTeal
-import com.example.gymbuddy.ui.theme.TextSecondary
+import com.csci3310.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.ui.theme.DarkSurfaceElevated
+import com.csci3310.gymbuddy.ui.theme.NeonCyan
+import com.csci3310.gymbuddy.ui.theme.NeonTeal
+import com.csci3310.gymbuddy.ui.theme.TextSecondary
 
 @Composable
 fun ExerciseCard(

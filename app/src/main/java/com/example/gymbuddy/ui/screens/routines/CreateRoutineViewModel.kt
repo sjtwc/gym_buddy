@@ -1,14 +1,14 @@
-package com.example.gymbuddy.ui.screens.routines
+package com.csci3310.gymbuddy.ui.screens.routines
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.repository.RoutineRepository
-import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.domain.model.RoutineExercise
-import com.example.gymbuddy.domain.model.RoutineExerciseTimer
-import com.example.gymbuddy.domain.model.RoutineSetData
-import com.example.gymbuddy.domain.model.SetType
+import com.csci3310.gymbuddy.data.repository.RoutineRepository
+import com.csci3310.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.domain.model.Routine
+import com.csci3310.gymbuddy.domain.model.RoutineExercise
+import com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer
+import com.csci3310.gymbuddy.domain.model.RoutineSetData
+import com.csci3310.gymbuddy.domain.model.SetType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

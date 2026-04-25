@@ -1,7 +1,7 @@
-package com.example.gymbuddy.ui.screens.exercise
+package com.csci3310.gymbuddy.ui.screens.exercise
 
-import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.domain.model.WorkoutSet
+import com.csci3310.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.domain.model.WorkoutSet
 
 data class ExerciseInsightState(
     val exercise: Exercise? = null,

@@ -1,15 +1,15 @@
-package com.example.gymbuddy.ui.screens.exercise
+package com.csci3310.gymbuddy.ui.screens.exercise
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.local.dao.PersonalRecordDao
-import com.example.gymbuddy.data.local.dao.SetDao
-import com.example.gymbuddy.data.local.dao.WorkoutDao
-import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
-import com.example.gymbuddy.data.local.entity.PersonalRecordEntity
-import com.example.gymbuddy.data.repository.ExerciseRepository
-import com.example.gymbuddy.data.repository.SetRepository
-import com.example.gymbuddy.domain.model.WorkoutSet
+import com.csci3310.gymbuddy.data.local.dao.PersonalRecordDao
+import com.csci3310.gymbuddy.data.local.dao.SetDao
+import com.csci3310.gymbuddy.data.local.dao.WorkoutDao
+import com.csci3310.gymbuddy.data.local.dao.WorkoutExerciseDao
+import com.csci3310.gymbuddy.data.local.entity.PersonalRecordEntity
+import com.csci3310.gymbuddy.data.repository.ExerciseRepository
+import com.csci3310.gymbuddy.data.repository.SetRepository
+import com.csci3310.gymbuddy.domain.model.WorkoutSet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

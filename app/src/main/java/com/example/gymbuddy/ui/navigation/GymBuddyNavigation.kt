@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.navigation
+package com.csci3310.gymbuddy.ui.navigation
 
 import android.app.Application
 import androidx.compose.foundation.layout.Box
@@ -22,18 +22,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.gymbuddy.service.WorkoutSessionManager
-import com.example.gymbuddy.ui.components.WorkoutOverlay
-import com.example.gymbuddy.ui.screens.home.HomeScreen
-import com.example.gymbuddy.ui.screens.workout.WorkoutScreen
-import com.example.gymbuddy.ui.screens.exercise.ExerciseScreen
-import com.example.gymbuddy.ui.screens.progress.ProgressScreen
-import com.example.gymbuddy.ui.screens.profile.ProfileScreen
-import com.example.gymbuddy.ui.screens.profile.ProfileEditScreen
-import com.example.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
-import com.example.gymbuddy.ui.screens.achievement.AchievementScreen
-import com.example.gymbuddy.ui.screens.routines.CreateRoutineScreen
-import com.example.gymbuddy.ui.screens.settings.SettingsScreen
+import com.csci3310.gymbuddy.service.WorkoutSessionManager
+import com.csci3310.gymbuddy.ui.components.WorkoutOverlay
+import com.csci3310.gymbuddy.ui.screens.home.HomeScreen
+import com.csci3310.gymbuddy.ui.screens.workout.WorkoutScreen
+import com.csci3310.gymbuddy.ui.screens.exercise.ExerciseScreen
+import com.csci3310.gymbuddy.ui.screens.progress.ProgressScreen
+import com.csci3310.gymbuddy.ui.screens.profile.ProfileScreen
+import com.csci3310.gymbuddy.ui.screens.profile.ProfileEditScreen
+import com.csci3310.gymbuddy.ui.screens.exercise.ExerciseDetailScreen
+import com.csci3310.gymbuddy.ui.screens.achievement.AchievementScreen
+import com.csci3310.gymbuddy.ui.screens.routines.CreateRoutineScreen
+import com.csci3310.gymbuddy.ui.screens.settings.SettingsScreen
 
 @Composable
 fun GymBuddyNavigation(

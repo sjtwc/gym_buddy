@@ -1,11 +1,11 @@
-package com.example.gymbuddy.ui.screens.profile
+package com.csci3310.gymbuddy.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.repository.UserProfileRepository
-import com.example.gymbuddy.domain.model.PetMood
-import com.example.gymbuddy.domain.model.UserProfile
-import com.example.gymbuddy.domain.model.VirtualPet
+import com.csci3310.gymbuddy.data.repository.UserProfileRepository
+import com.csci3310.gymbuddy.domain.model.PetMood
+import com.csci3310.gymbuddy.domain.model.UserProfile
+import com.csci3310.gymbuddy.domain.model.VirtualPet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject

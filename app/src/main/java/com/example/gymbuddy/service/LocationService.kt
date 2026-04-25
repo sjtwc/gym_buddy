@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.Manifest
 import android.content.Context

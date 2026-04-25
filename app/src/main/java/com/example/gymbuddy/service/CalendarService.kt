@@ -1,8 +1,8 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.content.Context
-import com.example.gymbuddy.data.local.CalendarPreferences
-import com.example.gymbuddy.domain.model.FreeTimeSlot
+import com.csci3310.gymbuddy.data.local.CalendarPreferences
+import com.csci3310.gymbuddy.domain.model.FreeTimeSlot
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

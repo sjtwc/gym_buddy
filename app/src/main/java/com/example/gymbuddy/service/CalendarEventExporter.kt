@@ -1,7 +1,7 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.content.Context
-import com.example.gymbuddy.data.repository.ScheduledWorkoutRepository
+import com.csci3310.gymbuddy.data.repository.ScheduledWorkoutRepository
 import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -52,7 +52,7 @@ class CalendarEventExporter(
         }
     }
 
-    private fun buildExercisesDescription(exercises: List<com.example.gymbuddy.domain.model.RoutineExercise>): String {
+    private fun buildExercisesDescription(exercises: List<com.csci3310.gymbuddy.domain.model.RoutineExercise>): String {
         return exercises.mapIndexed { index, exercise ->
             val sets = if (exercise.sets.isNotEmpty()) {
                 "${exercise.sets.size}x${exercise.targetReps}"

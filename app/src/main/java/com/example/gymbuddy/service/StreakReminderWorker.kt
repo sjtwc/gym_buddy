@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,9 +10,9 @@ import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.gymbuddy.R
-import com.example.gymbuddy.data.repository.UserProfileRepository
-import com.example.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.R
+import com.csci3310.gymbuddy.data.repository.UserProfileRepository
+import com.csci3310.gymbuddy.MainActivity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 

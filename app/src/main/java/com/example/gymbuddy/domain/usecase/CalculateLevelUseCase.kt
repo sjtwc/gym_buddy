@@ -1,4 +1,4 @@
-package com.example.gymbuddy.domain.usecase
+package com.csci3310.gymbuddy.domain.usecase
 
 import javax.inject.Inject
 import kotlin.math.pow

@@ -1,10 +1,10 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import com.example.gymbuddy.data.local.GymBuddyDatabase
+import com.csci3310.gymbuddy.data.local.GymBuddyDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject

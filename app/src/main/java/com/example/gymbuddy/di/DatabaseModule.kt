@@ -1,14 +1,14 @@
-package com.example.gymbuddy.di
+package com.csci3310.gymbuddy.di
 
 import android.content.Context
-import com.example.gymbuddy.data.local.CalendarPreferences
-import com.example.gymbuddy.data.local.GymBuddyDatabase
-import com.example.gymbuddy.data.local.MuscleGoalPreferences
-import com.example.gymbuddy.data.local.dao.*
-import com.example.gymbuddy.data.repository.RoutineRepository
-import com.example.gymbuddy.data.repository.ScheduledWorkoutRepository
-import com.example.gymbuddy.service.CalendarEventExporter
-import com.example.gymbuddy.service.CalendarService
+import com.csci3310.gymbuddy.data.local.CalendarPreferences
+import com.csci3310.gymbuddy.data.local.GymBuddyDatabase
+import com.csci3310.gymbuddy.data.local.MuscleGoalPreferences
+import com.csci3310.gymbuddy.data.local.dao.*
+import com.csci3310.gymbuddy.data.repository.RoutineRepository
+import com.csci3310.gymbuddy.data.repository.ScheduledWorkoutRepository
+import com.csci3310.gymbuddy.service.CalendarEventExporter
+import com.csci3310.gymbuddy.service.CalendarService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

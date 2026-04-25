@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components.dialogs
+package com.csci3310.gymbuddy.ui.components.dialogs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,11 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.gymbuddy.ui.theme.DarkSurfaceElevated
-import com.example.gymbuddy.ui.theme.NeonTeal
-import com.example.gymbuddy.ui.theme.TextPrimary
-import com.example.gymbuddy.ui.theme.TextSecondary
-import com.example.gymbuddy.ui.theme.TextTertiary
+import com.csci3310.gymbuddy.ui.theme.DarkSurfaceElevated
+import com.csci3310.gymbuddy.ui.theme.NeonTeal
+import com.csci3310.gymbuddy.ui.theme.TextPrimary
+import com.csci3310.gymbuddy.ui.theme.TextSecondary
+import com.csci3310.gymbuddy.ui.theme.TextTertiary
 
 private val RoundedCornerShape8 = RoundedCornerShape(8.dp)
 

@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import io.ktor.client.*
 import io.ktor.client.call.*

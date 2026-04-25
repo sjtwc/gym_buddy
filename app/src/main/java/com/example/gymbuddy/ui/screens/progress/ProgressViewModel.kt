@@ -1,14 +1,14 @@
-package com.example.gymbuddy.ui.screens.progress
+package com.csci3310.gymbuddy.ui.screens.progress
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.local.MuscleGoalPreferences
-import com.example.gymbuddy.data.local.dao.PersonalRecordDao
-import com.example.gymbuddy.data.repository.DailyVolume
-import com.example.gymbuddy.data.repository.ExerciseRepository
-import com.example.gymbuddy.data.repository.WorkoutRepository
-import com.example.gymbuddy.data.repository.WorkoutWithDetails
-import com.example.gymbuddy.domain.model.Workout
+import com.csci3310.gymbuddy.data.local.MuscleGoalPreferences
+import com.csci3310.gymbuddy.data.local.dao.PersonalRecordDao
+import com.csci3310.gymbuddy.data.repository.DailyVolume
+import com.csci3310.gymbuddy.data.repository.ExerciseRepository
+import com.csci3310.gymbuddy.data.repository.WorkoutRepository
+import com.csci3310.gymbuddy.data.repository.WorkoutWithDetails
+import com.csci3310.gymbuddy.domain.model.Workout
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*

@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.routines
+package com.csci3310.gymbuddy.ui.screens.routines
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,13 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.domain.model.RoutineSetData
-import com.example.gymbuddy.domain.model.SetType
-import com.example.gymbuddy.ui.screens.exercise.ExercisePickerPage
-import com.example.gymbuddy.ui.theme.*
-import com.example.gymbuddy.ui.components.common.SetTypeColors
-import com.example.gymbuddy.ui.components.common.SetTypeButton as SetTypeButtonComposable
+import com.csci3310.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.domain.model.RoutineSetData
+import com.csci3310.gymbuddy.domain.model.SetType
+import com.csci3310.gymbuddy.ui.screens.exercise.ExercisePickerPage
+import com.csci3310.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.components.common.SetTypeColors
+import com.csci3310.gymbuddy.ui.components.common.SetTypeButton as SetTypeButtonComposable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -302,10 +302,10 @@ fun RoutineExerciseCard(
     exerciseName: String,
     sets: List<RoutineSetData>,
     bodyFocus: String,
-    timers: List<com.example.gymbuddy.domain.model.RoutineExerciseTimer>,
+    timers: List<com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer>,
     onUpdateSets: (List<RoutineSetData>) -> Unit,
     onUpdateBodyFocus: (String) -> Unit,
-    onUpdateTimers: (List<com.example.gymbuddy.domain.model.RoutineExerciseTimer>) -> Unit,
+    onUpdateTimers: (List<com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer>) -> Unit,
     onRemove: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -589,7 +589,7 @@ fun SetTypeBadge(
     onToggle: (SetType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    com.example.gymbuddy.ui.components.common.SetTypeButton(
+    com.csci3310.gymbuddy.ui.components.common.SetTypeButton(
         setType = setType,
         setNumber = setNumber,
         onToggle = onToggle,
@@ -716,9 +716,9 @@ confirmButton = {
 
 @Composable
 fun ConfigureTimerDialog(
-    currentTimers: List<com.example.gymbuddy.domain.model.RoutineExerciseTimer>,
+    currentTimers: List<com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer>,
     onDismiss: () -> Unit,
-    onConfirm: (List<com.example.gymbuddy.domain.model.RoutineExerciseTimer>) -> Unit
+    onConfirm: (List<com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer>) -> Unit
 ) {
     var normalTime by remember { mutableStateOf("01:30") }
     var warmupTime by remember { mutableStateOf("01:00") }
@@ -770,11 +770,11 @@ fun ConfigureTimerDialog(
             Button(
                 onClick = {
                     val timers = listOf(
-                        com.example.gymbuddy.domain.model.RoutineExerciseTimer(SetType.NORMAL, parseTimeInput(normalTime)),
-                        com.example.gymbuddy.domain.model.RoutineExerciseTimer(SetType.WARMUP, parseTimeInput(warmupTime)),
-                        com.example.gymbuddy.domain.model.RoutineExerciseTimer(SetType.WORK, parseTimeInput(workTime)),
-                        com.example.gymbuddy.domain.model.RoutineExerciseTimer(SetType.DROP, parseTimeInput(dropTime)),
-                        com.example.gymbuddy.domain.model.RoutineExerciseTimer(SetType.FAILURE, parseTimeInput(failureTime))
+                        com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer(SetType.NORMAL, parseTimeInput(normalTime)),
+                        com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer(SetType.WARMUP, parseTimeInput(warmupTime)),
+                        com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer(SetType.WORK, parseTimeInput(workTime)),
+                        com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer(SetType.DROP, parseTimeInput(dropTime)),
+                        com.csci3310.gymbuddy.domain.model.RoutineExerciseTimer(SetType.FAILURE, parseTimeInput(failureTime))
                     )
                     onConfirm(timers)
                     onDismiss()

@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,8 +10,8 @@ import android.media.RingtoneManager
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.example.gymbuddy.MainActivity
-import com.example.gymbuddy.domain.model.*
+import com.csci3310.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.domain.model.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,10 +53,10 @@ class WorkoutSessionService : Service() {
         const val NOTIFICATION_ID = 1002
         const val TIMER_END_CHANNEL_ID = "rest_timer_end_channel"
         const val TIMER_END_NOTIFICATION_ID = 1003
-        const val ACTION_START = "com.example.gymbuddy.START_SESSION"
-        const val ACTION_STOP = "com.example.gymbuddy.STOP_SESSION"
-        const val ACTION_COMPLETE_SET = "com.example.gymbuddy.COMPLETE_SET"
-        const val ACTION_START_REST = "com.example.gymbuddy.START_REST"
+        const val ACTION_START = "com.csci3310.gymbuddy.START_SESSION"
+        const val ACTION_STOP = "com.csci3310.gymbuddy.STOP_SESSION"
+        const val ACTION_COMPLETE_SET = "com.csci3310.gymbuddy.COMPLETE_SET"
+        const val ACTION_START_REST = "com.csci3310.gymbuddy.START_REST"
         
         const val EXTRA_WORKOUT_ID = "extra_workout_id"
         const val EXTRA_WORKOUT_NAME = "extra_workout_name"

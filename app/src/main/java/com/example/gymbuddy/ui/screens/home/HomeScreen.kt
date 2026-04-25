@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.home
+package com.csci3310.gymbuddy.ui.screens.home
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -34,13 +34,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.domain.model.GymChain
-import com.example.gymbuddy.domain.model.GymLocation
-import com.example.gymbuddy.domain.model.PetMood
-import com.example.gymbuddy.domain.model.UserTitle
-import com.example.gymbuddy.ui.navigation.Screen
-import com.example.gymbuddy.ui.theme.*
-import com.example.gymbuddy.ui.components.common.StatCard
+import com.csci3310.gymbuddy.domain.model.GymChain
+import com.csci3310.gymbuddy.domain.model.GymLocation
+import com.csci3310.gymbuddy.domain.model.PetMood
+import com.csci3310.gymbuddy.domain.model.UserTitle
+import com.csci3310.gymbuddy.ui.navigation.Screen
+import com.csci3310.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.components.common.StatCard
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.util.Calendar

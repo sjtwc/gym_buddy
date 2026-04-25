@@ -118,9 +118,9 @@
         <!-- User Stats Content Provider -->
         <provider
             android:name=".provider.UserStatsContentProvider"
-            android:authorities="com.example.gymbuddy.provider"
+            android:authorities="com.csci3310.gymbuddy.provider"
             android:exported="true"
-            android:readPermission="com.example.gymbuddy.permission.READ_STATS" />
+            android:readPermission="com.csci3310.gymbuddy.permission.READ_STATS" />
     </application>
 
 </manifest>

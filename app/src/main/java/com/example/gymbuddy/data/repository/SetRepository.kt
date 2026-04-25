@@ -1,8 +1,8 @@
-package com.example.gymbuddy.data.repository
+package com.csci3310.gymbuddy.data.repository
 
-import com.example.gymbuddy.data.local.dao.SetDao
-import com.example.gymbuddy.data.local.entity.SetEntity
-import com.example.gymbuddy.domain.model.WorkoutSet
+import com.csci3310.gymbuddy.data.local.dao.SetDao
+import com.csci3310.gymbuddy.data.local.entity.SetEntity
+import com.csci3310.gymbuddy.domain.model.WorkoutSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

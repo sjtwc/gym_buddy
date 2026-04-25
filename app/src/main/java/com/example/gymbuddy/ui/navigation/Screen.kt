@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.navigation
+package com.csci3310.gymbuddy.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*

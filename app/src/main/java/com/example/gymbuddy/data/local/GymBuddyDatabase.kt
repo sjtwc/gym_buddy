@@ -1,4 +1,4 @@
-package com.example.gymbuddy.data.local
+package com.csci3310.gymbuddy.data.local
 
 import android.content.Context
 import androidx.room.Database
@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.gymbuddy.data.local.dao.*
-import com.example.gymbuddy.data.local.entity.*
+import com.csci3310.gymbuddy.data.local.dao.*
+import com.csci3310.gymbuddy.data.local.entity.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

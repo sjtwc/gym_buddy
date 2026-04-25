@@ -1,12 +1,12 @@
-package com.example.gymbuddy.ui.screens.achievement
+package com.csci3310.gymbuddy.ui.screens.achievement
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.local.dao.AchievementDao
-import com.example.gymbuddy.data.local.dao.WorkoutDao
-import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
-import com.example.gymbuddy.data.local.dao.UserProfileDao
-import com.example.gymbuddy.domain.model.AchievementType
+import com.csci3310.gymbuddy.data.local.dao.AchievementDao
+import com.csci3310.gymbuddy.data.local.dao.WorkoutDao
+import com.csci3310.gymbuddy.data.local.dao.WorkoutExerciseDao
+import com.csci3310.gymbuddy.data.local.dao.UserProfileDao
+import com.csci3310.gymbuddy.domain.model.AchievementType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

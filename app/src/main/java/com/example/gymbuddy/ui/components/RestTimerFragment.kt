@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components
+package com.csci3310.gymbuddy.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -20,8 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gymbuddy.domain.model.formatTime
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.domain.model.formatTime
+import com.csci3310.gymbuddy.ui.theme.*
 
 @Composable
 fun RestTimerFragment(

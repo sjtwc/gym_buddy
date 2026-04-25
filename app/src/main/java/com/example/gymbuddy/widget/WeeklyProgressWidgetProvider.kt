@@ -1,4 +1,4 @@
-package com.example.gymbuddy.widget
+package com.csci3310.gymbuddy.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -6,8 +6,8 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import com.example.gymbuddy.R
-import com.example.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.R
+import com.csci3310.gymbuddy.MainActivity
 
 class WeeklyProgressWidgetProvider : AppWidgetProvider() {
 

@@ -1,4 +1,4 @@
-package com.example.gymbuddy.widget
+package com.csci3310.gymbuddy.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import android.app.Activity
-import com.example.gymbuddy.R
-import com.example.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.R
+import com.csci3310.gymbuddy.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,7 +17,7 @@ import java.util.Calendar
 class WorkoutWidgetProvider : AppWidgetProvider() {
     
     companion object {
-        const val ACTION_QUICK_START = "com.example.gymbuddy.ACTION_QUICK_START"
+        const val ACTION_QUICK_START = "com.csci3310.gymbuddy.ACTION_QUICK_START"
         
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val views = RemoteViews(context.packageName, R.layout.workout_widget)

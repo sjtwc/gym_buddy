@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components
+package com.csci3310.gymbuddy.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.theme.*
 
 @Composable
 fun RestTimerPopup(

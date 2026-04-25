@@ -1,13 +1,13 @@
-package com.example.gymbuddy.widget
+package com.csci3310.gymbuddy.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.database.Cursor
 import androidx.work.WorkManager
-import com.example.gymbuddy.data.local.GymBuddyDatabase
-import com.example.gymbuddy.data.local.entity.WorkoutEntity
-import com.example.gymbuddy.provider.UserStatsContract
+import com.csci3310.gymbuddy.data.local.GymBuddyDatabase
+import com.csci3310.gymbuddy.data.local.entity.WorkoutEntity
+import com.csci3310.gymbuddy.provider.UserStatsContract
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

@@ -1,14 +1,14 @@
-package com.example.gymbuddy.ui.screens.workout
+package com.csci3310.gymbuddy.ui.screens.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymbuddy.data.repository.RoutineRepository
-import com.example.gymbuddy.data.repository.ScheduledWorkoutRepository
-import com.example.gymbuddy.data.repository.WorkoutRepository
-import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.domain.model.ScheduledWorkout
-import com.example.gymbuddy.domain.model.Workout
-import com.example.gymbuddy.service.WorkoutSessionManager
+import com.csci3310.gymbuddy.data.repository.RoutineRepository
+import com.csci3310.gymbuddy.data.repository.ScheduledWorkoutRepository
+import com.csci3310.gymbuddy.data.repository.WorkoutRepository
+import com.csci3310.gymbuddy.domain.model.Routine
+import com.csci3310.gymbuddy.domain.model.ScheduledWorkout
+import com.csci3310.gymbuddy.domain.model.Workout
+import com.csci3310.gymbuddy.service.WorkoutSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

@@ -1,9 +1,9 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
-import com.example.gymbuddy.data.local.CalendarPreferences
+import com.csci3310.gymbuddy.data.local.CalendarPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient

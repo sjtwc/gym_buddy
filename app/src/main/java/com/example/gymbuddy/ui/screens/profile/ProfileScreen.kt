@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.profile
+package com.csci3310.gymbuddy.ui.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.domain.model.PetMood
-import com.example.gymbuddy.ui.navigation.Screen
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.domain.model.PetMood
+import com.csci3310.gymbuddy.ui.navigation.Screen
+import com.csci3310.gymbuddy.ui.theme.*
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 

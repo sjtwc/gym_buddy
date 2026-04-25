@@ -1,10 +1,10 @@
-package com.example.gymbuddy.data.repository
+package com.csci3310.gymbuddy.data.repository
 
-import com.example.gymbuddy.data.local.MuscleGoalPreferences
-import com.example.gymbuddy.data.local.dao.ScheduledWorkoutDao
-import com.example.gymbuddy.data.local.entity.ScheduledWorkoutEntity
-import com.example.gymbuddy.domain.model.Routine
-import com.example.gymbuddy.domain.model.ScheduledWorkout
+import com.csci3310.gymbuddy.data.local.MuscleGoalPreferences
+import com.csci3310.gymbuddy.data.local.dao.ScheduledWorkoutDao
+import com.csci3310.gymbuddy.data.local.entity.ScheduledWorkoutEntity
+import com.csci3310.gymbuddy.domain.model.Routine
+import com.csci3310.gymbuddy.domain.model.ScheduledWorkout
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

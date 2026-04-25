@@ -1,4 +1,4 @@
-package com.example.gymbuddy
+package com.csci3310.gymbuddy
 
 import android.Manifest
 import android.content.Intent
@@ -16,16 +16,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.example.gymbuddy.auth.AuthManager
-import com.example.gymbuddy.BuildConfig
-import com.example.gymbuddy.data.repository.WorkoutRepository
-import com.example.gymbuddy.domain.model.Workout
-import com.example.gymbuddy.service.StreakAlarmReceiver
-import com.example.gymbuddy.service.WorkoutSessionManager
-import com.example.gymbuddy.ui.navigation.GymBuddyNavigation
-import com.example.gymbuddy.ui.navigation.Screen
-import com.example.gymbuddy.ui.theme.DarkBackground
-import com.example.gymbuddy.ui.theme.GymBuddyTheme
+import com.csci3310.gymbuddy.auth.AuthManager
+import com.csci3310.gymbuddy.BuildConfig
+import com.csci3310.gymbuddy.data.repository.WorkoutRepository
+import com.csci3310.gymbuddy.domain.model.Workout
+import com.csci3310.gymbuddy.service.StreakAlarmReceiver
+import com.csci3310.gymbuddy.service.WorkoutSessionManager
+import com.csci3310.gymbuddy.ui.navigation.GymBuddyNavigation
+import com.csci3310.gymbuddy.ui.navigation.Screen
+import com.csci3310.gymbuddy.ui.theme.DarkBackground
+import com.csci3310.gymbuddy.ui.theme.GymBuddyTheme
 import androidx.compose.runtime.LaunchedEffect
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

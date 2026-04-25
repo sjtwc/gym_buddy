@@ -12,11 +12,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.gymbuddy"
+    namespace = "com.csci3310.gymbuddy"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.gymbuddy"
+        applicationId = "com.csci3310.gymbuddy"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

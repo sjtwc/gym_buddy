@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -9,7 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.example.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.MainActivity
 
 class StreakAlarmReceiver : BroadcastReceiver() {
 

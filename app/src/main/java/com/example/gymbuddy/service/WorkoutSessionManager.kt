@@ -1,14 +1,14 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import com.example.gymbuddy.data.repository.WorkoutRepository
-import com.example.gymbuddy.data.repository.UserProfileRepository
-import com.example.gymbuddy.data.repository.AchievementRepository
-import com.example.gymbuddy.domain.model.*
+import com.csci3310.gymbuddy.data.repository.WorkoutRepository
+import com.csci3310.gymbuddy.data.repository.UserProfileRepository
+import com.csci3310.gymbuddy.data.repository.AchievementRepository
+import com.csci3310.gymbuddy.domain.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -324,7 +324,7 @@ class WorkoutSessionManager @Inject constructor(
         service?.enableRestTimer(exerciseIndex)
     }
     
-    fun saveRestTimers(exerciseIndex: Int, timers: List<com.example.gymbuddy.domain.model.RestTimer>) {
+    fun saveRestTimers(exerciseIndex: Int, timers: List<com.csci3310.gymbuddy.domain.model.RestTimer>) {
         service?.saveRestTimers(exerciseIndex, timers)
     }
     
@@ -359,7 +359,7 @@ class WorkoutSessionManager @Inject constructor(
                 }
             }
             
-            com.example.gymbuddy.widget.WidgetPreferences.updateFromProvider(context)
+            com.csci3310.gymbuddy.widget.WidgetPreferences.updateFromProvider(context)
         }
         
         resetState()

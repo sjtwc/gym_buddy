@@ -1,4 +1,4 @@
-package com.example.gymbuddy.domain.model
+package com.csci3310.gymbuddy.domain.model
 
 enum class AchievementType(
     val title: String,

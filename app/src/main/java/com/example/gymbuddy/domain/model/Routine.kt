@@ -1,6 +1,6 @@
-package com.example.gymbuddy.domain.model
+package com.csci3310.gymbuddy.domain.model
 
-import com.example.gymbuddy.domain.model.SetType
+import com.csci3310.gymbuddy.domain.model.SetType
 
 data class Routine(
     val id: Long = 0,

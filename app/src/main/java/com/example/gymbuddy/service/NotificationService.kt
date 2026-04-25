@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,9 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.example.gymbuddy.R
-import com.example.gymbuddy.domain.model.AchievementType
-import com.example.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.R
+import com.csci3310.gymbuddy.domain.model.AchievementType
+import com.csci3310.gymbuddy.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -1,9 +1,9 @@
-package com.example.gymbuddy.provider
+package com.csci3310.gymbuddy.provider
 
 import android.net.Uri
 
 object UserStatsContract {
-    const val AUTHORITY = "com.example.gymbuddy.provider"
+    const val AUTHORITY = "com.csci3310.gymbuddy.provider"
     val BASE_URI: Uri = Uri.parse("content://$AUTHORITY")
 
     object PersonalRecords {

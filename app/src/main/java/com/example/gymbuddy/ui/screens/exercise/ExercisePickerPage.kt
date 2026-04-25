@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.exercise
+package com.csci3310.gymbuddy.ui.screens.exercise
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.domain.model.MuscleGroup
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.domain.model.MuscleGroup
+import com.csci3310.gymbuddy.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components
+package com.csci3310.gymbuddy.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,9 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.gymbuddy.domain.model.RestTimer
-import com.example.gymbuddy.domain.model.SetType
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.domain.model.RestTimer
+import com.csci3310.gymbuddy.domain.model.SetType
+import com.csci3310.gymbuddy.ui.theme.*
 
 @Composable
 fun ConfigureRestTimerDialog(

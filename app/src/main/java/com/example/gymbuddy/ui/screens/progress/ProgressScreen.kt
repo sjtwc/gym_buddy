@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.progress
+package com.csci3310.gymbuddy.ui.screens.progress
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -34,12 +34,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.gymbuddy.data.repository.DailyVolume
-import com.example.gymbuddy.data.repository.WorkoutWithDetails
-import com.example.gymbuddy.domain.model.Workout
-import com.example.gymbuddy.domain.model.WorkoutExercise
-import com.example.gymbuddy.ui.navigation.Screen
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.data.repository.DailyVolume
+import com.csci3310.gymbuddy.data.repository.WorkoutWithDetails
+import com.csci3310.gymbuddy.domain.model.Workout
+import com.csci3310.gymbuddy.domain.model.WorkoutExercise
+import com.csci3310.gymbuddy.ui.navigation.Screen
+import com.csci3310.gymbuddy.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt

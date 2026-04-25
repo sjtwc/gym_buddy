@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.exercise
+package com.csci3310.gymbuddy.ui.screens.exercise
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,10 +18,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.gymbuddy.domain.model.Exercise
-import com.example.gymbuddy.domain.model.WorkoutSet
-import com.example.gymbuddy.ui.theme.*
-import com.example.gymbuddy.ui.components.common.StatCard
+import com.csci3310.gymbuddy.domain.model.Exercise
+import com.csci3310.gymbuddy.domain.model.WorkoutSet
+import com.csci3310.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.components.common.StatCard
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart

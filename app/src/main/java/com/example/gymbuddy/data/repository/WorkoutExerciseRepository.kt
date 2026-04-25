@@ -1,7 +1,7 @@
-package com.example.gymbuddy.data.repository
+package com.csci3310.gymbuddy.data.repository
 
-import com.example.gymbuddy.data.local.dao.WorkoutExerciseDao
-import com.example.gymbuddy.data.local.entity.WorkoutExerciseEntity
+import com.csci3310.gymbuddy.data.local.dao.WorkoutExerciseDao
+import com.csci3310.gymbuddy.data.local.entity.WorkoutExerciseEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

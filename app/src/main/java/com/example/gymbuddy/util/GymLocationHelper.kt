@@ -1,10 +1,10 @@
-package com.example.gymbuddy.util
+package com.csci3310.gymbuddy.util
 
 import android.location.Location
-import com.example.gymbuddy.domain.model.GymChain
-import com.example.gymbuddy.domain.model.GymLocation
-import com.example.gymbuddy.service.GeocodingService
-import com.example.gymbuddy.service.LatLng
+import com.csci3310.gymbuddy.domain.model.GymChain
+import com.csci3310.gymbuddy.domain.model.GymLocation
+import com.csci3310.gymbuddy.service.GeocodingService
+import com.csci3310.gymbuddy.service.LatLng
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 

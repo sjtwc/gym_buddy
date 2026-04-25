@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.screens.profile
+package com.csci3310.gymbuddy.ui.screens.profile
 
 import android.content.Context
 import android.net.Uri
@@ -31,7 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.gymbuddy.ui.theme.*
+import com.csci3310.gymbuddy.ui.theme.*
 import java.io.File
 import java.util.UUID
 

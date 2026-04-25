@@ -1,4 +1,4 @@
-package com.example.gymbuddy.service
+package com.csci3310.gymbuddy.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,8 +11,8 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.example.gymbuddy.MainActivity
-import com.example.gymbuddy.R
+import com.csci3310.gymbuddy.MainActivity
+import com.csci3310.gymbuddy.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +37,8 @@ class RestTimerService : Service() {
     companion object {
         const val CHANNEL_ID = "rest_timer_channel"
         const val NOTIFICATION_ID = 1001
-        const val ACTION_START = "com.example.gymbuddy.START_TIMER"
-        const val ACTION_STOP = "com.example.gymbuddy.STOP_TIMER"
+        const val ACTION_START = "com.csci3310.gymbuddy.START_TIMER"
+        const val ACTION_STOP = "com.csci3310.gymbuddy.STOP_TIMER"
         const val EXTRA_TIME = "extra_time"
     }
     

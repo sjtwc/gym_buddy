@@ -1,4 +1,4 @@
-package com.example.gymbuddy.data.local.entity
+package com.csci3310.gymbuddy.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

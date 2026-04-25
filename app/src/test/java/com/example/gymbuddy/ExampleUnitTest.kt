@@ -1,4 +1,4 @@
-package com.example.gymbuddy
+package com.csci3310.gymbuddy
 
 import org.junit.Test
 

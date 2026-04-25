@@ -1,4 +1,4 @@
-package com.example.gymbuddy.ui.components.common
+package com.csci3310.gymbuddy.ui.components.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,10 +18,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gymbuddy.ui.theme.DarkSurface
-import com.example.gymbuddy.ui.theme.TextPrimary
-import com.example.gymbuddy.ui.theme.TextSecondary
-import com.example.gymbuddy.ui.theme.TextTertiary
+import com.csci3310.gymbuddy.ui.theme.DarkSurface
+import com.csci3310.gymbuddy.ui.theme.TextPrimary
+import com.csci3310.gymbuddy.ui.theme.TextSecondary
+import com.csci3310.gymbuddy.ui.theme.TextTertiary
 
 @Composable
 fun WeightInputField(
